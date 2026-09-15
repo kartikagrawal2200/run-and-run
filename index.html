@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Run and Run | Cyber Endless Arcade</title>
-  <meta name="description" content="Play Run and Run online! An adrenaline-fueled endless arcade runner with synthwave music, futuristic obstacles, and cyber power-ups.">
+  <title>Run and Run v2 | Cyber Endless Arcade</title>
+  <meta name="description" content="Play Run and Run Version 2 online! An adrenaline-fueled endless arcade runner with 3 selectable cyber backgrounds, enhanced graphics, synthwave music, and offline mobile app support.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Run & Run">
+  <meta name="apple-mobile-web-app-title" content="Run & Run v2">
   <link rel="apple-touch-icon" href="icon.svg">
 </head>
 <body>
@@ -50,7 +50,7 @@
             </div>
             <div id="zoneBadge" class="zone-badge">
               <span class="dot"></span>
-              <span id="zoneDisplay">DOWNTOWN MATRIX</span>
+              <span id="zoneDisplay">CYBER MATRIX</span>
             </div>
           </div>
 
@@ -104,8 +104,30 @@
         <section id="menuScreen" class="overlay">
           <div class="glass-panel">
             <div class="logo-wrap">
-              <div class="neon-tag">ARCADE RUNNER v2.0</div>
-              <h1 class="glitch-title">RUN &amp; <span class="highlight">RUN</span></h1>
+              <div class="neon-tag-v2">⚡ VERSION 2.0 • GRAPHICS &amp; SMOOTH UPDATE ⚡</div>
+              <h1 class="glitch-title">RUN &amp; <span class="highlight">RUN</span> <span class="v2-badge">v2</span></h1>
+            </div>
+
+            <!-- 2-3 Background Selector -->
+            <div class="bg-selector-card">
+              <div class="bg-selector-title">
+                <span>CHOOSE BACKGROUND</span>
+                <small class="bg-selected-name" id="bgSelectedName">CYBER MATRIX</small>
+              </div>
+              <div class="bg-options" id="bgOptions">
+                <button type="button" class="bg-option-btn active" data-bg="0" id="bgBtn0" aria-label="Cyber Matrix Background">
+                  <div class="bg-thumb swatch-matrix"></div>
+                  <span class="bg-btn-title">MATRIX</span>
+                </button>
+                <button type="button" class="bg-option-btn" data-bg="1" id="bgBtn1" aria-label="Synth Sunset Background">
+                  <div class="bg-thumb swatch-sunset"></div>
+                  <span class="bg-btn-title">SUNSET</span>
+                </button>
+                <button type="button" class="bg-option-btn" data-bg="2" id="bgBtn2" aria-label="Cosmic Void Background">
+                  <div class="bg-thumb swatch-nebula"></div>
+                  <span class="bg-btn-title">COSMIC</span>
+                </button>
+              </div>
             </div>
 
             <div class="instructions-card">
