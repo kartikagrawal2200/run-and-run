@@ -2222,50 +2222,92 @@
     }
 
     initEventListeners() {
-      // Menu Play
-      document.getElementById('playBtn').addEventListener('click', () => {
-        SoundSystem.ensure();
-        SoundSystem.startBgm();
+      // Robust button trigger helper supporting both pointer/click and touch
+      const attachButtonAction = (elementOrId, callback) => {
+        const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId;
+        if (!el) return;
+        let lastTrigger = 0;
+        const handler = (e) => {
+          const now = Date.now();
+          if (now - lastTrigger < 250) return; // Prevent double-trigger from touch+click
+          lastTrigger = now;
+          if (e && e.cancelable && e.type !== 'click') e.preventDefault();
+          try {
+            callback(e);
+          } catch (err) {
+            console.error('[ButtonAction Error]', err);
+          }
+        };
+        el.addEventListener('click', handler);
+        el.addEventListener('touchend', handler);
+      };
+
+      // Menu Play: Start Game
+      attachButtonAction('playBtn', () => {
+        try {
+          SoundSystem.ensure();
+          SoundSystem.startBgm();
+        } catch (e) {
+          console.warn('[Audio] Failed to start on play:', e);
+        }
         this.resetRun();
         this.setState(GameStates.PLAYING);
       });
 
       // Settings Modal Open/Close
       const settingsModal = this.settingsModal;
-      document.getElementById('menuSettingsBtn').addEventListener('click', () => {
-        SoundSystem.ensure();
-        settingsModal.classList.remove('hidden');
+      attachButtonAction('menuSettingsBtn', () => {
+        try { SoundSystem.ensure(); } catch (e) {}
+        if (settingsModal) settingsModal.classList.remove('hidden');
       });
-      document.getElementById('closeSettingsBtn').addEventListener('click', () => {
-        settingsModal.classList.add('hidden');
+      attachButtonAction('closeSettingsBtn', () => {
+        if (settingsModal) settingsModal.classList.add('hidden');
       });
-      document.getElementById('applySettingsBtn').addEventListener('click', () => {
-        settingsModal.classList.add('hidden');
+      attachButtonAction('applySettingsBtn', () => {
+        if (settingsModal) settingsModal.classList.add('hidden');
       });
 
-      // Settings Tabs
-      const setupModalTabs = (tabBtnClass, contentIdPrefix) => {
-        const tabBtns = document.querySelectorAll(tabBtnClass);
-        tabBtns.forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            tabBtns.forEach(b => b.classList.remove('active'));
+      // Shop Modal Open/Close
+      const shopModal = this.shopModal;
+      const openShop = () => {
+        try { SoundSystem.ensure(); } catch (e) {}
+        this.renderCostumesList();
+        this.renderUpgradesList();
+        this.updateBankDisplays();
+        if (shopModal) shopModal.classList.remove('hidden');
+      };
+      attachButtonAction('menuShopBtn', openShop);
+      attachButtonAction('gameoverShopBtn', openShop);
+
+      const closeShop = () => {
+        if (shopModal) shopModal.classList.add('hidden');
+        this.updateBankDisplays();
+      };
+      attachButtonAction('closeShopBtn', closeShop);
+      attachButtonAction('leaveShopBtn', closeShop);
+
+      // Scoped Modal Tabs (Each modal controls its own tabs independently)
+      document.querySelectorAll('.modal-panel').forEach(panel => {
+        const tabs = panel.querySelectorAll('.modal-nav-tabs .tab-btn');
+        tabs.forEach(btn => {
+          attachButtonAction(btn, () => {
+            tabs.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const targetId = btn.getAttribute('data-tab');
-            const contents = btn.closest('.glass-panel').querySelectorAll('.tab-content');
+            const contents = panel.querySelectorAll('.tab-content');
             contents.forEach(c => {
               if (c.id === targetId) c.classList.remove('hidden');
               else c.classList.add('hidden');
             });
           });
         });
-      };
-      setupModalTabs('.modal-nav-tabs .tab-btn', 'tab');
+      });
 
       // Audio volume & toggle controls in Settings
       const bgmToggle = document.getElementById('settingsBgmToggle');
       const bgmSlider = document.getElementById('settingsBgmSlider');
       if (bgmToggle && bgmSlider) {
-        bgmToggle.addEventListener('click', () => {
+        attachButtonAction(bgmToggle, () => {
           const active = SoundSystem.toggleBgm();
           bgmToggle.textContent = active ? 'ON' : 'OFF';
           if (active) bgmToggle.classList.add('active');
@@ -2280,7 +2322,7 @@
       const sfxToggle = document.getElementById('settingsSfxToggle');
       const sfxSlider = document.getElementById('settingsSfxSlider');
       if (sfxToggle && sfxSlider) {
-        sfxToggle.addEventListener('click', () => {
+        attachButtonAction(sfxToggle, () => {
           const active = SoundSystem.toggleSfx();
           sfxToggle.textContent = active ? 'ON' : 'OFF';
           if (active) sfxToggle.classList.add('active');
@@ -2292,63 +2334,48 @@
         });
       }
 
-      // Shop Modal Open/Close
-      const shopModal = this.shopModal;
-      const openShop = () => {
-        SoundSystem.ensure();
-        this.renderCostumesList();
-        this.renderUpgradesList();
-        this.updateBankDisplays();
-        shopModal.classList.remove('hidden');
-      };
-      document.getElementById('menuShopBtn').addEventListener('click', openShop);
-      const gameoverShopBtn = document.getElementById('gameoverShopBtn');
-      if (gameoverShopBtn) gameoverShopBtn.addEventListener('click', openShop);
-
-      document.getElementById('closeShopBtn').addEventListener('click', () => {
-        shopModal.classList.add('hidden');
-        this.updateBankDisplays();
-      });
-      document.getElementById('leaveShopBtn').addEventListener('click', () => {
-        shopModal.classList.add('hidden');
-        this.updateBankDisplays();
-      });
-
       // Pause / Resume
-      document.getElementById('pauseBtn').addEventListener('click', () => {
+      attachButtonAction('pauseBtn', () => {
         if (this.state === GameStates.PLAYING) this.setState(GameStates.PAUSED);
       });
-      document.getElementById('resumeBtn').addEventListener('click', () => {
+      attachButtonAction('resumeBtn', () => {
         this.setState(GameStates.PLAYING);
       });
-      document.getElementById('quitBtn').addEventListener('click', () => {
-        SoundSystem.stopBgm();
+      attachButtonAction('quitBtn', () => {
+        try { SoundSystem.stopBgm(); } catch (e) {}
         this.setState(GameStates.MENU);
       });
 
       // Game Over buttons
-      document.getElementById('restartBtn').addEventListener('click', () => {
-        SoundSystem.startBgm();
+      attachButtonAction('restartBtn', () => {
+        try {
+          SoundSystem.ensure();
+          SoundSystem.startBgm();
+        } catch (e) {}
         this.resetRun();
         this.setState(GameStates.PLAYING);
       });
-      document.getElementById('menuBtn').addEventListener('click', () => {
-        SoundSystem.stopBgm();
+      attachButtonAction('menuBtn', () => {
+        try { SoundSystem.stopBgm(); } catch (e) {}
         this.setState(GameStates.MENU);
       });
 
       // Audio toggles in HUD
       const muteBtn = document.getElementById('muteBtn');
-      muteBtn.addEventListener('click', () => {
-        const active = SoundSystem.toggleSfx();
-        muteBtn.textContent = active ? '🔊' : '🔇';
-      });
+      if (muteBtn) {
+        attachButtonAction(muteBtn, () => {
+          const active = SoundSystem.toggleSfx();
+          muteBtn.textContent = active ? '🔊' : '🔇';
+        });
+      }
 
       const bgmBtn = document.getElementById('bgmBtn');
-      bgmBtn.addEventListener('click', () => {
-        const active = SoundSystem.toggleBgm();
-        bgmBtn.textContent = active ? '🎵' : '🔇';
-      });
+      if (bgmBtn) {
+        attachButtonAction(bgmBtn, () => {
+          const active = SoundSystem.toggleBgm();
+          bgmBtn.textContent = active ? '🎵' : '🔇';
+        });
+      }
 
       // Keyboard Controls
       window.addEventListener('keydown', (e) => {

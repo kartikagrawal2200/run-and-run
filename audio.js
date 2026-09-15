@@ -182,70 +182,86 @@ const SoundSystem = (function () {
 
     // Hi-hat on off-beats
     if (step16 % 2 === 1) {
-      const hatOsc = ctx.createOscillator();
-      const hatGain = ctx.createGain();
-      hatOsc.type = 'highpass';
-      hatOsc.frequency.setValueAtTime(8000, time);
-      hatGain.gain.setValueAtTime(0.03, time);
-      hatGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.03);
-      hatOsc.connect(hatGain).connect(ctx.destination);
-      hatOsc.start(time);
-      hatOsc.stop(time + 0.035);
+      try {
+        const hatOsc = ctx.createOscillator();
+        const hatGain = ctx.createGain();
+        const hatFilter = ctx.createBiquadFilter();
+        hatOsc.type = 'square';
+        hatFilter.type = 'highpass';
+        hatFilter.frequency.setValueAtTime(7000, time);
+        hatGain.gain.setValueAtTime(0.02 * sfxVolume, time);
+        hatGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.03);
+        hatOsc.connect(hatFilter).connect(hatGain).connect(ctx.destination);
+        hatOsc.start(time);
+        hatOsc.stop(time + 0.035);
+      } catch (e) {}
     }
 
     // Rolling 16th synth bassline
-    const bassFreq = bassNotes[bassIdx];
-    const bassOsc = ctx.createOscillator();
-    const bassGain = ctx.createGain();
-    const bassFilter = ctx.createBiquadFilter();
+    try {
+      const bassFreq = bassNotes[bassIdx];
+      const bassOsc = ctx.createOscillator();
+      const bassGain = ctx.createGain();
+      const bassFilter = ctx.createBiquadFilter();
 
-    bassOsc.type = 'sawtooth';
-    bassOsc.frequency.setValueAtTime(bassFreq, time);
+      bassOsc.type = 'sawtooth';
+      bassOsc.frequency.setValueAtTime(bassFreq, time);
 
-    bassFilter.type = 'lowpass';
-    bassFilter.frequency.setValueAtTime(450, time);
-    bassFilter.frequency.exponentialRampToValueAtTime(220, time + stepTime * 0.85);
+      bassFilter.type = 'lowpass';
+      bassFilter.frequency.setValueAtTime(450, time);
+      bassFilter.frequency.exponentialRampToValueAtTime(220, time + stepTime * 0.85);
 
-    bassGain.gain.setValueAtTime(0, time);
-    bassGain.gain.linearRampToValueAtTime(0.07, time + 0.005);
-    bassGain.gain.exponentialRampToValueAtTime(0.001, time + stepTime * 0.9);
+      bassGain.gain.setValueAtTime(0, time);
+      bassGain.gain.linearRampToValueAtTime(0.07 * bgmVolume, time + 0.005);
+      bassGain.gain.exponentialRampToValueAtTime(0.001, time + stepTime * 0.9);
 
-    bassOsc.connect(bassFilter).connect(bassGain).connect(ctx.destination);
-    bassOsc.start(time);
-    bassOsc.stop(time + stepTime);
+      bassOsc.connect(bassFilter).connect(bassGain).connect(ctx.destination);
+      bassOsc.start(time);
+      bassOsc.stop(time + stepTime);
+    } catch (e) {}
 
     // Occasional lead accent
     if (step16 % 4 === 2 && Math.random() < 0.6) {
-      const leadNote = leadNotes[bgmStep % leadNotes.length];
-      const leadOsc = ctx.createOscillator();
-      const leadGain = ctx.createGain();
-      leadOsc.type = 'sine';
-      leadOsc.frequency.setValueAtTime(leadNote, time);
-      leadGain.gain.setValueAtTime(0.035, time);
-      leadGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.22);
-      leadOsc.connect(leadGain).connect(ctx.destination);
-      leadOsc.start(time);
-      leadOsc.stop(time + 0.23);
+      try {
+        const leadNote = leadNotes[bgmStep % leadNotes.length];
+        const leadOsc = ctx.createOscillator();
+        const leadGain = ctx.createGain();
+        leadOsc.type = 'sine';
+        leadOsc.frequency.setValueAtTime(leadNote, time);
+        leadGain.gain.setValueAtTime(0.035 * bgmVolume, time);
+        leadGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.22);
+        leadOsc.connect(leadGain).connect(ctx.destination);
+        leadOsc.start(time);
+        leadOsc.stop(time + 0.23);
+      } catch (e) {}
     }
   }
 
   function bgmScheduler() {
     if (!isPlayingBgm || !ctx) return;
-    while (nextNoteTime < ctx.currentTime + 0.1) {
-      scheduleBgmNote(nextNoteTime);
-      nextNoteTime += stepTime;
-      bgmStep++;
+    try {
+      while (nextNoteTime < ctx.currentTime + 0.1) {
+        scheduleBgmNote(nextNoteTime);
+        nextNoteTime += stepTime;
+        bgmStep++;
+      }
+      bgmTimer = setTimeout(bgmScheduler, 25);
+    } catch (e) {
+      console.warn('[Audio] bgmScheduler error:', e);
     }
-    bgmTimer = setTimeout(bgmScheduler, 25);
   }
 
   function startBgm() {
-    ensureAudio();
-    if (isPlayingBgm) return;
-    isPlayingBgm = true;
-    bgmStep = 0;
-    nextNoteTime = ctx.currentTime + 0.05;
-    bgmScheduler();
+    try {
+      ensureAudio();
+      if (isPlayingBgm || !ctx) return;
+      isPlayingBgm = true;
+      bgmStep = 0;
+      nextNoteTime = (ctx && typeof ctx.currentTime === 'number') ? ctx.currentTime + 0.05 : 0;
+      bgmScheduler();
+    } catch (e) {
+      console.warn('[Audio] Failed to start BGM:', e);
+    }
   }
 
   function stopBgm() {

@@ -27,7 +27,17 @@ html, body {
   background-color: var(--bg-dark);
   font-family: var(--font-body);
   color: #e2e8f0;
-  touch-action: none;
+}
+
+button, .cyber-btn, .nav-cyber-btn, .close-icon-btn, .tab-btn, .bg-option-btn, .shop-action-btn, .upgrade-btn {
+  touch-action: manipulation;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: auto;
+}
+
+.overlay, .glass-panel, .modal-panel {
+  pointer-events: auto;
 }
 
 #pageWrapper {
