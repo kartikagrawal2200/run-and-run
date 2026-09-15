@@ -1,0 +1,23 @@
+{
+  "name": "Run and Run: Cyber Endless Arcade",
+  "short_name": "Run & Run",
+  "description": "Endless cyber arcade runner with synthwave music, futuristic obstacles, and power-ups.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#070913",
+  "theme_color": "#4cc9f0",
+  "categories": [
+    "games",
+    "arcade"
+  ],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
