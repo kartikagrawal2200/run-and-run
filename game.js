@@ -82,48 +82,41 @@
   }
 
   /* ============================================================
-     ZONES / CYBER THEMES
+     ZONES / CYBER THEMES (3 SELECTABLE BACKGROUNDS)
      ============================================================ */
   const THEMES = [
     {
-      name: 'DOWNTOWN MATRIX',
-      sky: ['#040a17', '#0e1e38'],
-      ground: '#131b2e',
+      id: 'matrix',
+      name: 'CYBER MATRIX',
+      sky: ['#02050f', '#09162c'],
+      ground: '#0c1424',
       grid: '#4cc9f0',
-      building: '#192644',
-      accent: '#4cc9f0'
+      building: '#101d36',
+      accent: '#00f0ff',
+      celestial: 'moon',
+      horizonGlow: 'rgba(76, 201, 240, 0.22)'
     },
     {
-      name: 'SUNSET HIGHWAY',
-      sky: ['#280824', '#601b3d'],
-      ground: '#331526',
+      id: 'sunset',
+      name: 'SYNTH SUNSET',
+      sky: ['#240523', '#5a123b'],
+      ground: '#260d21',
       grid: '#f72585',
-      building: '#481938',
-      accent: '#ff007f'
+      building: '#3b122f',
+      accent: '#ff007f',
+      celestial: 'sun',
+      horizonGlow: 'rgba(247, 37, 133, 0.28)'
     },
     {
-      name: 'TOXIC CORE',
-      sky: ['#061a14', '#0d3829'],
-      ground: '#112b20',
-      grid: '#06d6a0',
-      building: '#163e30',
-      accent: '#06d6a0'
-    },
-    {
-      name: 'NEON DESERT',
-      sky: ['#2a1608', '#542d0a'],
-      ground: '#3b220d',
-      grid: '#ffd23f',
-      building: '#5c3817',
-      accent: '#ffb703'
-    },
-    {
-      name: 'GLITCH VOID',
-      sky: ['#120826', '#26114a'],
-      ground: '#1f103b',
-      grid: '#b5179e',
-      building: '#371869',
-      accent: '#7209b7'
+      id: 'cosmic',
+      name: 'COSMIC VOID',
+      sky: ['#070214', '#1f0b3d'],
+      ground: '#130726',
+      grid: '#9d4edd',
+      building: '#261145',
+      accent: '#ffd23f',
+      celestial: 'nebula',
+      horizonGlow: 'rgba(157, 78, 221, 0.25)'
     }
   ];
 
@@ -261,16 +254,37 @@
     constructor() {
       this.farBuildings = this._createLayer(8, 70, 180);
       this.midBuildings = this._createLayer(6, 120, 270);
-      this.streaks = [];
-      for (let i = 0; i < 20; i++) {
-        this.streaks.push({
-          x: randRange(20, DESIGN_WIDTH - 20),
-          y: randRange(GROUND_Y - 300, GROUND_Y + 120),
-          speed: randRange(1.2, 2.5),
-          len: randRange(20, 60),
-          alpha: randRange(0.2, 0.6)
+
+      // Starfield for deep cyber space
+      this.stars = [];
+      for (let i = 0; i < 55; i++) {
+        this.stars.push({
+          x: Math.random() * DESIGN_WIDTH,
+          y: Math.random() * (GROUND_Y - 260),
+          radius: randRange(0.8, 2.2),
+          alpha: randRange(0.3, 0.95),
+          twinkleSpeed: randRange(2.0, 5.5),
+          twinklePhase: Math.random() * Math.PI * 2
         });
       }
+
+      // Shooting stars system
+      this.shootingStar = null;
+      this.shootingStarTimer = randRange(2.0, 4.5);
+
+      // Speed streaks (wind trails when running fast)
+      this.speedStreaks = [];
+      for (let i = 0; i < 22; i++) {
+        this.speedStreaks.push({
+          x: randRange(15, DESIGN_WIDTH - 15),
+          y: Math.random() * DESIGN_HEIGHT,
+          speed: randRange(1.4, 2.8),
+          len: randRange(35, 85),
+          alpha: randRange(0.18, 0.45)
+        });
+      }
+
+      this.time = 0;
     }
 
     _createLayer(count, minH, maxH) {
@@ -281,34 +295,284 @@
           x: i * colWidth,
           w: colWidth * randRange(0.6, 0.9),
           h: randRange(minH, maxH),
-          windows: Math.random() > 0.3
+          windows: Math.random() > 0.25,
+          beacon: Math.random() > 0.35,
+          beaconColor: Math.random() > 0.5 ? '#ff3366' : '#00f0ff',
+          neonSign: Math.random() > 0.65 ? (['RUN', 'V2.0', 'NEO', 'CYBER'][Math.floor(Math.random() * 4)]) : null
         });
       }
       return b;
     }
 
-    render(ctx, distance, buildingColor, gridColor) {
-      // Far layer
-      this._renderBuildings(ctx, this.farBuildings, distance * 0.1, 240, buildingColor, 0.35);
-      // Mid layer
-      this._renderBuildings(ctx, this.midBuildings, distance * 0.26, 290, buildingColor, 0.65);
+    update(dt, speedRatio = 1) {
+      this.time += dt;
 
-      // Distant neon grid on horizon
+      // Update shooting stars
+      if (this.shootingStar) {
+        this.shootingStar.life -= dt;
+        this.shootingStar.x += this.shootingStar.vx * dt;
+        this.shootingStar.y += this.shootingStar.vy * dt;
+        if (this.shootingStar.life <= 0) {
+          this.shootingStar = null;
+          this.shootingStarTimer = randRange(3.0, 6.5);
+        }
+      } else {
+        this.shootingStarTimer -= dt;
+        if (this.shootingStarTimer <= 0) {
+          this.shootingStar = {
+            x: randRange(20, DESIGN_WIDTH - 120),
+            y: randRange(20, 150),
+            vx: randRange(380, 650),
+            vy: randRange(180, 320),
+            len: randRange(55, 95),
+            life: randRange(0.35, 0.6),
+            maxLife: 0.6,
+            color: Math.random() > 0.5 ? '#4cc9f0' : '#ffd23f'
+          };
+        }
+      }
+
+      // Update speed wind streaks
+      for (const s of this.speedStreaks) {
+        s.y += 420 * s.speed * speedRatio * dt;
+        if (s.y > DESIGN_HEIGHT + s.len) {
+          s.y = -s.len;
+          s.x = randRange(10, DESIGN_WIDTH - 10);
+        }
+      }
+    }
+
+    render(ctx, distance, theme, buildingColor, gridColor, speedRatio = 1) {
+      // 1. Starfield with smooth twinkling
+      ctx.save();
+      for (const st of this.stars) {
+        const twinkle = Math.sin(this.time * st.twinkleSpeed + st.twinklePhase);
+        const a = clamp(st.alpha + twinkle * 0.35, 0.1, 1);
+        ctx.globalAlpha = a;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(st.x, st.y, st.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 2. Shooting star streak
+      if (this.shootingStar) {
+        const ss = this.shootingStar;
+        const a = clamp(ss.life / ss.maxLife, 0, 1);
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.strokeStyle = ss.color;
+        ctx.shadowColor = ss.color;
+        ctx.shadowBlur = 12;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(ss.x, ss.y);
+        ctx.lineTo(ss.x - ss.vx * 0.08, ss.y - ss.vy * 0.08);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 3. Celestial object (Retro Sun, Cyber Moon, or Nebula)
+      this._renderCelestial(ctx, theme);
+
+      // 4. Parallax skyline layers
+      this._renderBuildings(ctx, this.farBuildings, distance * 0.1, 240, buildingColor, 0.38, gridColor);
+      this._renderBuildings(ctx, this.midBuildings, distance * 0.26, 290, buildingColor, 0.70, gridColor);
+
+      // 5. Distant perspective grid on horizon
       ctx.save();
       ctx.strokeStyle = gridColor;
-      ctx.globalAlpha = 0.2;
+      ctx.globalAlpha = 0.22;
       ctx.lineWidth = 1;
       const horizonY = 300;
-      for (let x = 0; x <= DESIGN_WIDTH; x += 32) {
+      for (let x = 0; x <= DESIGN_WIDTH; x += 30) {
         ctx.beginPath();
         ctx.moveTo(x, horizonY);
-        ctx.lineTo(x + (x - DESIGN_WIDTH / 2) * 1.5, GROUND_Y);
+        ctx.lineTo(x + (x - DESIGN_WIDTH / 2) * 1.6, GROUND_Y);
         ctx.stroke();
       }
       ctx.restore();
+
+      // 6. Atmospheric horizon glow
+      if (theme && theme.horizonGlow) {
+        ctx.save();
+        const hGrad = ctx.createLinearGradient(0, horizonY - 40, 0, GROUND_Y + 12);
+        hGrad.addColorStop(0, 'rgba(0,0,0,0)');
+        hGrad.addColorStop(0.7, theme.horizonGlow);
+        hGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = hGrad;
+        ctx.fillRect(0, horizonY - 40, DESIGN_WIDTH, GROUND_Y - horizonY + 52);
+        ctx.restore();
+      }
+
+      // 7. Track border rails with animated neon LED guide nodes
+      ctx.save();
+      ctx.strokeStyle = gridColor;
+      ctx.shadowColor = gridColor;
+      ctx.shadowBlur = 10;
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(0, 260); ctx.lineTo(0, DESIGN_HEIGHT);
+      ctx.moveTo(DESIGN_WIDTH, 260); ctx.lineTo(DESIGN_WIDTH, DESIGN_HEIGHT);
+      ctx.stroke();
+
+      for (let y = 300; y < DESIGN_HEIGHT; y += 70) {
+        const offset = (this.time * 60 + y) % (DESIGN_HEIGHT - 300) + 300;
+        ctx.fillStyle = '#fff';
+        ctx.shadowColor = gridColor;
+        ctx.shadowBlur = 8;
+        ctx.fillRect(2, offset, 4, 10);
+        ctx.fillRect(DESIGN_WIDTH - 6, offset, 4, 10);
+      }
+      ctx.restore();
+
+      // 8. Dynamic speed wind streaks
+      if (speedRatio > 1.05) {
+        ctx.save();
+        ctx.strokeStyle = gridColor;
+        ctx.shadowColor = gridColor;
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = 1.2;
+        const streakAlpha = clamp((speedRatio - 1.05) * 0.45, 0, 0.45);
+        ctx.globalAlpha = streakAlpha;
+        for (const s of this.speedStreaks) {
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y);
+          ctx.lineTo(s.x, s.y + s.len);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
     }
 
-    _renderBuildings(ctx, list, offset, baseY, color, alpha) {
+    _renderCelestial(ctx, theme) {
+      if (!theme) return;
+      ctx.save();
+
+      if (theme.celestial === 'sun') {
+        // Retro Synthwave Sun
+        const sunX = DESIGN_WIDTH / 2;
+        const sunY = 250;
+        const radius = 68;
+
+        // Big outer radiant glow
+        const sunGlow = ctx.createRadialGradient(sunX, sunY, radius * 0.2, sunX, sunY, radius * 1.8);
+        sunGlow.addColorStop(0, 'rgba(255, 210, 63, 0.6)');
+        sunGlow.addColorStop(0.5, 'rgba(247, 37, 133, 0.3)');
+        sunGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = sunGlow;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, radius * 1.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Sun disc gradient
+        const discGrad = ctx.createLinearGradient(sunX, sunY - radius, sunX, sunY + radius);
+        discGrad.addColorStop(0, '#ffd23f');
+        discGrad.addColorStop(0.5, '#ff007f');
+        discGrad.addColorStop(1, '#7209b7');
+
+        ctx.fillStyle = discGrad;
+        ctx.shadowColor = '#f72585';
+        ctx.shadowBlur = 24;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Iconic horizontal retro blinds
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#240523';
+        const startCutY = sunY - 10;
+        for (let i = 0; i < 7; i++) {
+          const sy = startCutY + i * 11;
+          const sliceH = 2 + i * 1.2;
+          ctx.fillRect(sunX - radius, sy, radius * 2, sliceH);
+        }
+      } else if (theme.celestial === 'moon') {
+        // Cyber Matrix Digital Moon
+        const moonX = DESIGN_WIDTH * 0.72;
+        const moonY = 160;
+        const radius = 42;
+
+        const moonGlow = ctx.createRadialGradient(moonX, moonY, radius * 0.3, moonX, moonY, radius * 2.2);
+        moonGlow.addColorStop(0, 'rgba(76, 201, 240, 0.5)');
+        moonGlow.addColorStop(0.6, 'rgba(0, 240, 255, 0.15)');
+        moonGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = moonGlow;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, radius * 2.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        const moonGrad = ctx.createLinearGradient(moonX - radius, moonY - radius, moonX + radius, moonY + radius);
+        moonGrad.addColorStop(0, '#e0f7fa');
+        moonGrad.addColorStop(0.5, '#4cc9f0');
+        moonGrad.addColorStop(1, '#09162c');
+
+        ctx.fillStyle = moonGrad;
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 18;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Orbiting cyan data rings
+        ctx.strokeStyle = 'rgba(76, 201, 240, 0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.ellipse(moonX, moonY, radius * 1.5, radius * 0.48, -0.28, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Orbiting satellite data node
+        const satAngle = this.time * 1.8;
+        const satX = moonX + Math.cos(satAngle) * radius * 1.5;
+        const satY = moonY + Math.sin(satAngle) * radius * 0.48;
+        ctx.fillStyle = '#fff';
+        ctx.shadowColor = '#fff';
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(satX, satY, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Cosmic Void Nebula & Pulsar
+        const nebX = DESIGN_WIDTH * 0.38;
+        const nebY = 175;
+
+        const nebGrad = ctx.createRadialGradient(nebX, nebY, 20, nebX, nebY, 140);
+        nebGrad.addColorStop(0, 'rgba(181, 23, 158, 0.35)');
+        nebGrad.addColorStop(0.4, 'rgba(114, 9, 183, 0.22)');
+        nebGrad.addColorStop(0.8, 'rgba(76, 201, 240, 0.12)');
+        nebGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = nebGrad;
+        ctx.beginPath();
+        ctx.arc(nebX, nebY, 140, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Radiant Pulsar Star
+        const pX = DESIGN_WIDTH * 0.42;
+        const pY = 160;
+        const pSize = 5 + Math.sin(this.time * 5) * 1.5;
+        ctx.fillStyle = '#ffd23f';
+        ctx.shadowColor = '#ffd23f';
+        ctx.shadowBlur = 18;
+        ctx.beginPath();
+        ctx.arc(pX, pY, pSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Cross flare
+        ctx.strokeStyle = 'rgba(255, 210, 63, 0.6)';
+        ctx.lineWidth = 1.5;
+        const rayLen = 22 + Math.sin(this.time * 5) * 6;
+        ctx.beginPath();
+        ctx.moveTo(pX - rayLen, pY); ctx.lineTo(pX + rayLen, pY);
+        ctx.moveTo(pX, pY - rayLen); ctx.lineTo(pX, pY + rayLen);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    _renderBuildings(ctx, list, offset, baseY, color, alpha, accentColor) {
       const period = DESIGN_WIDTH;
       const shift = offset % period;
 
@@ -336,6 +600,36 @@
             ctx.fillStyle = color;
             ctx.globalAlpha = alpha;
           }
+
+          // Rooftop beacon
+          if (b.beacon) {
+            const blink = Math.sin(this.time * 4 + bx) > 0;
+            if (blink) {
+              ctx.save();
+              ctx.fillStyle = b.beaconColor;
+              ctx.shadowColor = b.beaconColor;
+              ctx.shadowBlur = 8;
+              ctx.globalAlpha = 0.9;
+              ctx.fillRect(bx + b.w / 2 - 1, baseY - b.h - 8, 2, 8);
+              ctx.beginPath();
+              ctx.arc(bx + b.w / 2, baseY - b.h - 9, 2.5, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+            }
+          }
+
+          // Neon advertising sign
+          if (b.neonSign && b.w > 36) {
+            ctx.save();
+            ctx.globalAlpha = 0.85;
+            ctx.font = 'bold 9px "Orbitron", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = accentColor || '#4cc9f0';
+            ctx.shadowColor = accentColor || '#4cc9f0';
+            ctx.shadowBlur = 8;
+            ctx.fillText(b.neonSign, bx + b.w / 2, baseY - b.h + 20);
+            ctx.restore();
+          }
         }
       }
       ctx.restore();
@@ -343,14 +637,14 @@
   }
 
   /* ============================================================
-     PLAYER (CYBER RUNNER)
+     PLAYER (CYBER RUNNER v2 - ULTRA SMOOTH PHYSICS & GRAPHICS)
      ============================================================ */
   class Player {
     constructor() {
       this.lane = 1;
       this.x = laneX(1);
       this.targetX = this.x;
-      this.laneChangeSpeed = 16;
+      this.tilt = 0;
 
       this.jumpHeight = 0;
       this.jumpVel = 0;
@@ -406,27 +700,31 @@
     update(dt, particles) {
       this.animTime += dt;
 
-      // Smooth horizontal interpolation
+      // Critically damped exponential lane approach for buttery 60/120fps smoothness
       const dx = this.targetX - this.x;
-      if (Math.abs(dx) > 0.5) {
-        const factor = 1 - Math.pow(0.001, dt * (this.laneChangeSpeed / 10));
-        this.x += dx * factor;
-        // Emit trail sparks during lane change
+      const moveAlpha = 1 - Math.exp(-24 * dt);
+      this.x += dx * moveAlpha;
+
+      // Dynamic banking tilt when changing lanes
+      const targetTilt = clamp(dx * 0.0035, -0.22, 0.22);
+      this.tilt = lerp(this.tilt, targetTilt, 1 - Math.exp(-18 * dt));
+
+      // Emit lateral trail sparks during lane change
+      if (Math.abs(dx) > 1.5) {
         particles.trail(this.x, GROUND_Y - 20, '#4cc9f0');
-      } else {
-        this.x = this.targetX;
       }
 
-      // Jump physics
+      // Jump physics with apex smoothing
       if (this.jumping) {
-        this.jumpVel -= this.gravity * dt;
+        const apexFloat = Math.abs(this.jumpVel) < 200 ? 0.78 : 1.0;
+        this.jumpVel -= this.gravity * apexFloat * dt;
         this.jumpHeight += this.jumpVel * dt;
         if (this.jumpHeight <= 0) {
           this.jumpHeight = 0;
           this.jumping = false;
           this.jumpVel = 0;
           this.squash = 1; // Landing squash
-          particles.burst(this.x, GROUND_Y, '#4cc9f0', 8, 40, 100);
+          particles.burst(this.x, GROUND_Y, '#4cc9f0', 10, 50, 130);
         }
       }
 
@@ -443,9 +741,10 @@
         }
       }
 
-      // Steady runner particles
-      if (!this.jumping && Math.random() < 0.4) {
-        particles.trail(this.x, GROUND_Y, '#4cc9f0');
+      // Continuous dual cyber thruster particles
+      if (!this.jumping && Math.random() < 0.5) {
+        particles.trail(this.x - 8, GROUND_Y - 2, '#00f0ff');
+        particles.trail(this.x + 8, GROUND_Y - 2, '#ffd23f');
       }
     }
 
@@ -466,7 +765,7 @@
       const currentH = b.h;
       const squashOffset = this.squash * 8;
 
-      // Drop shadow on ground
+      // Dynamic ground shadow that scales with jump height
       ctx.save();
       const shadowScale = clamp(1 - this.jumpHeight / 280, 0.3, 1);
       ctx.globalAlpha = 0.4 * shadowScale;
@@ -477,18 +776,57 @@
       ctx.restore();
 
       ctx.save();
+      // Apply banking tilt rotation
+      ctx.translate(this.x, b.y + currentH / 2);
+      ctx.rotate(this.tilt);
+      ctx.translate(-this.x, -(b.y + currentH / 2));
 
-      // Energy Shield Aura if active
+      // Dual Counter-Rotating Hex Energy Shield
       if (this.hasShield) {
         ctx.save();
-        const pulse = Math.sin(this.animTime * 8) * 4;
+        const pulse = Math.sin(this.animTime * 6) * 3;
+        const r = (this.width / 2) + 14 + pulse;
+
+        // Outer rotating hexagon
+        ctx.save();
+        ctx.translate(this.x, b.y + currentH / 2);
+        ctx.rotate(this.animTime * 2.2);
         ctx.strokeStyle = '#06d6a0';
         ctx.shadowColor = '#06d6a0';
         ctx.shadowBlur = 16;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.ellipse(this.x, b.y + currentH / 2, (this.width / 2) + 12 + pulse, (currentH / 2) + 12 + pulse, 0, 0, Math.PI * 2);
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * Math.PI) / 3;
+          const hx = Math.cos(angle) * r;
+          const hy = Math.sin(angle) * r;
+          if (i === 0) ctx.moveTo(hx, hy);
+          else ctx.lineTo(hx, hy);
+        }
+        ctx.closePath();
         ctx.stroke();
+        ctx.restore();
+
+        // Inner counter-rotating ring
+        ctx.save();
+        ctx.translate(this.x, b.y + currentH / 2);
+        ctx.rotate(-this.animTime * 1.7);
+        ctx.strokeStyle = '#4cc9f0';
+        ctx.shadowColor = '#4cc9f0';
+        ctx.shadowBlur = 12;
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * Math.PI) / 3;
+          const hx = Math.cos(angle) * (r * 0.78);
+          const hy = Math.sin(angle) * (r * 0.78);
+          if (i === 0) ctx.moveTo(hx, hy);
+          else ctx.lineTo(hx, hy);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+
         ctx.restore();
       }
 
@@ -496,21 +834,34 @@
       const bodyColor = this.sliding ? '#f72585' : '#4cc9f0';
       ctx.fillStyle = bodyColor;
       ctx.shadowColor = bodyColor;
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = 14;
 
-      // Rounded torso / body
+      // Rounded cyber torso
       const cornerR = 8;
       ctx.beginPath();
       ctx.roundRect(b.x, b.y + squashOffset, b.w, currentH - squashOffset, cornerR);
       ctx.fill();
 
-      // Cyber glowing visor
+      // Dual jet thrusters with pulsing flame glow
+      const flameH = 8 + Math.sin(this.animTime * 24) * 4;
+      ctx.fillStyle = this.sliding ? '#ffd23f' : '#00f0ff';
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.shadowBlur = 10;
+      ctx.fillRect(b.x + 8, b.y + currentH - 2, 6, flameH);
+      ctx.fillRect(b.x + b.w - 14, b.y + currentH - 2, 6, flameH);
+
+      // Cyber glowing visor with scanner beam
       ctx.fillStyle = '#ffd23f';
       ctx.shadowColor = '#ffd23f';
       ctx.shadowBlur = 8;
       const visorH = this.sliding ? 7 : 12;
       const visorY = b.y + (this.sliding ? 6 : 10) + squashOffset;
       ctx.fillRect(b.x + 6, visorY, b.w - 12, visorH);
+
+      // Visor animated laser scan highlight
+      const scanX = b.x + 6 + ((Math.sin(this.animTime * 12) + 1) * 0.5) * (b.w - 18);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(scanX, visorY, 4, visorH);
 
       // Running armor details / stripes
       ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
@@ -652,19 +1003,34 @@
         const oy = o.y - o.h;
 
         if (o.type.id === 'LOW') {
-          // Low Barrier with caution stripes
+          // Low Barrier with caution stripes and electric arcs
           ctx.fillStyle = o.type.color;
           ctx.shadowColor = o.type.color;
-          ctx.shadowBlur = 10;
+          ctx.shadowBlur = 12;
           ctx.fillRect(ox, oy, o.w, o.h);
 
           // Glowing danger line
           ctx.fillStyle = o.type.accent;
           ctx.fillRect(ox + 4, oy + 4, o.w - 8, 6);
 
+          // Animated electric lightning sparks across top edge
+          ctx.strokeStyle = '#00f0ff';
+          ctx.shadowColor = '#00f0ff';
+          ctx.shadowBlur = 10;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          let arcX = ox + 6;
+          ctx.moveTo(arcX, oy + 6);
+          while (arcX < ox + o.w - 8) {
+            arcX += randRange(10, 20);
+            const arcY = oy + 6 + (Math.random() * 8 - 4);
+            ctx.lineTo(Math.min(arcX, ox + o.w - 6), arcY);
+          }
+          ctx.stroke();
+
           // Caution diagonal stripes
           ctx.fillStyle = '#000';
-          ctx.globalAlpha = 0.25;
+          ctx.globalAlpha = 0.28;
           for (let sx = ox; sx < ox + o.w; sx += 18) {
             ctx.beginPath();
             ctx.moveTo(sx, oy + o.h);
@@ -677,39 +1043,53 @@
           // Overhead High Beam with slide gap
           const solidH = o.h - o.type.gap;
 
-          // Upper beam
+          // Upper beam structure
           ctx.fillStyle = o.type.color;
           ctx.shadowColor = o.type.accent;
-          ctx.shadowBlur = 12;
+          ctx.shadowBlur = 14;
           ctx.fillRect(ox, oy, o.w, solidH);
 
           // Pulsing laser emitter beam
+          const laserPulse = (Math.sin(Date.now() * 0.012) + 1) * 0.5;
           ctx.fillStyle = o.type.accent;
-          ctx.fillRect(ox + 8, oy + solidH - 8, o.w - 16, 6);
+          ctx.shadowColor = o.type.accent;
+          ctx.shadowBlur = 12 + laserPulse * 10;
+          ctx.fillRect(ox + 6, oy + solidH - 8, o.w - 12, 6);
 
           // Subtle holographic clearance indicator below
           ctx.fillStyle = o.type.accent;
-          ctx.globalAlpha = 0.12;
+          ctx.globalAlpha = 0.14 + laserPulse * 0.08;
           ctx.fillRect(ox, oy + solidH, o.w, o.type.gap);
-          ctx.globalAlpha = 0.8;
+
+          ctx.globalAlpha = 0.85;
           ctx.font = 'bold 11px "Orbitron", sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText('▼ SLIDE ▼', o.x, oy + solidH + 26);
+          ctx.fillText('▼ SLIDE UNDER ▼', o.x, oy + solidH + 26);
         } else {
-          // Block Monolith
+          // Block Monolith with tech circuitry
           ctx.fillStyle = o.type.color;
           ctx.fillRect(ox, oy, o.w, o.h);
 
           // Glowing edge frame
           ctx.strokeStyle = o.type.accent;
           ctx.shadowColor = o.type.accent;
-          ctx.shadowBlur = 14;
+          ctx.shadowBlur = 16;
           ctx.lineWidth = 3;
           ctx.strokeRect(ox + 2, oy + 2, o.w - 4, o.h - 4);
 
-          // Hazard symbol
+          // Digital circuit trace lines
+          ctx.strokeStyle = 'rgba(255, 0, 85, 0.45)';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(ox + 10, oy + 18); ctx.lineTo(ox + o.w - 10, oy + 18);
+          ctx.moveTo(ox + 10, oy + o.h - 18); ctx.lineTo(ox + o.w - 10, oy + o.h - 18);
+          ctx.moveTo(ox + o.w / 2, oy + 18); ctx.lineTo(ox + o.w / 2, oy + o.h - 18);
+          ctx.stroke();
+
+          // Pulsing Hazard symbol
+          const hazardPulse = Math.sin(Date.now() * 0.008) * 2;
           ctx.fillStyle = o.type.accent;
-          ctx.font = 'bold 20px "Orbitron", sans-serif';
+          ctx.font = `bold ${20 + hazardPulse}px "Orbitron", sans-serif`;
           ctx.textAlign = 'center';
           ctx.fillText('⚠', o.x, oy + o.h / 2 + 7);
         }
@@ -912,33 +1292,61 @@
 
         ctx.save();
         if (item.type === 'coin') {
-          // 3D Spinning Coin
+          // 3D Spinning Gold Coin with metallic sheen
           const wobble = Math.abs(Math.cos(item.spin));
           const w = Math.max(3, item.radius * wobble);
 
-          ctx.fillStyle = '#ffd23f';
+          const coinGrad = ctx.createLinearGradient(cx - w, cy - item.radius, cx + w, cy + item.radius);
+          coinGrad.addColorStop(0, '#fffbe0');
+          coinGrad.addColorStop(0.5, '#ffd23f');
+          coinGrad.addColorStop(1, '#ff9100');
+
+          ctx.fillStyle = coinGrad;
           ctx.shadowColor = '#ffd23f';
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = 10;
           ctx.beginPath();
           ctx.ellipse(cx, cy, w, item.radius, 0, 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.strokeStyle = '#fff';
-          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.2;
           ctx.stroke();
+
+          // Inner metallic rim when facing viewer
+          if (w > 5) {
+            ctx.strokeStyle = 'rgba(184, 93, 0, 0.55)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, w * 0.65, item.radius * 0.65, 0, 0, Math.PI * 2);
+            ctx.stroke();
+          }
         } else {
-          // Power-up Orb
+          // Power-up Orb with orbiting energy aura rings
           const meta = POWERUP_METAS[item.type];
-          ctx.fillStyle = meta.color;
+
+          // Outer rotating halo ring
+          ctx.strokeStyle = meta.color;
           ctx.shadowColor = meta.color;
           ctx.shadowBlur = 14;
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, item.radius * 1.5, item.radius * 0.6, item.spin * 2.2, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // Core Orb
+          const orbGrad = ctx.createRadialGradient(cx - 3, cy - 3, 2, cx, cy, item.radius);
+          orbGrad.addColorStop(0, '#ffffff');
+          orbGrad.addColorStop(0.4, meta.color);
+          orbGrad.addColorStop(1, '#0b0f19');
+
+          ctx.fillStyle = orbGrad;
           ctx.beginPath();
           ctx.arc(cx, cy, item.radius, 0, Math.PI * 2);
           ctx.fill();
 
           // Icon
-          ctx.fillStyle = '#0b0f19';
-          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowBlur = 4;
           ctx.font = 'bold 15px sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
@@ -960,6 +1368,7 @@
   });
 
   const STORAGE_KEY = 'run_and_run_best_score';
+  const BG_STORAGE_KEY = 'run_and_run_selected_bg';
 
   class GameApp {
     constructor() {
@@ -989,11 +1398,12 @@
       this.parallax = new ParallaxCity();
       this.particles = new ParticleSystem();
 
-      this.themeIndex = 0;
-      this.prevThemeIndex = 0;
+      // Background selection (3 choices)
+      this.selectedBgIndex = this.loadSelectedBg();
+      this.themeIndex = this.selectedBgIndex;
+      this.prevThemeIndex = this.selectedBgIndex;
       this.themeBlend = 1;
       this.themeTimer = 0;
-      this.themeDuration = 20;
 
       this.lastTime = 0;
       this.resetRun();
@@ -1018,6 +1428,47 @@
       } catch (e) {}
     }
 
+    loadSelectedBg() {
+      try {
+        const val = parseInt(localStorage.getItem(BG_STORAGE_KEY), 10);
+        return (val >= 0 && val < THEMES.length) ? val : 0;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    saveSelectedBg(idx) {
+      try {
+        localStorage.setItem(BG_STORAGE_KEY, String(idx));
+      } catch (e) {}
+    }
+
+    selectBackground(index) {
+      if (index < 0 || index >= THEMES.length) return;
+      this.selectedBgIndex = index;
+      this.prevThemeIndex = this.themeIndex;
+      this.themeIndex = index;
+      this.themeBlend = 0;
+      this.saveSelectedBg(index);
+
+      // Update UI buttons active state
+      for (let i = 0; i < THEMES.length; i++) {
+        const btn = document.getElementById(`bgBtn${i}`);
+        if (btn) {
+          if (i === index) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      }
+
+      const nameEl = document.getElementById('bgSelectedName');
+      if (nameEl) {
+        nameEl.textContent = THEMES[index].name;
+      }
+      if (this.zoneDisplay) {
+        this.zoneDisplay.textContent = THEMES[index].name;
+      }
+    }
+
     resetRun() {
       this.distance = 0;
       this.elapsed = 0;
@@ -1034,8 +1485,9 @@
       this.track.reset();
       this.collectibles.reset();
 
-      this.themeIndex = 0;
-      this.prevThemeIndex = 0;
+      // Maintain user's chosen background
+      this.themeIndex = this.selectedBgIndex;
+      this.prevThemeIndex = this.selectedBgIndex;
       this.themeBlend = 1;
       this.themeTimer = 0;
     }
@@ -1174,6 +1626,20 @@
           }
         }
       }, { passive: true });
+
+      // 3-Choice Background Selector buttons
+      for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById(`bgBtn${i}`);
+        if (btn) {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            SoundSystem.ensure();
+            this.selectBackground(i);
+          });
+        }
+      }
+      // Initialize active background state and label
+      this.selectBackground(this.selectedBgIndex);
     }
 
     setState(next) {
@@ -1255,15 +1721,8 @@
     }
 
     updateTheme(dt) {
-      this.themeTimer += dt;
-      if (this.themeTimer >= this.themeDuration && this.themeBlend >= 1) {
-        this.themeTimer = 0;
-        this.prevThemeIndex = this.themeIndex;
-        this.themeIndex = (this.themeIndex + 1) % THEMES.length;
-        this.themeBlend = 0;
-      }
       if (this.themeBlend < 1) {
-        this.themeBlend = Math.min(1, this.themeBlend + dt / 2.5);
+        this.themeBlend = Math.min(1, this.themeBlend + dt / 0.5);
       }
     }
 
@@ -1279,6 +1738,7 @@
 
       this.track.update(dt, this.speed, this.elapsed);
       this.collectibles.update(dt, this.player, this.speed, this.particles);
+      this.parallax.update(dt, this.speed / this.baseSpeed);
 
       this.checkCollisions();
       this.particles.update(dt);
@@ -1319,8 +1779,8 @@
     }
 
     drawBackground() {
-      const from = THEMES[this.prevThemeIndex];
-      const to = THEMES[this.themeIndex];
+      const from = THEMES[this.prevThemeIndex] || THEMES[0];
+      const to = THEMES[this.themeIndex] || THEMES[0];
       const t = this.themeBlend;
 
       const skyTop = t < 1 ? lerpColor(from.sky[0], to.sky[0], t) : to.sky[0];
@@ -1328,6 +1788,7 @@
       const groundCol = t < 1 ? lerpColor(from.ground, to.ground, t) : to.ground;
       const bldgCol = t < 1 ? lerpColor(from.building, to.building, t) : to.building;
       const gridCol = t < 1 ? lerpColor(from.grid, to.grid, t) : to.grid;
+      const speedRatio = this.state === GameStates.PLAYING ? (this.speed / this.baseSpeed) : 0.6;
 
       // Dynamic Sky Gradient
       const grad = ctx.createLinearGradient(0, 0, 0, DESIGN_HEIGHT);
@@ -1336,8 +1797,8 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT);
 
-      // Parallax Cityscape
-      this.parallax.render(ctx, this.distance, bldgCol, gridCol);
+      // Parallax Cityscape with Celestial Objects & Speed Streaks
+      this.parallax.render(ctx, this.distance, to, bldgCol, gridCol, speedRatio);
 
       // Ground Track
       ctx.fillStyle = groundCol;
@@ -1393,11 +1854,13 @@
       if (!this.lastTime) this.lastTime = timestamp;
       let dt = (timestamp - this.lastTime) / 1000;
       this.lastTime = timestamp;
-      dt = Math.min(dt, 1 / 30);
+      // High refresh smoothness clamp (handles 60Hz, 90Hz, 120Hz gracefully)
+      dt = Math.min(Math.max(dt, 0.001), 0.033);
 
       // Gentle ambient updates when on menu
       if (this.state !== GameStates.PLAYING) {
         this.distance += 40 * dt;
+        this.parallax.update(dt, 0.4);
         this.updateTheme(dt);
         this.particles.update(dt);
         ScreenShake.update(dt);
