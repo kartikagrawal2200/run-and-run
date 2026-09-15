@@ -1,7 +1,7 @@
 {
-  "name": "Run and Run: Cyber Endless Arcade",
-  "short_name": "Run & Run",
-  "description": "Endless cyber arcade runner with synthwave music, futuristic obstacles, and power-ups.",
+  "name": "Run and Run v2: Cyber Endless Arcade",
+  "short_name": "Run & Run v2",
+  "description": "Version 2.0 with 3 selectable backgrounds, enhanced graphics, and ultra-smooth cyber arcade action.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'run-and-run-v1';
+const CACHE_NAME = 'run-and-run-v2';
 const STATIC_ASSETS = [
   './',
   './index.html',
