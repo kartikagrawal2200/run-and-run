@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Run and Run | Cyber Endless Arcade</title>
+  <meta name="description" content="Play Run and Run online! An adrenaline-fueled endless arcade runner with synthwave music, futuristic obstacles, and cyber power-ups.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="pageWrapper">
+    <!-- Ambient glowing backdrop grids -->
+    <div class="cyber-grid-bg"></div>
+
+    <main id="gameWrapper">
+      <div id="gameContainer">
+        <!-- Canvas Game World -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- CRT scanline overlay -->
+        <div class="scanlines"></div>
+
+        <!-- HUD (Heads-Up Display) -->
+        <header id="hud" class="hidden">
+          <div class="hud-left">
+            <div class="stat-pill score-pill">
+              <span class="stat-tag">SCORE</span>
+              <span id="scoreDisplay" class="glow-text">0</span>
+            </div>
+            <div class="stat-row">
+              <div class="stat-badge coin-badge">
+                <span class="badge-icon">🪙</span>
+                <span id="coinCount">0</span>
+              </div>
+              <div id="shieldDisplay" class="stat-badge shield-badge hidden">
+                <span class="badge-icon">🛡️</span>
+                <span id="shieldCount">0</span>
+              </div>
+            </div>
+            <div id="zoneBadge" class="zone-badge">
+              <span class="dot"></span>
+              <span id="zoneDisplay">DOWNTOWN MATRIX</span>
+            </div>
+          </div>
+
+          <div class="hud-right">
+            <div class="hud-actions">
+              <button id="bgmBtn" class="hud-icon-btn" title="Toggle Synth Music" aria-label="Toggle Synth Music">🎵</button>
+              <button id="muteBtn" class="hud-icon-btn" title="Toggle Sound FX" aria-label="Toggle Sound Effects">🔊</button>
+              <button id="pauseBtn" class="hud-icon-btn" title="Pause Game (P)" aria-label="Pause Game">⏸</button>
+            </div>
+            <div id="powerupContainer">
+              <div id="powerupDisplay" class="powerup-badge hidden">
+                <span id="powerupIcon">⚡</span>
+                <span id="powerupText">MAGNET 8s</span>
+              </div>
+            </div>
+            <div class="speedometer">
+              <span class="stat-tag">VELOCITY</span>
+              <div class="speed-bar-wrap">
+                <div id="speedBarFill" class="speed-bar-fill"></div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- On-screen Touch & Virtual Controls for Mobile / Mouse -->
+        <div id="virtualControls" class="hidden">
+          <div class="control-row">
+            <button id="ctrlLeft" class="v-btn" aria-label="Move Left">
+              <span>◀</span>
+              <small>A / ←</small>
+            </button>
+            <div class="v-btn-center">
+              <button id="ctrlJump" class="v-btn v-btn-action" aria-label="Jump">
+                <span>▲ JUMP</span>
+                <small>W / ↑ / Space</small>
+              </button>
+              <button id="ctrlSlide" class="v-btn v-btn-action" aria-label="Slide">
+                <span>▼ SLIDE</span>
+                <small>S / ↓</small>
+              </button>
+            </div>
+            <button id="ctrlRight" class="v-btn" aria-label="Move Right">
+              <span>▶</span>
+              <small>D / →</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- Overlays -->
+        <!-- Main Start Screen -->
+        <section id="menuScreen" class="overlay">
+          <div class="glass-panel">
+            <div class="logo-wrap">
+              <div class="neon-tag">ARCADE RUNNER v2.0</div>
+              <h1 class="glitch-title">RUN &amp; <span class="highlight">RUN</span></h1>
+            </div>
+
+            <div class="instructions-card">
+              <h3>SYSTEM DIRECTIVES</h3>
+              <ul>
+                <li><span class="key-badge">A</span> <span class="key-badge">D</span> or <span class="key-badge">←</span> <span class="key-badge">→</span> : Switch Lanes</li>
+                <li><span class="key-badge">W</span> or <span class="key-badge">↑</span> or <span class="key-badge">Space</span> : Jump barriers</li>
+                <li><span class="key-badge">S</span> or <span class="key-badge">↓</span> : Slide under beam barriers</li>
+                <li><span class="warn-pill">AVOID</span> Black cyber pillars — change lanes immediately!</li>
+                <li><span class="bonus-pill">GRAB</span> 🪙 Data Orbs &amp; Powerups (Shield, Multiplier, Magnet)</li>
+              </ul>
+            </div>
+
+            <div class="high-score-preview">
+              <span>PERSONAL RECORD</span>
+              <strong id="menuBestScore">0</strong>
+            </div>
+
+            <button id="playBtn" class="cyber-btn primary-btn">
+              <span class="btn-text">INITIALIZE RUN</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Pause Screen -->
+        <section id="pauseScreen" class="overlay hidden">
+          <div class="glass-panel">
+            <h2 class="section-title">SYSTEM SUSPENDED</h2>
+            <p class="section-subtitle">Take a breather, Runner.</p>
+            <div class="btn-stack">
+              <button id="resumeBtn" class="cyber-btn primary-btn">RESUME PROTOCOL</button>
+              <button id="quitBtn" class="cyber-btn secondary-btn">ABORT TO TERMINAL</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Game Over Screen -->
+        <section id="gameOverScreen" class="overlay hidden">
+          <div class="glass-panel">
+            <div class="critical-tag">MISSION TERMINATED</div>
+            <h2 class="section-title danger-glow">NEURAL CRASH</h2>
+            
+            <div class="stats-grid">
+              <div class="stat-card highlight-card">
+                <span class="card-label">FINAL SCORE</span>
+                <span class="card-val" id="finalScore">0</span>
+              </div>
+              <div class="stat-card">
+                <span class="card-label">ORBS SECURED</span>
+                <span class="card-val" id="finalCoins">0</span>
+              </div>
+              <div class="stat-card best-card">
+                <span class="card-label">BEST RECORD</span>
+                <span class="card-val" id="bestScore">0</span>
+              </div>
+            </div>
+
+            <div class="btn-stack">
+              <button id="restartBtn" class="cyber-btn primary-btn">JACK BACK IN</button>
+              <button id="menuBtn" class="cyber-btn secondary-btn">MAIN TERMINAL</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="audio.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
