@@ -49,95 +49,111 @@ const SoundSystem = (function () {
   }
 
   function playTone(freq, duration, type, startGain, delay, freqEnd) {
-    if (sfxMuted || !ctx) return;
-    const t0 = ctx.currentTime + (delay || 0);
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    try {
+      if (sfxMuted || !ctx) return;
+      const t0 = ctx.currentTime + (delay || 0);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
 
-    osc.type = type || 'sine';
-    osc.frequency.setValueAtTime(freq, t0);
-    if (freqEnd) {
-      osc.frequency.exponentialRampToValueAtTime(Math.max(1, freqEnd), t0 + duration);
-    }
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, t0);
+      if (freqEnd) {
+        osc.frequency.exponentialRampToValueAtTime(Math.max(1, freqEnd), t0 + duration);
+      }
 
-    gain.gain.setValueAtTime(0, t0);
-    gain.gain.linearRampToValueAtTime(startGain || 0.15, t0 + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime((startGain || 0.15) * sfxVolume, t0 + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
 
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(t0);
-    osc.stop(t0 + duration + 0.02);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + duration + 0.02);
+    } catch (e) {}
   }
 
   // Sound effects
   function playJump() {
-    ensureAudio();
-    playTone(320, 0.16, 'triangle', 0.18, 0, 780);
-    playTone(540, 0.12, 'sine', 0.1, 0.04, 880);
+    try {
+      ensureAudio();
+      playTone(320, 0.16, 'triangle', 0.18, 0, 780);
+      playTone(540, 0.12, 'sine', 0.1, 0.04, 880);
+    } catch (e) {}
   }
 
   function playSlide() {
-    ensureAudio();
-    playTone(280, 0.22, 'sine', 0.16, 0, 110);
+    try {
+      ensureAudio();
+      playTone(280, 0.22, 'sine', 0.16, 0, 110);
+    } catch (e) {}
   }
 
   function playLaneSwitch() {
-    ensureAudio();
-    playTone(400, 0.06, 'triangle', 0.08, 0, 520);
+    try {
+      ensureAudio();
+      playTone(400, 0.06, 'triangle', 0.08, 0, 520);
+    } catch (e) {}
   }
 
   function playCoin() {
-    ensureAudio();
-    playTone(1046.5, 0.08, 'square', 0.09, 0);       // C6
-    playTone(1318.5, 0.09, 'square', 0.08, 0.04);    // E6
-    playTone(1567.98, 0.14, 'square', 0.07, 0.08);   // G6
+    try {
+      ensureAudio();
+      playTone(1046.5, 0.08, 'square', 0.09, 0);       // C6
+      playTone(1318.5, 0.09, 'square', 0.08, 0.04);    // E6
+      playTone(1567.98, 0.14, 'square', 0.07, 0.08);   // G6
+    } catch (e) {}
   }
 
   function playPowerup() {
-    ensureAudio();
-    playTone(440, 0.08, 'sawtooth', 0.1, 0);
-    playTone(554.37, 0.08, 'sawtooth', 0.1, 0.06);
-    playTone(659.25, 0.08, 'sawtooth', 0.1, 0.12);
-    playTone(880, 0.2, 'sawtooth', 0.12, 0.18);
+    try {
+      ensureAudio();
+      playTone(440, 0.08, 'sawtooth', 0.1, 0);
+      playTone(554.37, 0.08, 'sawtooth', 0.1, 0.06);
+      playTone(659.25, 0.08, 'sawtooth', 0.1, 0.12);
+      playTone(880, 0.2, 'sawtooth', 0.12, 0.18);
+    } catch (e) {}
   }
 
   function playShieldBreak() {
-    ensureAudio();
-    playTone(240, 0.25, 'sawtooth', 0.2, 0, 70);
-    playTone(160, 0.3, 'square', 0.15, 0.05, 50);
+    try {
+      ensureAudio();
+      playTone(240, 0.25, 'sawtooth', 0.2, 0, 70);
+      playTone(160, 0.3, 'square', 0.15, 0.05, 50);
+    } catch (e) {}
   }
 
   function playCrash() {
-    ensureAudio();
-    if (sfxMuted || !ctx) return;
-    const t0 = ctx.currentTime;
-
-    // Sub bass drop
-    playTone(150, 0.6, 'sawtooth', 0.28, 0, 30);
-    playTone(80, 0.7, 'triangle', 0.35, 0.05, 20);
-
-    // Filtered noise burst
     try {
-      const bufferSize = ctx.sampleRate * 0.35;
-      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
-      }
-      const noise = ctx.createBufferSource();
-      noise.buffer = buffer;
+      ensureAudio();
+      if (sfxMuted || !ctx) return;
+      const t0 = ctx.currentTime;
 
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(1400, t0);
-      filter.frequency.exponentialRampToValueAtTime(200, t0 + 0.35);
+      // Sub bass drop
+      playTone(150, 0.6, 'sawtooth', 0.28, 0, 30);
+      playTone(80, 0.7, 'triangle', 0.35, 0.05, 20);
 
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.35, t0);
-      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.35);
+      // Filtered noise burst
+      try {
+        const bufferSize = ctx.sampleRate * 0.35;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
 
-      noise.connect(filter).connect(gain).connect(ctx.destination);
-      noise.start(t0);
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1400, t0);
+        filter.frequency.exponentialRampToValueAtTime(200, t0 + 0.35);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.35 * sfxVolume, t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.35);
+
+        noise.connect(filter).connect(gain).connect(ctx.destination);
+        noise.start(t0);
+      } catch (e) {}
     } catch (e) {}
   }
 
@@ -284,17 +300,21 @@ const SoundSystem = (function () {
   }
 
   function playBuy() {
-    ensureAudio();
-    playTone(523.25, 0.08, 'square', 0.12 * sfxVolume, 0);       // C5
-    playTone(659.25, 0.08, 'square', 0.12 * sfxVolume, 0.06);    // E5
-    playTone(783.99, 0.08, 'square', 0.12 * sfxVolume, 0.12);    // G5
-    playTone(1046.5, 0.22, 'square', 0.15 * sfxVolume, 0.18);    // C6
+    try {
+      ensureAudio();
+      playTone(523.25, 0.08, 'square', 0.12 * sfxVolume, 0);       // C5
+      playTone(659.25, 0.08, 'square', 0.12 * sfxVolume, 0.06);    // E5
+      playTone(783.99, 0.08, 'square', 0.12 * sfxVolume, 0.12);    // G5
+      playTone(1046.5, 0.22, 'square', 0.15 * sfxVolume, 0.18);    // C6
+    } catch (e) {}
   }
 
   function playEquip() {
-    ensureAudio();
-    playTone(330, 0.08, 'triangle', 0.14 * sfxVolume, 0, 660);
-    playTone(880, 0.15, 'sine', 0.12 * sfxVolume, 0.08);
+    try {
+      ensureAudio();
+      playTone(330, 0.08, 'triangle', 0.14 * sfxVolume, 0, 660);
+      playTone(880, 0.15, 'sine', 0.12 * sfxVolume, 0.08);
+    } catch (e) {}
   }
 
   return {

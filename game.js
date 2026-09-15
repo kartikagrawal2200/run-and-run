@@ -1,6 +1,22 @@
 (function () {
   'use strict';
 
+  // Canvas roundRect compatibility polyfill for older/mobile browsers
+  if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
+      let r = typeof radii === 'number' ? radii : 4;
+      r = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2);
+      this.beginPath();
+      this.moveTo(x + r, y);
+      this.arcTo(x + w, y, x + w, y + h, r);
+      this.arcTo(x + w, y + h, x, y + h, r);
+      this.arcTo(x, y + h, x, y, r);
+      this.arcTo(x, y, x + w, y, r);
+      this.closePath();
+      return this;
+    };
+  }
+
   /* ============================================================
      CANVAS CONFIGURATION & VIEWPORT
      ============================================================ */
@@ -761,377 +777,420 @@
   /* ============================================================
      HUMANOID RUNNER RENDER PIPELINE
      ============================================================ */
+  /* ============================================================
+     HUMANOID RUNNER RENDER PIPELINE (CRASH-PROOF & HIGH-DEFINITION)
+     ============================================================ */
   function drawHumanoidRunner(ctx, cx, groundY, animTime, isJumping, isSliding, jumpHeight, tilt, costume, squash, hasShield) {
-    const c = costume || COSTUMES.neo;
-    ctx.save();
-    ctx.translate(cx, groundY);
-    if (tilt) ctx.rotate(tilt);
-
-    // 1. Dynamic ground shadow that scales with jump height
-    if (jumpHeight !== undefined) {
+    try {
+      const c = costume || COSTUMES.neo;
       ctx.save();
-      const shadowScale = clamp(1 - (jumpHeight || 0) / 280, 0.25, 1);
-      ctx.globalAlpha = 0.45 * shadowScale;
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.ellipse(0, 4, 22 * shadowScale, 6 * shadowScale, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
+      ctx.translate(cx, groundY);
+      if (tilt) ctx.rotate(tilt);
 
-    // Lift body by jumpHeight
-    ctx.translate(0, -(jumpHeight || 0));
-
-    // 2. Dual Hex Shield if active
-    if (hasShield) {
-      const pulse = Math.sin(animTime * 6) * 3;
-      const r = 36 + pulse;
-
-      // Outer rotating hexagon
-      ctx.save();
-      ctx.translate(0, -40);
-      ctx.rotate(animTime * 2.2);
-      ctx.strokeStyle = '#06d6a0';
-      ctx.shadowColor = '#06d6a0';
-      ctx.shadowBlur = 14;
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        const a = (i * Math.PI) / 3;
-        const hx = Math.cos(a) * r, hy = Math.sin(a) * r;
-        if (i === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+      // 1. Dynamic ground shadow that scales with jump height
+      if (jumpHeight !== undefined) {
+        ctx.save();
+        const shadowScale = clamp(1 - (jumpHeight || 0) / 280, 0.25, 1);
+        ctx.globalAlpha = 0.45 * shadowScale;
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        const sw = Math.max(4, 22 * shadowScale);
+        const sh = Math.max(2, 6 * shadowScale);
+        ctx.ellipse(0, 4, sw, sh, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
-      ctx.closePath();
-      ctx.stroke();
-      ctx.restore();
 
-      // Inner counter-rotating ring
-      ctx.save();
-      ctx.translate(0, -40);
-      ctx.rotate(-animTime * 1.8);
-      ctx.strokeStyle = '#4cc9f0';
-      ctx.shadowColor = '#4cc9f0';
-      ctx.shadowBlur = 10;
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        const a = (i * Math.PI) / 3;
-        const hx = Math.cos(a) * (r * 0.78), hy = Math.sin(a) * (r * 0.78);
-        if (i === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+      // Lift body by jumpHeight
+      ctx.translate(0, -(jumpHeight || 0));
+
+      // 2. Dual Hex Shield if active
+      if (hasShield) {
+        const pulse = Math.sin(animTime * 6) * 3;
+        const r = 36 + pulse;
+
+        // Outer rotating hexagon
+        ctx.save();
+        ctx.translate(0, -40);
+        ctx.rotate(animTime * 2.2);
+        ctx.strokeStyle = '#06d6a0';
+        ctx.shadowColor = '#06d6a0';
+        ctx.shadowBlur = 14;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = (i * Math.PI) / 3;
+          const hx = Math.cos(a) * r, hy = Math.sin(a) * r;
+          if (i === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+
+        // Inner counter-rotating ring
+        ctx.save();
+        ctx.translate(0, -40);
+        ctx.rotate(-animTime * 1.8);
+        ctx.strokeStyle = '#4cc9f0';
+        ctx.shadowColor = '#4cc9f0';
+        ctx.shadowBlur = 10;
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = (i * Math.PI) / 3;
+          const hx = Math.cos(a) * (r * 0.78), hy = Math.sin(a) * (r * 0.78);
+          if (i === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
       }
-      ctx.closePath();
-      ctx.stroke();
+
+      if (isSliding) {
+        // ----------------------------------------------------
+        // SLIDING HUMAN POSE: low angled skid on asphalt
+        // ----------------------------------------------------
+        ctx.save();
+        ctx.translate(0, -18);
+        ctx.rotate(-0.35); // Leaning backwards
+
+        // Rear stretched leg
+        ctx.fillStyle = c.suitDark;
+        ctx.beginPath();
+        ctx.moveTo(-18, 2); ctx.lineTo(6, 2); ctx.lineTo(4, 10); ctx.lineTo(-18, 10);
+        ctx.closePath();
+        ctx.fill();
+
+        // Rear glowing sneaker
+        ctx.fillStyle = c.shoes;
+        ctx.shadowColor = c.accent;
+        ctx.shadowBlur = 8;
+        ctx.fillRect(-24, 2, 7, 9);
+        ctx.shadowBlur = 0;
+
+        // Front bent knee forward
+        ctx.fillStyle = c.suitLight;
+        ctx.beginPath();
+        ctx.moveTo(2, -4); ctx.lineTo(20, -4); ctx.lineTo(16, 8); ctx.lineTo(0, 8);
+        ctx.closePath();
+        ctx.fill();
+
+        // Knee friction spark armor pad
+        ctx.fillStyle = c.visor;
+        ctx.shadowColor = c.visor;
+        ctx.shadowBlur = 12;
+        ctx.fillRect(16, -2, 6, 8);
+
+        // Friction spark trails
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(20 + Math.sin(animTime * 30) * 4, 3, 3, 3);
+        ctx.fillRect(16 + Math.cos(animTime * 25) * 5, 5, 2, 2);
+        ctx.shadowBlur = 0;
+
+        // Torso / cyber jacket
+        ctx.fillStyle = c.suitDark;
+        ctx.beginPath();
+        ctx.moveTo(-12, -22); ctx.lineTo(12, -22); ctx.lineTo(10, 0); ctx.lineTo(-10, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        // Jacket chestplate
+        ctx.fillStyle = c.suitLight;
+        ctx.fillRect(-8, -20, 16, 10);
+
+        // Torso glowing core
+        ctx.fillStyle = c.accent;
+        ctx.shadowColor = c.accent;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(0, -12, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Arms in slide bracing position
+        ctx.fillStyle = c.suitDark;
+        ctx.fillRect(-18, -14, 12, 6);
+        ctx.fillRect(6, -10, 14, 6);
+        ctx.fillStyle = c.skin;
+        ctx.fillRect(-22, -14, 5, 5);
+        ctx.fillRect(19, -10, 5, 5);
+
+        // Head / cyber helmet
+        ctx.fillStyle = c.suitDark;
+        ctx.beginPath();
+        ctx.arc(0, -32, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Helmet crest / energy hair flying back
+        ctx.fillStyle = c.hair;
+        ctx.beginPath();
+        ctx.moveTo(-6, -36);
+        ctx.lineTo(-24, -30 + Math.sin(animTime * 16) * 3);
+        ctx.lineTo(-8, -27);
+        ctx.closePath();
+        ctx.fill();
+
+        // Glowing Visor
+        ctx.fillStyle = c.visor;
+        ctx.shadowColor = c.visor;
+        ctx.shadowBlur = 12;
+        ctx.fillRect(2, -35, 9, 6);
+        ctx.shadowBlur = 0;
+
+        ctx.restore();
+
+      } else if (isJumping) {
+        // ----------------------------------------------------
+        // JUMPING HUMAN POSE: tucked athletic mid-air stride
+        // ----------------------------------------------------
+        ctx.save();
+        ctx.translate(0, -38);
+
+        // Left leg tucked forward-up
+        ctx.fillStyle = c.suitDark;
+        ctx.fillRect(-14, 4, 10, 14);
+        ctx.fillStyle = c.suitLight;
+        ctx.fillRect(-14, 16, 12, 10);
+        ctx.fillStyle = c.shoes;
+        ctx.fillRect(-16, 24, 14, 7);
+
+        // Right leg bent back
+        ctx.fillStyle = c.suitDark;
+        ctx.fillRect(4, 4, 10, 12);
+        ctx.fillStyle = c.suitLight;
+        ctx.fillRect(8, 14, 12, 10);
+        ctx.fillStyle = c.shoes;
+        ctx.fillRect(10, 22, 14, 7);
+
+        // Torso / chestplate
+        ctx.fillStyle = c.suitDark;
+        ctx.beginPath();
+        ctx.moveTo(-12, -22); ctx.lineTo(12, -22); ctx.lineTo(10, 4); ctx.lineTo(-10, 4);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = c.suitLight;
+        ctx.fillRect(-8, -20, 16, 14);
+
+        // Chest reactor core
+        ctx.fillStyle = c.accent;
+        ctx.shadowColor = c.accent;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(0, -10, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Outstretched arms for balance
+        ctx.fillStyle = c.suitDark;
+        ctx.fillRect(-22, -18, 11, 7);
+        ctx.fillRect(-25, -24, 6, 9);
+        ctx.fillRect(11, -18, 11, 7);
+        ctx.fillRect(19, -24, 6, 9);
+        ctx.fillStyle = c.skin;
+        ctx.fillRect(-26, -27, 6, 5);
+        ctx.fillRect(19, -27, 6, 5);
+
+        // Head / Cyber Helmet
+        ctx.fillStyle = c.suitDark;
+        ctx.beginPath();
+        ctx.arc(0, -32, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Neck
+        ctx.fillStyle = c.skin;
+        ctx.fillRect(-4, -24, 8, 4);
+
+        // Cyber Hair / Crest in wind
+        ctx.fillStyle = c.hair;
+        ctx.beginPath();
+        ctx.moveTo(-5, -36);
+        ctx.lineTo(-20, -42 + Math.sin(animTime * 14) * 3);
+        ctx.lineTo(-8, -30);
+        ctx.closePath();
+        ctx.fill();
+
+        // Glowing Visor
+        ctx.fillStyle = c.visor;
+        ctx.shadowColor = c.visor;
+        ctx.shadowBlur = 14;
+        ctx.fillRect(-1, -35, 10, 6);
+        ctx.shadowBlur = 0;
+
+        // Thruster flames from jet boots
+        const flameH = 12 + Math.sin(animTime * 24) * 4;
+        ctx.fillStyle = '#00f0ff';
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 14;
+        ctx.beginPath();
+        ctx.moveTo(-16, 31); ctx.lineTo(-10, 31 + flameH); ctx.lineTo(-4, 31);
+        ctx.moveTo(10, 29); ctx.lineTo(16, 29 + flameH); ctx.lineTo(22, 29);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.restore();
+
+      } else {
+        // ----------------------------------------------------
+        // ATHLETIC RUNNING / SPRINTING CYBER ATHLETE
+        // ----------------------------------------------------
+        const phase = (animTime * 14) % (Math.PI * 2);
+        const legSwing = Math.sin(phase);
+        const bobY = -Math.abs(Math.sin(phase)) * 4 + (squash || 0) * 8;
+
+        ctx.save();
+        ctx.translate(0, -38 + bobY);
+
+        // 1. BACK ARM (Swings opposite to front leg)
+        const backArmAngle = legSwing * 0.7;
+        ctx.save();
+        ctx.translate(-9, -16);
+        ctx.rotate(backArmAngle);
+        ctx.fillStyle = c.suitDark;
+        ctx.fillRect(-3, 0, 6, 14); // upper arm
+        ctx.fillStyle = c.suitLight;
+        ctx.fillRect(-3, 12, 6, 12); // forearm gauntlet
+        ctx.fillStyle = c.skin;
+        ctx.fillRect(-2, 22, 5, 5); // fist
+        ctx.restore();
+
+        // 2. BACK LEG
+        const backLegAngle = -legSwing * 0.75;
+        ctx.save();
+        ctx.translate(-5, 6);
+        ctx.rotate(backLegAngle);
+        ctx.fillStyle = c.suitDark;
+        ctx.fillRect(-4, 0, 8, 16); // thigh
+        ctx.fillStyle = c.suitLight;
+        ctx.fillRect(-4, 14, 8, 16); // shin guard
+        // Back shoe
+        ctx.fillStyle = c.shoes;
+        ctx.shadowColor = c.accent;
+        ctx.shadowBlur = 6;
+        ctx.fillRect(-4, 28, 13, 7);
+        ctx.shadowBlur = 0;
+        ctx.restore();
+
+        // 3. HUMAN ATHLETIC TORSO & CYBER JACKET
+        ctx.fillStyle = c.suitDark;
+        ctx.beginPath();
+        ctx.moveTo(-12, -22); ctx.lineTo(12, -22); ctx.lineTo(10, 4); ctx.lineTo(-10, 4);
+        ctx.closePath();
+        ctx.fill();
+
+        // Jacket chestplate & armor accents
+        ctx.fillStyle = c.suitLight;
+        ctx.fillRect(-8, -20, 16, 14);
+
+        // Shoulder pauldrons
+        ctx.fillStyle = c.suitLight;
+        ctx.beginPath();
+        ctx.arc(-11, -16, 5, 0, Math.PI * 2);
+        ctx.arc(11, -16, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Chest glowing cyber reactor core
+        ctx.fillStyle = c.accent;
+        ctx.shadowColor = c.accent;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(0, -11, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Belt & utility buckle
+        ctx.fillStyle = '#070a12';
+        ctx.fillRect(-11, 2, 22, 4);
+        ctx.fillStyle = c.visor;
+        ctx.fillRect(-3, 2, 6, 4);
+
+        // 4. FRONT LEG (Swings forward)
+        const frontLegAngle = legSwing * 0.75;
+        ctx.save();
+        ctx.translate(5, 6);
+        ctx.rotate(frontLegAngle);
+        ctx.fillStyle = c.suitDark;
+        ctx.fillRect(-4, 0, 8, 16); // thigh
+        ctx.fillStyle = c.suitLight;
+        ctx.fillRect(-4, 14, 8, 16); // shin guard
+        // Front shoe with glowing neon sole
+        ctx.fillStyle = c.shoes;
+        ctx.shadowColor = c.accent;
+        ctx.shadowBlur = 8;
+        ctx.fillRect(-3, 28, 14, 7);
+        ctx.fillStyle = c.accent;
+        ctx.fillRect(-3, 33, 14, 2.5); // glowing sole
+        ctx.shadowBlur = 0;
+        ctx.restore();
+
+        // 5. HUMAN HEAD & CYBER HELMET
+        // Neck
+        ctx.fillStyle = c.skin;
+        ctx.fillRect(-4, -24, 8, 4);
+
+        // Cyber Helmet shell
+        ctx.fillStyle = c.suitDark;
+        ctx.beginPath();
+        ctx.arc(0, -32, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Chin / faceplate
+        ctx.fillStyle = c.skin;
+        ctx.beginPath();
+        ctx.arc(4, -27, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Cyber Hair / Wind crest
+        ctx.fillStyle = c.hair;
+        ctx.beginPath();
+        ctx.moveTo(-4, -36);
+        ctx.lineTo(-22, -35 + Math.sin(phase) * 4);
+        ctx.lineTo(-8, -28);
+        ctx.closePath();
+        ctx.fill();
+
+        // Visor eye-slit
+        ctx.fillStyle = c.visor;
+        ctx.shadowColor = c.visorGlow;
+        ctx.shadowBlur = 12;
+        ctx.fillRect(0, -35, 10, 6);
+
+        // Visor animated laser scanner beam
+        const scanX = 0 + ((Math.sin(animTime * 12) + 1) * 0.5) * 7;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(scanX, -35, 3, 6);
+        ctx.shadowBlur = 0;
+
+        // 6. FRONT ARM (Swings opposite to back arm)
+        const frontArmAngle = -legSwing * 0.7;
+        ctx.save();
+        ctx.translate(9, -16);
+        ctx.rotate(frontArmAngle);
+        ctx.fillStyle = c.suitDark;
+        ctx.fillRect(-3, 0, 6, 14); // upper arm
+        ctx.fillStyle = c.suitLight;
+        ctx.fillRect(-3, 12, 6, 12); // forearm gauntlet
+        ctx.fillStyle = c.skin;
+        ctx.fillRect(-2, 22, 5, 5); // fist
+        ctx.restore();
+
+        // Jet thruster flames on heels when running fast
+        const flameH = 6 + Math.sin(animTime * 24) * 3;
+        ctx.fillStyle = c.visor;
+        ctx.shadowColor = c.visor;
+        ctx.shadowBlur = 8;
+        ctx.fillRect(-10, 30, 4, flameH);
+        ctx.fillRect(6, 30, 4, flameH);
+        ctx.shadowBlur = 0;
+
+        ctx.restore();
+      }
+
       ctx.restore();
+    } catch (err) {
+      console.error('[Runner Render Error]', err);
+      try { ctx.restore(); } catch (e) {}
     }
-
-    if (isSliding) {
-      // ----------------------------------------------------
-      // SLIDING HUMAN POSE: low angled skid on asphalt
-      // ----------------------------------------------------
-      ctx.save();
-      ctx.translate(0, -18);
-      ctx.rotate(-0.35); // Leaning backwards
-
-      // Sliding knee and leg flat to ground
-      ctx.fillStyle = c.suitDark;
-      ctx.fillRect(-16, 2, 28, 9); // back leg stretched back
-      ctx.fillStyle = c.shoes;
-      ctx.shadowColor = c.accent;
-      ctx.shadowBlur = 6;
-      ctx.fillRect(-22, 2, 8, 9); // back sneaker
-
-      // Front bent knee forward
-      ctx.fillStyle = c.suitLight;
-      ctx.fillRect(4, -4, 18, 10);
-      // Knee spark armor pad
-      ctx.fillStyle = c.visor;
-      ctx.shadowColor = c.visor;
-      ctx.shadowBlur = 10;
-      ctx.fillRect(18, -2, 6, 8);
-
-      // Torso / cyber jacket
-      ctx.fillStyle = c.suitDark;
-      ctx.fillRect(-10, -22, 22, 22);
-      ctx.fillStyle = c.suitLight;
-      ctx.fillRect(-8, -20, 8, 18); // jacket lapel
-
-      // Torso glowing core
-      ctx.fillStyle = c.accent;
-      ctx.shadowColor = c.accent;
-      ctx.shadowBlur = 8;
-      ctx.beginPath();
-      ctx.arc(0, -11, 3.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Arms in slide bracing position
-      ctx.fillStyle = c.suitDark;
-      ctx.fillRect(-18, -14, 12, 6); // back arm
-      ctx.fillRect(6, -10, 14, 6); // front arm bracing
-      ctx.fillStyle = c.skin;
-      ctx.fillRect(-22, -14, 5, 5); // back hand
-      ctx.fillRect(19, -10, 5, 5); // front hand
-
-      // Head / helmet
-      ctx.fillStyle = c.suitDark;
-      ctx.beginPath();
-      ctx.arc(0, -32, 10, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Helmet crest / ponytail flying back
-      ctx.fillStyle = c.hair;
-      ctx.beginPath();
-      ctx.moveTo(-7, -35);
-      ctx.lineTo(-24, -30 + Math.sin(animTime * 16) * 3);
-      ctx.lineTo(-9, -28);
-      ctx.closePath();
-      ctx.fill();
-
-      // Glowing Visor
-      ctx.fillStyle = c.visor;
-      ctx.shadowColor = c.visor;
-      ctx.shadowBlur = 10;
-      ctx.fillRect(2, -35, 9, 6);
-
-      ctx.restore();
-
-    } else if (isJumping) {
-      // ----------------------------------------------------
-      // JUMPING HUMAN POSE: tucked athletic mid-air stride
-      // ----------------------------------------------------
-      ctx.save();
-      ctx.translate(0, -40);
-
-      // Left leg tucked forward-up
-      ctx.fillStyle = c.suitDark;
-      ctx.fillRect(-14, 4, 10, 16);
-      ctx.fillStyle = c.suitLight;
-      ctx.fillRect(-14, 18, 12, 10);
-      ctx.fillStyle = c.shoes;
-      ctx.shadowColor = c.accent;
-      ctx.shadowBlur = 6;
-      ctx.fillRect(-16, 26, 14, 7);
-
-      // Right leg bent back
-      ctx.fillStyle = c.suitDark;
-      ctx.fillRect(4, 4, 10, 14);
-      ctx.fillStyle = c.suitLight;
-      ctx.fillRect(8, 16, 12, 10);
-      ctx.fillStyle = c.shoes;
-      ctx.fillRect(10, 24, 14, 7);
-
-      // Torso / chestplate
-      ctx.fillStyle = c.suitDark;
-      ctx.beginPath();
-      ctx.roundRect(-12, -22, 24, 28, 6);
-      ctx.fill();
-      ctx.fillStyle = c.suitLight;
-      ctx.fillRect(-8, -20, 16, 12);
-
-      // Chest reactor core
-      ctx.fillStyle = c.accent;
-      ctx.shadowColor = c.accent;
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      ctx.arc(0, -10, 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Outstretched arms for balance
-      ctx.fillStyle = c.suitDark;
-      ctx.fillRect(-22, -18, 11, 7); // left upper arm
-      ctx.fillRect(-25, -24, 6, 9); // left forearm angled up
-      ctx.fillRect(11, -18, 11, 7); // right upper arm
-      ctx.fillRect(19, -24, 6, 9); // right forearm angled up
-      ctx.fillStyle = c.skin;
-      ctx.fillRect(-26, -27, 6, 5);
-      ctx.fillRect(19, -27, 6, 5);
-
-      // Head / Cyber Helmet
-      ctx.fillStyle = c.suitDark;
-      ctx.beginPath();
-      ctx.arc(0, -32, 10, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Neck
-      ctx.fillStyle = c.skin;
-      ctx.fillRect(-4, -24, 8, 4);
-
-      // Cyber Hair / Crest in wind
-      ctx.fillStyle = c.hair;
-      ctx.beginPath();
-      ctx.moveTo(-5, -36);
-      ctx.lineTo(-20, -42 + Math.sin(animTime * 14) * 3);
-      ctx.lineTo(-8, -30);
-      ctx.closePath();
-      ctx.fill();
-
-      // Glowing Visor
-      ctx.fillStyle = c.visor;
-      ctx.shadowColor = c.visor;
-      ctx.shadowBlur = 12;
-      ctx.fillRect(-1, -35, 10, 6);
-
-      // Thruster flames from jet boots
-      const flameH = 10 + Math.sin(animTime * 24) * 4;
-      ctx.fillStyle = c.visor;
-      ctx.shadowColor = c.visor;
-      ctx.shadowBlur = 10;
-      ctx.fillRect(-14, 33, 6, flameH);
-      ctx.fillRect(12, 31, 6, flameH);
-
-      ctx.restore();
-
-    } else {
-      // ----------------------------------------------------
-      // ATHLETIC RUNNING / SPRINTING HUMAN CYBER SUIT
-      // ----------------------------------------------------
-      const phase = (animTime * 14) % (Math.PI * 2);
-      const legSwing = Math.sin(phase);
-      const bobY = -Math.abs(Math.sin(phase)) * 4 + (squash || 0) * 8;
-
-      ctx.save();
-      ctx.translate(0, -40 + bobY);
-
-      // 1. BACK ARM (Swings opposite to front leg)
-      const backArmAngle = legSwing * 0.7;
-      ctx.save();
-      ctx.translate(-8, -16);
-      ctx.rotate(backArmAngle);
-      ctx.fillStyle = c.suitDark;
-      ctx.fillRect(-3, 0, 6, 14); // upper arm
-      ctx.fillStyle = c.suitLight;
-      ctx.fillRect(-3, 12, 6, 12); // forearm gauntlet
-      ctx.fillStyle = c.skin;
-      ctx.fillRect(-2, 22, 5, 5); // fist
-      ctx.restore();
-
-      // 2. BACK LEG
-      const backLegAngle = -legSwing * 0.75;
-      ctx.save();
-      ctx.translate(-5, 6);
-      ctx.rotate(backLegAngle);
-      ctx.fillStyle = c.suitDark;
-      ctx.fillRect(-4, 0, 8, 16); // thigh
-      ctx.fillStyle = c.suitLight;
-      ctx.fillRect(-4, 14, 8, 16); // shin guard
-      // Back shoe
-      ctx.fillStyle = c.shoes;
-      ctx.shadowColor = c.accent;
-      ctx.shadowBlur = 6;
-      ctx.fillRect(-4, 28, 13, 7);
-      ctx.restore();
-
-      // 3. HUMAN ATHLETIC TORSO & CYBER JACKET
-      ctx.fillStyle = c.suitDark;
-      ctx.beginPath();
-      ctx.roundRect(-12, -22, 24, 28, 5); // torso shape
-      ctx.fill();
-
-      // Jacket chestplate & armor accents
-      ctx.fillStyle = c.suitLight;
-      ctx.fillRect(-9, -20, 18, 14);
-
-      // Shoulder pauldrons
-      ctx.fillStyle = c.suitLight;
-      ctx.beginPath();
-      ctx.ellipse(-11, -16, 4.5, 6, -0.2, 0, Math.PI * 2);
-      ctx.ellipse(11, -16, 4.5, 6, 0.2, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Chest glowing cyber reactor core
-      ctx.fillStyle = c.accent;
-      ctx.shadowColor = c.accent;
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      ctx.arc(0, -11, 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Belt & utility buckle
-      ctx.fillStyle = '#070a12';
-      ctx.shadowBlur = 0;
-      ctx.fillRect(-11, 2, 22, 4);
-      ctx.fillStyle = c.visor;
-      ctx.fillRect(-3, 2, 6, 4);
-
-      // 4. FRONT LEG (Swings forward)
-      const frontLegAngle = legSwing * 0.75;
-      ctx.save();
-      ctx.translate(5, 6);
-      ctx.rotate(frontLegAngle);
-      ctx.fillStyle = c.suitDark;
-      ctx.fillRect(-4, 0, 8, 16); // thigh
-      ctx.fillStyle = c.suitLight;
-      ctx.fillRect(-4, 14, 8, 16); // shin guard
-      // Front shoe with glowing neon sole
-      ctx.fillStyle = c.shoes;
-      ctx.shadowColor = c.accent;
-      ctx.shadowBlur = 6;
-      ctx.fillRect(-3, 28, 14, 7);
-      ctx.fillStyle = c.accent;
-      ctx.fillRect(-3, 33, 14, 2.5); // glowing sole
-      ctx.restore();
-
-      // 5. HUMAN HEAD & CYBER HELMET
-      // Neck
-      ctx.fillStyle = c.skin;
-      ctx.fillRect(-4, -24, 8, 4);
-
-      // Cyber Helmet shell
-      ctx.fillStyle = c.suitDark;
-      ctx.beginPath();
-      ctx.arc(0, -32, 10, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Chin / faceplate
-      ctx.fillStyle = c.skin;
-      ctx.beginPath();
-      ctx.arc(4, -27, 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Cyber Hair / Wind crest
-      ctx.fillStyle = c.hair;
-      ctx.beginPath();
-      ctx.moveTo(-4, -36);
-      ctx.lineTo(-22, -35 + Math.sin(phase) * 4);
-      ctx.lineTo(-8, -28);
-      ctx.closePath();
-      ctx.fill();
-
-      // Visor eye-slit
-      ctx.fillStyle = c.visor;
-      ctx.shadowColor = c.visorGlow;
-      ctx.shadowBlur = 12;
-      ctx.fillRect(0, -35, 10, 6);
-
-      // Visor animated laser scanner beam
-      const scanX = 0 + ((Math.sin(animTime * 12) + 1) * 0.5) * 7;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(scanX, -35, 3, 6);
-
-      // 6. FRONT ARM (Swings opposite to back arm)
-      const frontArmAngle = -legSwing * 0.7;
-      ctx.save();
-      ctx.translate(8, -16);
-      ctx.rotate(frontArmAngle);
-      ctx.fillStyle = c.suitDark;
-      ctx.fillRect(-3, 0, 6, 14); // upper arm
-      ctx.fillStyle = c.suitLight;
-      ctx.fillRect(-3, 12, 6, 12); // forearm gauntlet
-      ctx.fillStyle = c.skin;
-      ctx.fillRect(-2, 22, 5, 5); // fist
-      ctx.restore();
-
-      // Jet thruster flames on heels when running fast
-      const flameH = 6 + Math.sin(animTime * 24) * 3;
-      ctx.fillStyle = c.visor;
-      ctx.shadowColor = c.visor;
-      ctx.shadowBlur = 8;
-      ctx.fillRect(-10, 30, 4, flameH);
-      ctx.fillRect(6, 30, 4, flameH);
-
-      ctx.restore();
-    }
-
-    ctx.restore();
   }
 
   /* ============================================================
@@ -2015,6 +2074,41 @@
     }
 
     /* ---------------- ARMORY SHOP SYSTEM ---------------- */
+    attachButtonAction(elementOrId, callback) {
+      const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId;
+      if (!el) return;
+      let lastTrigger = 0;
+      const handler = (e) => {
+        const now = Date.now();
+        if (now - lastTrigger < 250) return; // Prevent double-trigger from touch+click
+        lastTrigger = now;
+        if (e && e.cancelable && e.type !== 'click') e.preventDefault();
+        try {
+          callback(e);
+        } catch (err) {
+          console.error('[ButtonAction Error]', err);
+        }
+      };
+      el.addEventListener('click', handler);
+      el.addEventListener('touchend', handler);
+    }
+
+    flashInsufficientFunds(btn, needed) {
+      if (!btn) return;
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = `NEED 🪙 +${needed}`;
+      btn.classList.add('flash-warn');
+      const shopBank = document.getElementById('shopCoinBank');
+      if (shopBank) {
+        shopBank.classList.add('flash-warn-pill');
+        setTimeout(() => shopBank.classList.remove('flash-warn-pill'), 1200);
+      }
+      setTimeout(() => {
+        btn.innerHTML = originalHtml;
+        btn.classList.remove('flash-warn');
+      }, 1300);
+    }
+
     renderCostumesList() {
       const container = document.getElementById('costumesList');
       if (!container) return;
@@ -2049,18 +2143,24 @@
         if (isEquipped) {
           btn.classList.add('equipped-btn');
           btn.textContent = 'EQUIPPED';
-          btn.disabled = true;
         } else if (isUnlocked) {
           btn.classList.add('equip-btn');
           btn.textContent = 'EQUIP';
-          btn.addEventListener('click', () => this.equipCostume(suit.id));
+          this.attachButtonAction(btn, () => this.equipCostume(suit.id));
         } else {
           btn.classList.add('buy-btn');
+          const hasCoins = this.bankCoins >= suit.price;
           btn.innerHTML = `BUY 🪙 ${suit.price}`;
-          if (this.bankCoins < suit.price) {
-            btn.disabled = true;
+          if (!hasCoins) {
+            btn.classList.add('btn-locked');
           }
-          btn.addEventListener('click', () => this.buyCostume(suit.id));
+          this.attachButtonAction(btn, () => {
+            if (this.bankCoins < suit.price) {
+              this.flashInsufficientFunds(btn, suit.price - this.bankCoins);
+              return;
+            }
+            this.buyCostume(suit.id);
+          });
         }
 
         card.appendChild(btn);
@@ -2073,14 +2173,19 @@
       if (!suit || this.bankCoins < suit.price) return;
 
       this.bankCoins -= suit.price;
-      this.unlockedCostumes.push(suitId);
+      if (!this.unlockedCostumes.includes(suitId)) {
+        this.unlockedCostumes.push(suitId);
+      }
       this.equippedCostume = suitId;
+      if (this.player) {
+        this.player.costume = suit;
+      }
 
       this.saveBankCoins(this.bankCoins);
       this.saveUnlockedCostumes(this.unlockedCostumes);
       this.saveEquippedCostume(this.equippedCostume);
 
-      SoundSystem.buy();
+      try { SoundSystem.buy(); } catch (e) {}
       this.updateBankDisplays();
       this.renderCostumesList();
     }
@@ -2088,9 +2193,12 @@
     equipCostume(suitId) {
       if (!this.unlockedCostumes.includes(suitId)) return;
       this.equippedCostume = suitId;
+      if (this.player) {
+        this.player.costume = COSTUMES[suitId] || COSTUMES.neo;
+      }
       this.saveEquippedCostume(suitId);
 
-      SoundSystem.equip();
+      try { SoundSystem.equip(); } catch (e) {}
       this.updateBankDisplays();
       this.renderCostumesList();
     }
@@ -2161,13 +2269,19 @@
         if (isMax) {
           btn.classList.add('max-btn');
           btn.textContent = 'MAX LEVEL';
-          btn.disabled = true;
         } else {
           btn.innerHTML = `UPGRADE 🪙 ${nextConf.cost}`;
-          if (this.bankCoins < nextConf.cost) {
-            btn.disabled = true;
+          const hasCoins = this.bankCoins >= nextConf.cost;
+          if (!hasCoins) {
+            btn.classList.add('btn-locked');
           }
-          btn.addEventListener('click', () => this.buyUpgrade(id));
+          this.attachButtonAction(btn, () => {
+            if (this.bankCoins < nextConf.cost) {
+              this.flashInsufficientFunds(btn, nextConf.cost - this.bankCoins);
+              return;
+            }
+            this.buyUpgrade(id);
+          });
         }
 
         card.appendChild(btn);
@@ -2191,7 +2305,18 @@
       this.saveBankCoins(this.bankCoins);
       this.saveUpgrades(this.upgrades);
 
-      SoundSystem.buy();
+      if (this.collectibles) {
+        if (upgradeId === 'magnet') {
+          this.collectibles.magnetDuration = nextConf.duration;
+          this.collectibles.magnetRadius = nextConf.radius;
+        } else if (upgradeId === 'multiplier') {
+          this.collectibles.multiplierDuration = nextConf.duration;
+        } else if (upgradeId === 'shield') {
+          this.collectibles.shieldCharges = Math.max(this.collectibles.shieldCharges, nextConf.shields);
+        }
+      }
+
+      try { SoundSystem.buy(); } catch (e) {}
       this.updateBankDisplays();
       this.renderUpgradesList();
     }
@@ -2222,28 +2347,8 @@
     }
 
     initEventListeners() {
-      // Robust button trigger helper supporting both pointer/click and touch
-      const attachButtonAction = (elementOrId, callback) => {
-        const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId;
-        if (!el) return;
-        let lastTrigger = 0;
-        const handler = (e) => {
-          const now = Date.now();
-          if (now - lastTrigger < 250) return; // Prevent double-trigger from touch+click
-          lastTrigger = now;
-          if (e && e.cancelable && e.type !== 'click') e.preventDefault();
-          try {
-            callback(e);
-          } catch (err) {
-            console.error('[ButtonAction Error]', err);
-          }
-        };
-        el.addEventListener('click', handler);
-        el.addEventListener('touchend', handler);
-      };
-
       // Menu Play: Start Game
-      attachButtonAction('playBtn', () => {
+      this.attachButtonAction('playBtn', () => {
         try {
           SoundSystem.ensure();
           SoundSystem.startBgm();
@@ -2256,14 +2361,14 @@
 
       // Settings Modal Open/Close
       const settingsModal = this.settingsModal;
-      attachButtonAction('menuSettingsBtn', () => {
+      this.attachButtonAction('menuSettingsBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
         if (settingsModal) settingsModal.classList.remove('hidden');
       });
-      attachButtonAction('closeSettingsBtn', () => {
+      this.attachButtonAction('closeSettingsBtn', () => {
         if (settingsModal) settingsModal.classList.add('hidden');
       });
-      attachButtonAction('applySettingsBtn', () => {
+      this.attachButtonAction('applySettingsBtn', () => {
         if (settingsModal) settingsModal.classList.add('hidden');
       });
 
@@ -2276,21 +2381,21 @@
         this.updateBankDisplays();
         if (shopModal) shopModal.classList.remove('hidden');
       };
-      attachButtonAction('menuShopBtn', openShop);
-      attachButtonAction('gameoverShopBtn', openShop);
+      this.attachButtonAction('menuShopBtn', openShop);
+      this.attachButtonAction('gameoverShopBtn', openShop);
 
       const closeShop = () => {
         if (shopModal) shopModal.classList.add('hidden');
         this.updateBankDisplays();
       };
-      attachButtonAction('closeShopBtn', closeShop);
-      attachButtonAction('leaveShopBtn', closeShop);
+      this.attachButtonAction('closeShopBtn', closeShop);
+      this.attachButtonAction('leaveShopBtn', closeShop);
 
       // Scoped Modal Tabs (Each modal controls its own tabs independently)
       document.querySelectorAll('.modal-panel').forEach(panel => {
         const tabs = panel.querySelectorAll('.modal-nav-tabs .tab-btn');
         tabs.forEach(btn => {
-          attachButtonAction(btn, () => {
+          this.attachButtonAction(btn, () => {
             tabs.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const targetId = btn.getAttribute('data-tab');
@@ -2307,7 +2412,7 @@
       const bgmToggle = document.getElementById('settingsBgmToggle');
       const bgmSlider = document.getElementById('settingsBgmSlider');
       if (bgmToggle && bgmSlider) {
-        attachButtonAction(bgmToggle, () => {
+        this.attachButtonAction(bgmToggle, () => {
           const active = SoundSystem.toggleBgm();
           bgmToggle.textContent = active ? 'ON' : 'OFF';
           if (active) bgmToggle.classList.add('active');
@@ -2322,7 +2427,7 @@
       const sfxToggle = document.getElementById('settingsSfxToggle');
       const sfxSlider = document.getElementById('settingsSfxSlider');
       if (sfxToggle && sfxSlider) {
-        attachButtonAction(sfxToggle, () => {
+        this.attachButtonAction(sfxToggle, () => {
           const active = SoundSystem.toggleSfx();
           sfxToggle.textContent = active ? 'ON' : 'OFF';
           if (active) sfxToggle.classList.add('active');
@@ -2335,19 +2440,19 @@
       }
 
       // Pause / Resume
-      attachButtonAction('pauseBtn', () => {
+      this.attachButtonAction('pauseBtn', () => {
         if (this.state === GameStates.PLAYING) this.setState(GameStates.PAUSED);
       });
-      attachButtonAction('resumeBtn', () => {
+      this.attachButtonAction('resumeBtn', () => {
         this.setState(GameStates.PLAYING);
       });
-      attachButtonAction('quitBtn', () => {
+      this.attachButtonAction('quitBtn', () => {
         try { SoundSystem.stopBgm(); } catch (e) {}
         this.setState(GameStates.MENU);
       });
 
       // Game Over buttons
-      attachButtonAction('restartBtn', () => {
+      this.attachButtonAction('restartBtn', () => {
         try {
           SoundSystem.ensure();
           SoundSystem.startBgm();
@@ -2355,7 +2460,7 @@
         this.resetRun();
         this.setState(GameStates.PLAYING);
       });
-      attachButtonAction('menuBtn', () => {
+      this.attachButtonAction('menuBtn', () => {
         try { SoundSystem.stopBgm(); } catch (e) {}
         this.setState(GameStates.MENU);
       });
@@ -2363,7 +2468,7 @@
       // Audio toggles in HUD
       const muteBtn = document.getElementById('muteBtn');
       if (muteBtn) {
-        attachButtonAction(muteBtn, () => {
+        this.attachButtonAction(muteBtn, () => {
           const active = SoundSystem.toggleSfx();
           muteBtn.textContent = active ? '🔊' : '🔇';
         });
@@ -2371,7 +2476,7 @@
 
       const bgmBtn = document.getElementById('bgmBtn');
       if (bgmBtn) {
-        attachButtonAction(bgmBtn, () => {
+        this.attachButtonAction(bgmBtn, () => {
           const active = SoundSystem.toggleBgm();
           bgmBtn.textContent = active ? '🎵' : '🔇';
         });
@@ -2700,23 +2805,32 @@
       // High refresh smoothness clamp (handles 60Hz, 90Hz, 120Hz gracefully)
       dt = Math.min(Math.max(dt, 0.001), 0.033);
 
-      // Gentle ambient updates when on menu
-      if (this.state !== GameStates.PLAYING) {
-        this.distance += 40 * dt;
-        this.parallax.update(dt, 0.4);
-        this.updateTheme(dt);
-        this.particles.update(dt);
-        ScreenShake.update(dt);
-        this.renderAvatarPreview(dt);
+      try {
+        // Gentle ambient updates when on menu
+        if (this.state !== GameStates.PLAYING) {
+          this.distance += 40 * dt;
+          this.parallax.update(dt, 0.4);
+          this.updateTheme(dt);
+          this.particles.update(dt);
+          ScreenShake.update(dt);
+          this.renderAvatarPreview(dt);
+        }
+
+        this.update(dt);
+        this.draw();
+      } catch (err) {
+        console.error('[Game Loop Error]', err);
       }
 
-      this.update(dt);
-      this.draw();
       requestAnimationFrame(t => this.loop(t));
     }
   }
 
-  window.addEventListener('DOMContentLoaded', () => {
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', () => {
+      new GameApp();
+    });
+  } else {
     new GameApp();
-  });
+  }
 })();
