@@ -102,43 +102,40 @@
         <!-- Overlays -->
         <!-- Main Start Screen -->
         <section id="menuScreen" class="overlay">
-          <div class="glass-panel">
+          <div class="glass-panel menu-panel">
+            <!-- Top Navigation Bar: Settings (Left) & Shop / Bank (Right) -->
+            <div class="menu-top-bar">
+              <button type="button" id="menuSettingsBtn" class="nav-cyber-btn" aria-label="Open Settings">
+                <span class="btn-icon">⚙️</span>
+                <span class="nav-btn-text">SETTINGS</span>
+              </button>
+
+              <div class="menu-top-right">
+                <div class="coin-bank-pill" title="Total Banked Coins">
+                  <span class="coin-icon">🪙</span>
+                  <span id="menuCoinBank" class="bank-count">0</span>
+                </div>
+                <button type="button" id="menuShopBtn" class="nav-cyber-btn shop-btn-glow" aria-label="Open Cyber Armory Shop">
+                  <span class="btn-icon">🛍️</span>
+                  <span class="nav-btn-text">ARMORY</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Title & Branding -->
             <div class="logo-wrap">
-              <div class="neon-tag-v2">⚡ VERSION 2.0 • GRAPHICS &amp; SMOOTH UPDATE ⚡</div>
+              <div class="neon-tag-v2">⚡ VERSION 2.0 • CYBER HUMAN RUNNER ⚡</div>
               <h1 class="glitch-title">RUN &amp; <span class="highlight">RUN</span> <span class="v2-badge">v2</span></h1>
             </div>
 
-            <!-- 2-3 Background Selector -->
-            <div class="bg-selector-card">
-              <div class="bg-selector-title">
-                <span>CHOOSE BACKGROUND</span>
-                <small class="bg-selected-name" id="bgSelectedName">CYBER MATRIX</small>
+            <!-- Interactive Humanoid Avatar Pedestal Preview -->
+            <div class="avatar-pedestal-wrap">
+              <div class="pedestal-hologram-ring"></div>
+              <canvas id="avatarCanvas" width="130" height="150" class="avatar-canvas"></canvas>
+              <div class="avatar-costume-tag">
+                <small>EQUIPPED SUIT</small>
+                <strong id="equippedCostumeName">NEO RUNNER</strong>
               </div>
-              <div class="bg-options" id="bgOptions">
-                <button type="button" class="bg-option-btn active" data-bg="0" id="bgBtn0" aria-label="Cyber Matrix Background">
-                  <div class="bg-thumb swatch-matrix"></div>
-                  <span class="bg-btn-title">MATRIX</span>
-                </button>
-                <button type="button" class="bg-option-btn" data-bg="1" id="bgBtn1" aria-label="Synth Sunset Background">
-                  <div class="bg-thumb swatch-sunset"></div>
-                  <span class="bg-btn-title">SUNSET</span>
-                </button>
-                <button type="button" class="bg-option-btn" data-bg="2" id="bgBtn2" aria-label="Cosmic Void Background">
-                  <div class="bg-thumb swatch-nebula"></div>
-                  <span class="bg-btn-title">COSMIC</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="instructions-card">
-              <h3>SYSTEM DIRECTIVES</h3>
-              <ul>
-                <li><span class="key-badge">A</span> <span class="key-badge">D</span> or <span class="key-badge">←</span> <span class="key-badge">→</span> : Switch Lanes</li>
-                <li><span class="key-badge">W</span> or <span class="key-badge">↑</span> or <span class="key-badge">Space</span> : Jump barriers</li>
-                <li><span class="key-badge">S</span> or <span class="key-badge">↓</span> : Slide under beam barriers</li>
-                <li><span class="warn-pill">AVOID</span> Black cyber pillars — change lanes immediately!</li>
-                <li><span class="bonus-pill">GRAB</span> 🪙 Data Orbs &amp; Powerups (Shield, Multiplier, Magnet)</li>
-              </ul>
             </div>
 
             <div class="high-score-preview">
@@ -152,6 +149,127 @@
             <button id="installAppBtn" class="cyber-btn secondary-btn install-btn">
               <span class="btn-text">📲 INSTALL APP (OFFLINE PLAY)</span>
             </button>
+          </div>
+        </section>
+
+        <!-- Settings Modal (Guidelines, Audio Volume, Environments) -->
+        <section id="settingsModal" class="overlay modal-overlay hidden">
+          <div class="glass-panel modal-panel">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <span class="modal-tag">TERMINAL CONFIG</span>
+                <h2>SETTINGS</h2>
+              </div>
+              <button type="button" id="closeSettingsBtn" class="close-icon-btn" aria-label="Close Settings">✕</button>
+            </div>
+
+            <div class="modal-nav-tabs">
+              <button type="button" class="tab-btn active" data-tab="tabDirectives" id="tabBtnDirectives">DIRECTIVES</button>
+              <button type="button" class="tab-btn" data-tab="tabAudio" id="tabBtnAudio">AUDIO</button>
+              <button type="button" class="tab-btn" data-tab="tabBackgrounds" id="tabBtnBackgrounds">WORLDS</button>
+            </div>
+
+            <!-- Tab 1: Guidelines / Directives -->
+            <div id="tabDirectives" class="tab-content">
+              <div class="instructions-card modal-card">
+                <h3>RUNNER PROTOCOL</h3>
+                <ul>
+                  <li><span class="key-badge">A</span> <span class="key-badge">D</span> or <span class="key-badge">←</span> <span class="key-badge">→</span> / Swipe Horizontal: Switch Lanes</li>
+                  <li><span class="key-badge">W</span> or <span class="key-badge">↑</span> or <span class="key-badge">Space</span> / Swipe Up: Jump over Electric Barriers</li>
+                  <li><span class="key-badge">S</span> or <span class="key-badge">↓</span> / Swipe Down: Slide under Overhead Laser Beams</li>
+                  <li><span class="warn-pill">AVOID</span> Black cyber pillars — change lanes immediately!</li>
+                  <li><span class="bonus-pill">GRAB</span> 🪙 Data Orbs to purchase suits &amp; upgrades in the Armory!</li>
+                  <li><span class="key-badge">P</span> or <span class="key-badge">ESC</span>: Suspend (Pause) Game</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Tab 2: Audio & Volume -->
+            <div id="tabAudio" class="tab-content hidden">
+              <div class="settings-card modal-card">
+                <div class="setting-item">
+                  <div class="setting-label-row">
+                    <span>SYNTHWAVE BGM</span>
+                    <button type="button" id="settingsBgmToggle" class="cyber-toggle active">ON</button>
+                  </div>
+                  <input type="range" id="settingsBgmSlider" min="0" max="100" value="70" class="cyber-slider">
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-label-row">
+                    <span>SOUND FX</span>
+                    <button type="button" id="settingsSfxToggle" class="cyber-toggle active">ON</button>
+                  </div>
+                  <input type="range" id="settingsSfxSlider" min="0" max="100" value="90" class="cyber-slider">
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 3: Background World Environments -->
+            <div id="tabBackgrounds" class="tab-content hidden">
+              <div class="bg-selector-card modal-card">
+                <div class="bg-selector-title">
+                  <span>SELECT CYBER ENVIRONMENT</span>
+                  <small class="bg-selected-name" id="bgSelectedName">CYBER MATRIX</small>
+                </div>
+                <div class="bg-options" id="bgOptions">
+                  <button type="button" class="bg-option-btn active" data-bg="0" id="bgBtn0" aria-label="Cyber Matrix Background">
+                    <div class="bg-thumb swatch-matrix"></div>
+                    <span class="bg-btn-title">MATRIX</span>
+                  </button>
+                  <button type="button" class="bg-option-btn" data-bg="1" id="bgBtn1" aria-label="Synth Sunset Background">
+                    <div class="bg-thumb swatch-sunset"></div>
+                    <span class="bg-btn-title">SUNSET</span>
+                  </button>
+                  <button type="button" class="bg-option-btn" data-bg="2" id="bgBtn2" aria-label="Cosmic Void Background">
+                    <div class="bg-thumb swatch-nebula"></div>
+                    <span class="bg-btn-title">COSMIC</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" id="applySettingsBtn" class="cyber-btn primary-btn modal-done-btn">DONE</button>
+          </div>
+        </section>
+
+        <!-- Cyber Armory Shop Modal (Costumes & Upgrades) -->
+        <section id="shopModal" class="overlay modal-overlay hidden">
+          <div class="glass-panel modal-panel shop-panel">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <span class="modal-tag">UPGRADES &amp; SUITS</span>
+                <h2>CYBER ARMORY</h2>
+              </div>
+              <div class="modal-header-right">
+                <div class="coin-bank-pill">
+                  <span class="coin-icon">🪙</span>
+                  <span id="shopCoinBank" class="bank-count">0</span>
+                </div>
+                <button type="button" id="closeShopBtn" class="close-icon-btn" aria-label="Close Shop">✕</button>
+              </div>
+            </div>
+
+            <div class="modal-nav-tabs">
+              <button type="button" class="tab-btn active" data-tab="tabCostumes" id="tabBtnCostumes">👔 SUITS</button>
+              <button type="button" class="tab-btn" data-tab="tabUpgrades" id="tabBtnUpgrades">⚡ TECH UPGRADES</button>
+            </div>
+
+            <!-- Costumes Tab -->
+            <div id="tabCostumes" class="tab-content">
+              <div class="costumes-scroll" id="costumesList">
+                <!-- Dynamically populated or rendered -->
+              </div>
+            </div>
+
+            <!-- Upgrades Tab -->
+            <div id="tabUpgrades" class="tab-content hidden">
+              <div class="upgrades-scroll" id="upgradesList">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <button type="button" id="leaveShopBtn" class="cyber-btn primary-btn modal-done-btn">RETURN TO TERMINAL</button>
           </div>
         </section>
 
@@ -188,8 +306,14 @@
               </div>
             </div>
 
+            <div class="gameover-bank-banner">
+              <span>TOTAL BANKED:</span>
+              <strong class="gameover-bank-val"><span class="coin-icon">🪙</span> <span id="gameoverBankTotal">0</span></strong>
+            </div>
+
             <div class="btn-stack">
               <button id="restartBtn" class="cyber-btn primary-btn">JACK BACK IN</button>
+              <button id="gameoverShopBtn" class="cyber-btn secondary-btn shop-accent-btn">🛍️ CYBER ARMORY</button>
               <button id="menuBtn" class="cyber-btn secondary-btn">MAIN TERMINAL</button>
             </div>
           </div>

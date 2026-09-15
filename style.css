@@ -746,6 +746,620 @@ canvas {
   color: var(--neon-cyan);
 }
 
+/* ============================================================
+   MENU REDESIGN: TOP NAV, AVATAR PEDESTAL & COIN BANK
+   ============================================================ */
+.menu-panel {
+  max-width: 440px;
+  padding: 18px 20px 24px 20px;
+  position: relative;
+}
+
+.menu-top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.menu-top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-cyber-btn {
+  background: rgba(16, 24, 44, 0.85);
+  border: 1px solid rgba(76, 201, 240, 0.35);
+  border-radius: 22px;
+  padding: 6px 12px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #e2e8f0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.18s ease;
+}
+
+.nav-cyber-btn:hover {
+  background: rgba(76, 201, 240, 0.25);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 12px rgba(76, 201, 240, 0.4);
+  transform: translateY(-2px);
+}
+
+.nav-cyber-btn:active {
+  transform: translateY(1px);
+}
+
+.shop-btn-glow {
+  background: linear-gradient(135deg, rgba(255, 210, 63, 0.2), rgba(247, 37, 133, 0.25));
+  border-color: rgba(255, 210, 63, 0.6);
+  color: #ffd23f;
+  box-shadow: 0 0 14px rgba(255, 210, 63, 0.35);
+}
+
+.shop-btn-glow:hover {
+  background: linear-gradient(135deg, rgba(255, 210, 63, 0.35), rgba(247, 37, 133, 0.4));
+  border-color: #ffd23f;
+  box-shadow: 0 0 20px rgba(255, 210, 63, 0.6);
+}
+
+.coin-bank-pill {
+  background: rgba(25, 20, 10, 0.85);
+  border: 1px solid rgba(255, 210, 63, 0.45);
+  border-radius: 20px;
+  padding: 5px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--neon-yellow);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(255, 210, 63, 0.25);
+}
+
+.coin-bank-pill .bank-count {
+  letter-spacing: 0.5px;
+}
+
+/* Avatar Cyber Pedestal */
+.avatar-pedestal-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0 14px 0;
+}
+
+.avatar-canvas {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.6));
+}
+
+.pedestal-hologram-ring {
+  position: absolute;
+  bottom: 22px;
+  width: 110px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(76, 201, 240, 0.35) 0%, rgba(76, 201, 240, 0.08) 50%, transparent 75%);
+  border: 1.5px solid rgba(76, 201, 240, 0.5);
+  box-shadow: 0 0 18px rgba(76, 201, 240, 0.4), inset 0 0 12px rgba(76, 201, 240, 0.3);
+  animation: pedestalRotate 4s infinite linear alternate;
+  z-index: 1;
+}
+
+@keyframes pedestalRotate {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  100% { transform: scale(1.05); opacity: 1; }
+}
+
+.avatar-costume-tag {
+  margin-top: -6px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(76, 201, 240, 0.4);
+  border-radius: 12px;
+  padding: 3px 12px;
+  backdrop-filter: blur(8px);
+}
+
+.avatar-costume-tag small {
+  font-family: var(--font-display);
+  font-size: 8px;
+  color: #94a3b8;
+  letter-spacing: 1.5px;
+}
+
+.avatar-costume-tag strong {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--neon-cyan);
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(76, 201, 240, 0.7);
+}
+
+/* ============================================================
+   MODALS: SETTINGS & CYBER ARMORY SHOP
+   ============================================================ */
+.modal-overlay {
+  z-index: 25;
+  background: rgba(4, 6, 14, 0.92);
+  backdrop-filter: blur(16px);
+}
+
+.modal-panel {
+  max-width: 440px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 20px;
+  overflow: hidden;
+}
+
+.modal-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
+}
+
+.modal-title-wrap {
+  text-align: left;
+}
+
+.modal-tag {
+  font-family: var(--font-display);
+  font-size: 9px;
+  color: var(--neon-cyan);
+  letter-spacing: 2px;
+}
+
+.modal-header h2 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #fff;
+}
+
+.modal-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.close-icon-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.close-icon-btn:hover {
+  background: rgba(255, 51, 102, 0.4);
+  border-color: var(--neon-red);
+  transform: rotate(90deg);
+}
+
+.modal-nav-tabs {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.shop-panel .modal-nav-tabs {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.tab-btn {
+  background: rgba(14, 20, 36, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 8px 4px;
+  font-family: var(--font-display);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tab-btn:hover {
+  color: #fff;
+  border-color: rgba(76, 201, 240, 0.4);
+}
+
+.tab-btn.active {
+  background: rgba(76, 201, 240, 0.18);
+  border-color: var(--neon-cyan);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(76, 201, 240, 0.4);
+}
+
+.tab-content {
+  width: 100%;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 14px;
+}
+
+.tab-content::-webkit-scrollbar {
+  width: 4px;
+}
+.tab-content::-webkit-scrollbar-thumb {
+  background: rgba(76, 201, 240, 0.4);
+  border-radius: 4px;
+}
+
+.modal-card {
+  margin-bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.settings-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setting-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.setting-label-row span {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--neon-cyan);
+  letter-spacing: 1px;
+}
+
+.cyber-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 3px 12px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cyber-toggle.active {
+  background: rgba(6, 214, 160, 0.25);
+  border-color: var(--neon-green);
+  color: var(--neon-green);
+  box-shadow: 0 0 10px rgba(6, 214, 160, 0.4);
+}
+
+.cyber-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  outline: none;
+}
+
+.cyber-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--neon-cyan);
+  box-shadow: 0 0 8px var(--neon-cyan);
+  cursor: pointer;
+}
+
+.modal-done-btn {
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+/* ============================================================
+   SHOP ITEMS: COSTUMES & TECH UPGRADES
+   ============================================================ */
+.costumes-scroll, .upgrades-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.costume-item-card {
+  background: rgba(14, 20, 36, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.15s ease;
+}
+
+.costume-item-card:hover {
+  border-color: rgba(76, 201, 240, 0.4);
+  background: rgba(20, 28, 50, 0.85);
+}
+
+.costume-item-card.equipped {
+  border-color: var(--neon-cyan);
+  background: rgba(76, 201, 240, 0.12);
+  box-shadow: 0 0 14px rgba(76, 201, 240, 0.25);
+}
+
+.costume-info-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.costume-avatar-orb {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+  flex-shrink: 0;
+}
+
+.costume-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.costume-name {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.costume-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.2;
+}
+
+.shop-action-btn {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.equip-btn {
+  background: rgba(76, 201, 240, 0.2);
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+
+.equip-btn:hover {
+  background: var(--neon-cyan);
+  color: #0b0f19;
+  box-shadow: 0 0 12px var(--neon-cyan);
+}
+
+.equipped-btn {
+  background: var(--neon-cyan);
+  color: #0b0f19;
+  box-shadow: 0 0 10px var(--neon-cyan);
+  cursor: default;
+}
+
+.buy-btn {
+  background: linear-gradient(135deg, #ffd23f, #ff7b00);
+  color: #0b0f19;
+  box-shadow: 0 2px 8px rgba(255, 123, 0, 0.4);
+}
+
+.buy-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(255, 123, 0, 0.6);
+}
+
+.buy-btn:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: #64748b;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Upgrade Card */
+.upgrade-item-card {
+  background: rgba(14, 20, 36, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.upgrade-info-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.upgrade-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.upgrade-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.upgrade-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.upgrade-name {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.upgrade-level-pips {
+  display: flex;
+  gap: 3px;
+}
+
+.level-pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.level-pip.filled {
+  background: var(--neon-cyan);
+  box-shadow: 0 0 6px var(--neon-cyan);
+  border-color: var(--neon-cyan);
+}
+
+.upgrade-desc {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.upgrade-btn {
+  background: linear-gradient(135deg, #ffd23f, #ff7b00);
+  color: #0b0f19;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 7px 12px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.upgrade-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(255, 123, 0, 0.6);
+}
+
+.upgrade-btn:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.max-btn {
+  background: rgba(6, 214, 160, 0.2);
+  border: 1px solid var(--neon-green);
+  color: var(--neon-green);
+  cursor: default;
+}
+
+/* Game Over Bank Banner */
+.gameover-bank-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: #94a3b8;
+  letter-spacing: 1px;
+}
+
+.gameover-bank-val {
+  color: var(--neon-yellow);
+  font-size: 15px;
+  text-shadow: 0 0 8px rgba(255, 210, 63, 0.6);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.shop-accent-btn {
+  border-color: rgba(255, 210, 63, 0.5);
+  color: #ffd23f;
+}
+
+.shop-accent-btn:hover {
+  background: rgba(255, 210, 63, 0.15);
+  border-color: #ffd23f;
+  color: #fff;
+}
+
 .hidden {
   display: none !important;
 }
+

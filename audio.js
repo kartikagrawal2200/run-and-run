@@ -13,6 +13,8 @@ const SoundSystem = (function () {
   let bgmStep = 0;
   let bgmTimer = null;
 
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
   // 124 BPM Synthwave
   const tempo = 124;
   const secondsPerBeat = 60.0 / tempo;
@@ -254,19 +256,29 @@ const SoundSystem = (function () {
     }
   }
 
-  function toggleSfx() {
-    sfxMuted = !sfxMuted;
-    return !sfxMuted;
+  let sfxVolume = 1.0;
+  let bgmVolume = 0.55;
+
+  function setSfxVolume(vol) {
+    sfxVolume = clamp(vol, 0, 1);
   }
 
-  function toggleBgm() {
-    bgmMuted = !bgmMuted;
-    if (bgmMuted) {
-      stopBgm();
-    } else {
-      startBgm();
-    }
-    return !bgmMuted;
+  function setBgmVolume(vol) {
+    bgmVolume = clamp(vol, 0, 1);
+  }
+
+  function playBuy() {
+    ensureAudio();
+    playTone(523.25, 0.08, 'square', 0.12 * sfxVolume, 0);       // C5
+    playTone(659.25, 0.08, 'square', 0.12 * sfxVolume, 0.06);    // E5
+    playTone(783.99, 0.08, 'square', 0.12 * sfxVolume, 0.12);    // G5
+    playTone(1046.5, 0.22, 'square', 0.15 * sfxVolume, 0.18);    // C6
+  }
+
+  function playEquip() {
+    ensureAudio();
+    playTone(330, 0.08, 'triangle', 0.14 * sfxVolume, 0, 660);
+    playTone(880, 0.15, 'sine', 0.12 * sfxVolume, 0.08);
   }
 
   return {
@@ -278,10 +290,14 @@ const SoundSystem = (function () {
     powerup: playPowerup,
     shieldBreak: playShieldBreak,
     crash: playCrash,
+    buy: playBuy,
+    equip: playEquip,
     startBgm: startBgm,
     stopBgm: stopBgm,
     toggleSfx: toggleSfx,
     toggleBgm: toggleBgm,
+    setSfxVolume: setSfxVolume,
+    setBgmVolume: setBgmVolume,
     getSfxState: () => !sfxMuted,
     getBgmState: () => !bgmMuted
   };

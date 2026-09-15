@@ -637,10 +637,509 @@
   }
 
   /* ============================================================
-     PLAYER (CYBER RUNNER v2 - ULTRA SMOOTH PHYSICS & GRAPHICS)
+     CYBER SUITS / COSTUMES SYSTEM
+     ============================================================ */
+  const COSTUMES = {
+    neo: {
+      id: 'neo',
+      name: 'NEO RUNNER',
+      price: 0,
+      desc: 'Standard issue cyber athlete suit with agility exo-struts.',
+      suitDark: '#101c38',
+      suitLight: '#4cc9f0',
+      visor: '#ffd23f',
+      visorGlow: 'rgba(255, 210, 63, 0.9)',
+      skin: '#f4c7ab',
+      hair: '#00f0ff',
+      shoes: '#ffffff',
+      accent: '#4cc9f0',
+      swatch: 'linear-gradient(135deg, #101c38, #4cc9f0, #ffd23f)'
+    },
+    ninja: {
+      id: 'ninja',
+      name: 'CYBER NINJA',
+      price: 100,
+      desc: 'Stealth carbon weave with crimson energy scarf & razor visor.',
+      suitDark: '#0b0c10',
+      suitLight: '#1f222e',
+      visor: '#ff0055',
+      visorGlow: 'rgba(255, 0, 85, 0.95)',
+      skin: '#d8b090',
+      hair: '#ff0055',
+      shoes: '#ff0055',
+      accent: '#ff0055',
+      swatch: 'linear-gradient(135deg, #0b0c10, #ff0055, #1f222e)'
+    },
+    rebel: {
+      id: 'rebel',
+      name: 'SYNTH REBEL',
+      price: 200,
+      desc: 'Outrun street jacket with UV sunglasses visor & radioactive kicks.',
+      suitDark: '#280638',
+      suitLight: '#f72585',
+      visor: '#00f0ff',
+      visorGlow: 'rgba(0, 240, 255, 0.95)',
+      skin: '#eec7a7',
+      hair: '#f72585',
+      shoes: '#06d6a0',
+      accent: '#f72585',
+      swatch: 'linear-gradient(135deg, #280638, #f72585, #00f0ff)'
+    },
+    apex: {
+      id: 'apex',
+      name: 'GOLDEN APEX',
+      price: 350,
+      desc: 'Gilded aerospace exoskeleton reserved for syndicate champions.',
+      suitDark: '#171410',
+      suitLight: '#ffd23f',
+      visor: '#ff7b00',
+      visorGlow: 'rgba(255, 123, 0, 0.95)',
+      skin: '#d8a682',
+      hair: '#ffd23f',
+      shoes: '#ffd23f',
+      accent: '#ffd23f',
+      swatch: 'linear-gradient(135deg, #171410, #ffd23f, #ff7b00)'
+    },
+    titan: {
+      id: 'titan',
+      name: 'TITAN ENFORCER',
+      price: 500,
+      desc: 'Heavy titanium kinetic plating powered by emerald fusion micro-cells.',
+      suitDark: '#e2e8f0',
+      suitLight: '#06d6a0',
+      visor: '#00f0ff',
+      visorGlow: 'rgba(0, 240, 255, 0.95)',
+      skin: '#c28552',
+      hair: '#1e293b',
+      shoes: '#06d6a0',
+      accent: '#06d6a0',
+      swatch: 'linear-gradient(135deg, #e2e8f0, #06d6a0, #00f0ff)'
+    }
+  };
+
+  /* ============================================================
+     TECH UPGRADES SYSTEM
+     ============================================================ */
+  const UPGRADES = {
+    magnet: {
+      id: 'magnet',
+      name: 'Magnet Tech',
+      icon: '🧲',
+      maxLevel: 4,
+      levels: [
+        { level: 1, duration: 8, radius: 160, cost: 0, desc: '8s duration, standard reach' },
+        { level: 2, duration: 12, radius: 190, cost: 80, desc: '12s duration, +20% reach' },
+        { level: 3, duration: 16, radius: 220, cost: 160, desc: '16s duration, +40% reach' },
+        { level: 4, duration: 20, radius: 260, cost: 300, desc: '20s duration, hyper pull' }
+      ]
+    },
+    multiplier: {
+      id: 'multiplier',
+      name: '2X Score Boost',
+      icon: '⭐',
+      maxLevel: 4,
+      levels: [
+        { level: 1, duration: 10, cost: 0, desc: '10s duration of 2X score' },
+        { level: 2, duration: 15, cost: 100, desc: '15s duration of 2X score' },
+        { level: 3, duration: 20, cost: 200, desc: '20s duration of 2X score' },
+        { level: 4, duration: 25, cost: 350, desc: '25s duration of 2X score' }
+      ]
+    },
+    shield: {
+      id: 'shield',
+      name: 'Starting Shield',
+      icon: '🛡️',
+      maxLevel: 2,
+      levels: [
+        { level: 0, shields: 0, cost: 0, desc: 'Deploy with 0 Starting Shield' },
+        { level: 1, shields: 1, cost: 150, desc: 'Deploy with 1 Shield active' },
+        { level: 2, shields: 2, cost: 300, desc: 'Deploy with 2 Shields active' }
+      ]
+    }
+  };
+
+  /* ============================================================
+     HUMANOID RUNNER RENDER PIPELINE
+     ============================================================ */
+  function drawHumanoidRunner(ctx, cx, groundY, animTime, isJumping, isSliding, jumpHeight, tilt, costume, squash, hasShield) {
+    const c = costume || COSTUMES.neo;
+    ctx.save();
+    ctx.translate(cx, groundY);
+    if (tilt) ctx.rotate(tilt);
+
+    // 1. Dynamic ground shadow that scales with jump height
+    if (jumpHeight !== undefined) {
+      ctx.save();
+      const shadowScale = clamp(1 - (jumpHeight || 0) / 280, 0.25, 1);
+      ctx.globalAlpha = 0.45 * shadowScale;
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.ellipse(0, 4, 22 * shadowScale, 6 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Lift body by jumpHeight
+    ctx.translate(0, -(jumpHeight || 0));
+
+    // 2. Dual Hex Shield if active
+    if (hasShield) {
+      const pulse = Math.sin(animTime * 6) * 3;
+      const r = 36 + pulse;
+
+      // Outer rotating hexagon
+      ctx.save();
+      ctx.translate(0, -40);
+      ctx.rotate(animTime * 2.2);
+      ctx.strokeStyle = '#06d6a0';
+      ctx.shadowColor = '#06d6a0';
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (i * Math.PI) / 3;
+        const hx = Math.cos(a) * r, hy = Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+
+      // Inner counter-rotating ring
+      ctx.save();
+      ctx.translate(0, -40);
+      ctx.rotate(-animTime * 1.8);
+      ctx.strokeStyle = '#4cc9f0';
+      ctx.shadowColor = '#4cc9f0';
+      ctx.shadowBlur = 10;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (i * Math.PI) / 3;
+        const hx = Math.cos(a) * (r * 0.78), hy = Math.sin(a) * (r * 0.78);
+        if (i === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    if (isSliding) {
+      // ----------------------------------------------------
+      // SLIDING HUMAN POSE: low angled skid on asphalt
+      // ----------------------------------------------------
+      ctx.save();
+      ctx.translate(0, -18);
+      ctx.rotate(-0.35); // Leaning backwards
+
+      // Sliding knee and leg flat to ground
+      ctx.fillStyle = c.suitDark;
+      ctx.fillRect(-16, 2, 28, 9); // back leg stretched back
+      ctx.fillStyle = c.shoes;
+      ctx.shadowColor = c.accent;
+      ctx.shadowBlur = 6;
+      ctx.fillRect(-22, 2, 8, 9); // back sneaker
+
+      // Front bent knee forward
+      ctx.fillStyle = c.suitLight;
+      ctx.fillRect(4, -4, 18, 10);
+      // Knee spark armor pad
+      ctx.fillStyle = c.visor;
+      ctx.shadowColor = c.visor;
+      ctx.shadowBlur = 10;
+      ctx.fillRect(18, -2, 6, 8);
+
+      // Torso / cyber jacket
+      ctx.fillStyle = c.suitDark;
+      ctx.fillRect(-10, -22, 22, 22);
+      ctx.fillStyle = c.suitLight;
+      ctx.fillRect(-8, -20, 8, 18); // jacket lapel
+
+      // Torso glowing core
+      ctx.fillStyle = c.accent;
+      ctx.shadowColor = c.accent;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(0, -11, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Arms in slide bracing position
+      ctx.fillStyle = c.suitDark;
+      ctx.fillRect(-18, -14, 12, 6); // back arm
+      ctx.fillRect(6, -10, 14, 6); // front arm bracing
+      ctx.fillStyle = c.skin;
+      ctx.fillRect(-22, -14, 5, 5); // back hand
+      ctx.fillRect(19, -10, 5, 5); // front hand
+
+      // Head / helmet
+      ctx.fillStyle = c.suitDark;
+      ctx.beginPath();
+      ctx.arc(0, -32, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Helmet crest / ponytail flying back
+      ctx.fillStyle = c.hair;
+      ctx.beginPath();
+      ctx.moveTo(-7, -35);
+      ctx.lineTo(-24, -30 + Math.sin(animTime * 16) * 3);
+      ctx.lineTo(-9, -28);
+      ctx.closePath();
+      ctx.fill();
+
+      // Glowing Visor
+      ctx.fillStyle = c.visor;
+      ctx.shadowColor = c.visor;
+      ctx.shadowBlur = 10;
+      ctx.fillRect(2, -35, 9, 6);
+
+      ctx.restore();
+
+    } else if (isJumping) {
+      // ----------------------------------------------------
+      // JUMPING HUMAN POSE: tucked athletic mid-air stride
+      // ----------------------------------------------------
+      ctx.save();
+      ctx.translate(0, -40);
+
+      // Left leg tucked forward-up
+      ctx.fillStyle = c.suitDark;
+      ctx.fillRect(-14, 4, 10, 16);
+      ctx.fillStyle = c.suitLight;
+      ctx.fillRect(-14, 18, 12, 10);
+      ctx.fillStyle = c.shoes;
+      ctx.shadowColor = c.accent;
+      ctx.shadowBlur = 6;
+      ctx.fillRect(-16, 26, 14, 7);
+
+      // Right leg bent back
+      ctx.fillStyle = c.suitDark;
+      ctx.fillRect(4, 4, 10, 14);
+      ctx.fillStyle = c.suitLight;
+      ctx.fillRect(8, 16, 12, 10);
+      ctx.fillStyle = c.shoes;
+      ctx.fillRect(10, 24, 14, 7);
+
+      // Torso / chestplate
+      ctx.fillStyle = c.suitDark;
+      ctx.beginPath();
+      ctx.roundRect(-12, -22, 24, 28, 6);
+      ctx.fill();
+      ctx.fillStyle = c.suitLight;
+      ctx.fillRect(-8, -20, 16, 12);
+
+      // Chest reactor core
+      ctx.fillStyle = c.accent;
+      ctx.shadowColor = c.accent;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(0, -10, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Outstretched arms for balance
+      ctx.fillStyle = c.suitDark;
+      ctx.fillRect(-22, -18, 11, 7); // left upper arm
+      ctx.fillRect(-25, -24, 6, 9); // left forearm angled up
+      ctx.fillRect(11, -18, 11, 7); // right upper arm
+      ctx.fillRect(19, -24, 6, 9); // right forearm angled up
+      ctx.fillStyle = c.skin;
+      ctx.fillRect(-26, -27, 6, 5);
+      ctx.fillRect(19, -27, 6, 5);
+
+      // Head / Cyber Helmet
+      ctx.fillStyle = c.suitDark;
+      ctx.beginPath();
+      ctx.arc(0, -32, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Neck
+      ctx.fillStyle = c.skin;
+      ctx.fillRect(-4, -24, 8, 4);
+
+      // Cyber Hair / Crest in wind
+      ctx.fillStyle = c.hair;
+      ctx.beginPath();
+      ctx.moveTo(-5, -36);
+      ctx.lineTo(-20, -42 + Math.sin(animTime * 14) * 3);
+      ctx.lineTo(-8, -30);
+      ctx.closePath();
+      ctx.fill();
+
+      // Glowing Visor
+      ctx.fillStyle = c.visor;
+      ctx.shadowColor = c.visor;
+      ctx.shadowBlur = 12;
+      ctx.fillRect(-1, -35, 10, 6);
+
+      // Thruster flames from jet boots
+      const flameH = 10 + Math.sin(animTime * 24) * 4;
+      ctx.fillStyle = c.visor;
+      ctx.shadowColor = c.visor;
+      ctx.shadowBlur = 10;
+      ctx.fillRect(-14, 33, 6, flameH);
+      ctx.fillRect(12, 31, 6, flameH);
+
+      ctx.restore();
+
+    } else {
+      // ----------------------------------------------------
+      // ATHLETIC RUNNING / SPRINTING HUMAN CYBER SUIT
+      // ----------------------------------------------------
+      const phase = (animTime * 14) % (Math.PI * 2);
+      const legSwing = Math.sin(phase);
+      const bobY = -Math.abs(Math.sin(phase)) * 4 + (squash || 0) * 8;
+
+      ctx.save();
+      ctx.translate(0, -40 + bobY);
+
+      // 1. BACK ARM (Swings opposite to front leg)
+      const backArmAngle = legSwing * 0.7;
+      ctx.save();
+      ctx.translate(-8, -16);
+      ctx.rotate(backArmAngle);
+      ctx.fillStyle = c.suitDark;
+      ctx.fillRect(-3, 0, 6, 14); // upper arm
+      ctx.fillStyle = c.suitLight;
+      ctx.fillRect(-3, 12, 6, 12); // forearm gauntlet
+      ctx.fillStyle = c.skin;
+      ctx.fillRect(-2, 22, 5, 5); // fist
+      ctx.restore();
+
+      // 2. BACK LEG
+      const backLegAngle = -legSwing * 0.75;
+      ctx.save();
+      ctx.translate(-5, 6);
+      ctx.rotate(backLegAngle);
+      ctx.fillStyle = c.suitDark;
+      ctx.fillRect(-4, 0, 8, 16); // thigh
+      ctx.fillStyle = c.suitLight;
+      ctx.fillRect(-4, 14, 8, 16); // shin guard
+      // Back shoe
+      ctx.fillStyle = c.shoes;
+      ctx.shadowColor = c.accent;
+      ctx.shadowBlur = 6;
+      ctx.fillRect(-4, 28, 13, 7);
+      ctx.restore();
+
+      // 3. HUMAN ATHLETIC TORSO & CYBER JACKET
+      ctx.fillStyle = c.suitDark;
+      ctx.beginPath();
+      ctx.roundRect(-12, -22, 24, 28, 5); // torso shape
+      ctx.fill();
+
+      // Jacket chestplate & armor accents
+      ctx.fillStyle = c.suitLight;
+      ctx.fillRect(-9, -20, 18, 14);
+
+      // Shoulder pauldrons
+      ctx.fillStyle = c.suitLight;
+      ctx.beginPath();
+      ctx.ellipse(-11, -16, 4.5, 6, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(11, -16, 4.5, 6, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Chest glowing cyber reactor core
+      ctx.fillStyle = c.accent;
+      ctx.shadowColor = c.accent;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(0, -11, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Belt & utility buckle
+      ctx.fillStyle = '#070a12';
+      ctx.shadowBlur = 0;
+      ctx.fillRect(-11, 2, 22, 4);
+      ctx.fillStyle = c.visor;
+      ctx.fillRect(-3, 2, 6, 4);
+
+      // 4. FRONT LEG (Swings forward)
+      const frontLegAngle = legSwing * 0.75;
+      ctx.save();
+      ctx.translate(5, 6);
+      ctx.rotate(frontLegAngle);
+      ctx.fillStyle = c.suitDark;
+      ctx.fillRect(-4, 0, 8, 16); // thigh
+      ctx.fillStyle = c.suitLight;
+      ctx.fillRect(-4, 14, 8, 16); // shin guard
+      // Front shoe with glowing neon sole
+      ctx.fillStyle = c.shoes;
+      ctx.shadowColor = c.accent;
+      ctx.shadowBlur = 6;
+      ctx.fillRect(-3, 28, 14, 7);
+      ctx.fillStyle = c.accent;
+      ctx.fillRect(-3, 33, 14, 2.5); // glowing sole
+      ctx.restore();
+
+      // 5. HUMAN HEAD & CYBER HELMET
+      // Neck
+      ctx.fillStyle = c.skin;
+      ctx.fillRect(-4, -24, 8, 4);
+
+      // Cyber Helmet shell
+      ctx.fillStyle = c.suitDark;
+      ctx.beginPath();
+      ctx.arc(0, -32, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Chin / faceplate
+      ctx.fillStyle = c.skin;
+      ctx.beginPath();
+      ctx.arc(4, -27, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cyber Hair / Wind crest
+      ctx.fillStyle = c.hair;
+      ctx.beginPath();
+      ctx.moveTo(-4, -36);
+      ctx.lineTo(-22, -35 + Math.sin(phase) * 4);
+      ctx.lineTo(-8, -28);
+      ctx.closePath();
+      ctx.fill();
+
+      // Visor eye-slit
+      ctx.fillStyle = c.visor;
+      ctx.shadowColor = c.visorGlow;
+      ctx.shadowBlur = 12;
+      ctx.fillRect(0, -35, 10, 6);
+
+      // Visor animated laser scanner beam
+      const scanX = 0 + ((Math.sin(animTime * 12) + 1) * 0.5) * 7;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(scanX, -35, 3, 6);
+
+      // 6. FRONT ARM (Swings opposite to back arm)
+      const frontArmAngle = -legSwing * 0.7;
+      ctx.save();
+      ctx.translate(8, -16);
+      ctx.rotate(frontArmAngle);
+      ctx.fillStyle = c.suitDark;
+      ctx.fillRect(-3, 0, 6, 14); // upper arm
+      ctx.fillStyle = c.suitLight;
+      ctx.fillRect(-3, 12, 6, 12); // forearm gauntlet
+      ctx.fillStyle = c.skin;
+      ctx.fillRect(-2, 22, 5, 5); // fist
+      ctx.restore();
+
+      // Jet thruster flames on heels when running fast
+      const flameH = 6 + Math.sin(animTime * 24) * 3;
+      ctx.fillStyle = c.visor;
+      ctx.shadowColor = c.visor;
+      ctx.shadowBlur = 8;
+      ctx.fillRect(-10, 30, 4, flameH);
+      ctx.fillRect(6, 30, 4, flameH);
+
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+
+  /* ============================================================
+     PLAYER (HUMANOID CYBER RUNNER v2)
      ============================================================ */
   class Player {
-    constructor() {
+    constructor(costume) {
+      this.costume = costume || COSTUMES.neo;
       this.lane = 1;
       this.x = laneX(1);
       this.targetX = this.x;
@@ -711,7 +1210,7 @@
 
       // Emit lateral trail sparks during lane change
       if (Math.abs(dx) > 1.5) {
-        particles.trail(this.x, GROUND_Y - 20, '#4cc9f0');
+        particles.trail(this.x, GROUND_Y - 20, this.costume.accent);
       }
 
       // Jump physics with apex smoothing
@@ -724,7 +1223,7 @@
           this.jumping = false;
           this.jumpVel = 0;
           this.squash = 1; // Landing squash
-          particles.burst(this.x, GROUND_Y, '#4cc9f0', 10, 50, 130);
+          particles.burst(this.x, GROUND_Y, this.costume.accent, 10, 50, 130);
         }
       }
 
@@ -735,7 +1234,7 @@
       // Slide countdown
       if (this.sliding) {
         this.slideTimer -= dt;
-        particles.trail(this.x, GROUND_Y - 10, '#ffd23f');
+        particles.trail(this.x, GROUND_Y - 8, this.costume.visor);
         if (this.slideTimer <= 0) {
           this.sliding = false;
         }
@@ -743,8 +1242,8 @@
 
       // Continuous dual cyber thruster particles
       if (!this.jumping && Math.random() < 0.5) {
-        particles.trail(this.x - 8, GROUND_Y - 2, '#00f0ff');
-        particles.trail(this.x + 8, GROUND_Y - 2, '#ffd23f');
+        particles.trail(this.x - 8, GROUND_Y - 2, this.costume.accent);
+        particles.trail(this.x + 8, GROUND_Y - 2, this.costume.visor);
       }
     }
 
@@ -761,122 +1260,19 @@
     }
 
     render(ctx) {
-      const b = this.getBounds();
-      const currentH = b.h;
-      const squashOffset = this.squash * 8;
-
-      // Dynamic ground shadow that scales with jump height
-      ctx.save();
-      const shadowScale = clamp(1 - this.jumpHeight / 280, 0.3, 1);
-      ctx.globalAlpha = 0.4 * shadowScale;
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.ellipse(this.x, GROUND_Y + 6, (this.width * 0.6) * shadowScale, 8 * shadowScale, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-
-      ctx.save();
-      // Apply banking tilt rotation
-      ctx.translate(this.x, b.y + currentH / 2);
-      ctx.rotate(this.tilt);
-      ctx.translate(-this.x, -(b.y + currentH / 2));
-
-      // Dual Counter-Rotating Hex Energy Shield
-      if (this.hasShield) {
-        ctx.save();
-        const pulse = Math.sin(this.animTime * 6) * 3;
-        const r = (this.width / 2) + 14 + pulse;
-
-        // Outer rotating hexagon
-        ctx.save();
-        ctx.translate(this.x, b.y + currentH / 2);
-        ctx.rotate(this.animTime * 2.2);
-        ctx.strokeStyle = '#06d6a0';
-        ctx.shadowColor = '#06d6a0';
-        ctx.shadowBlur = 16;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-          const angle = (i * Math.PI) / 3;
-          const hx = Math.cos(angle) * r;
-          const hy = Math.sin(angle) * r;
-          if (i === 0) ctx.moveTo(hx, hy);
-          else ctx.lineTo(hx, hy);
-        }
-        ctx.closePath();
-        ctx.stroke();
-        ctx.restore();
-
-        // Inner counter-rotating ring
-        ctx.save();
-        ctx.translate(this.x, b.y + currentH / 2);
-        ctx.rotate(-this.animTime * 1.7);
-        ctx.strokeStyle = '#4cc9f0';
-        ctx.shadowColor = '#4cc9f0';
-        ctx.shadowBlur = 12;
-        ctx.lineWidth = 1.8;
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-          const angle = (i * Math.PI) / 3;
-          const hx = Math.cos(angle) * (r * 0.78);
-          const hy = Math.sin(angle) * (r * 0.78);
-          if (i === 0) ctx.moveTo(hx, hy);
-          else ctx.lineTo(hx, hy);
-        }
-        ctx.closePath();
-        ctx.stroke();
-        ctx.restore();
-
-        ctx.restore();
-      }
-
-      // Cyber Runner Suit Body
-      const bodyColor = this.sliding ? '#f72585' : '#4cc9f0';
-      ctx.fillStyle = bodyColor;
-      ctx.shadowColor = bodyColor;
-      ctx.shadowBlur = 14;
-
-      // Rounded cyber torso
-      const cornerR = 8;
-      ctx.beginPath();
-      ctx.roundRect(b.x, b.y + squashOffset, b.w, currentH - squashOffset, cornerR);
-      ctx.fill();
-
-      // Dual jet thrusters with pulsing flame glow
-      const flameH = 8 + Math.sin(this.animTime * 24) * 4;
-      ctx.fillStyle = this.sliding ? '#ffd23f' : '#00f0ff';
-      ctx.shadowColor = ctx.fillStyle;
-      ctx.shadowBlur = 10;
-      ctx.fillRect(b.x + 8, b.y + currentH - 2, 6, flameH);
-      ctx.fillRect(b.x + b.w - 14, b.y + currentH - 2, 6, flameH);
-
-      // Cyber glowing visor with scanner beam
-      ctx.fillStyle = '#ffd23f';
-      ctx.shadowColor = '#ffd23f';
-      ctx.shadowBlur = 8;
-      const visorH = this.sliding ? 7 : 12;
-      const visorY = b.y + (this.sliding ? 6 : 10) + squashOffset;
-      ctx.fillRect(b.x + 6, visorY, b.w - 12, visorH);
-
-      // Visor animated laser scan highlight
-      const scanX = b.x + 6 + ((Math.sin(this.animTime * 12) + 1) * 0.5) * (b.w - 18);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(scanX, visorY, 4, visorH);
-
-      // Running armor details / stripes
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-      ctx.shadowBlur = 0;
-      if (!this.sliding) {
-        // Torso neon core
-        ctx.fillRect(b.x + 10, b.y + 30 + squashOffset, b.w - 20, 6);
-        // Running leg animation swing
-        const legSwing = Math.sin(this.animTime * 18) * 8;
-        ctx.fillStyle = '#212f4d';
-        ctx.fillRect(b.x + 8, b.y + currentH - 14, 12, 14 + (this.jumping ? 0 : legSwing));
-        ctx.fillRect(b.x + b.w - 20, b.y + currentH - 14, 12, 14 - (this.jumping ? 0 : legSwing));
-      }
-
-      ctx.restore();
+      drawHumanoidRunner(
+        ctx,
+        this.x,
+        GROUND_Y,
+        this.animTime,
+        this.jumping,
+        this.sliding,
+        this.jumpHeight,
+        this.tilt,
+        this.costume,
+        this.squash,
+        this.hasShield
+      );
     }
   }
 
@@ -1146,12 +1542,15 @@
       this.magnetSpeed = 700;
     }
 
-    reset() {
+    reset(startingShields = 0, magnetDur = 8, magnetRad = 160, multiplierDur = 10) {
       this.items = [];
       this.coinCount = 0;
       this.coinScore = 0;
       this.activePowerUps = {};
-      this.shieldCharges = 0;
+      this.shieldCharges = startingShields;
+      this.magnetDuration = magnetDur;
+      this.magnetRadius = magnetRad;
+      this.multiplierDuration = multiplierDur;
       this.coinTimer = 1.0;
       this.powerupTimer = 11.0;
     }
@@ -1277,7 +1676,10 @@
         particles.spawnText(item.x, item.y, 'SHIELD ARMED', '#06d6a0');
       } else {
         const meta = POWERUP_METAS[item.type];
-        this.activePowerUps[item.type] = meta.duration;
+        let duration = meta.duration;
+        if (item.type === 'magnet' && this.magnetDuration) duration = this.magnetDuration;
+        if (item.type === 'multiplier' && this.multiplierDuration) duration = this.multiplierDuration;
+        this.activePowerUps[item.type] = duration;
         SoundSystem.powerup();
         particles.burst(item.x, item.y, meta.color, 16, 60, 200);
         particles.spawnText(item.x, item.y, meta.name, meta.color);
@@ -1369,11 +1771,21 @@
 
   const STORAGE_KEY = 'run_and_run_best_score';
   const BG_STORAGE_KEY = 'run_and_run_selected_bg';
+  const COINS_STORAGE_KEY = 'run_and_run_bank_coins';
+  const COSTUMES_STORAGE_KEY = 'run_and_run_unlocked_costumes';
+  const EQUIPPED_STORAGE_KEY = 'run_and_run_equipped_costume';
+  const UPGRADES_STORAGE_KEY = 'run_and_run_upgrades';
 
   class GameApp {
     constructor() {
       this.state = GameStates.MENU;
       this.bestScore = this.loadBest();
+
+      // Persistent Bank, Costumes & Tech Upgrades
+      this.bankCoins = this.loadBankCoins();
+      this.unlockedCostumes = this.loadUnlockedCostumes();
+      this.equippedCostume = this.loadEquippedCostume();
+      this.upgrades = this.loadUpgrades();
 
       // UI elements
       this.hud = document.getElementById('hud');
@@ -1381,6 +1793,9 @@
       this.menuScreen = document.getElementById('menuScreen');
       this.pauseScreen = document.getElementById('pauseScreen');
       this.gameOverScreen = document.getElementById('gameOverScreen');
+      this.settingsModal = document.getElementById('settingsModal');
+      this.shopModal = document.getElementById('shopModal');
+
       this.scoreDisplay = document.getElementById('scoreDisplay');
       this.coinCount = document.getElementById('coinCount');
       this.shieldDisplay = document.getElementById('shieldDisplay');
@@ -1392,7 +1807,19 @@
       this.powerupText = document.getElementById('powerupText');
       this.menuBestScore = document.getElementById('menuBestScore');
 
+      // Bank displays
+      this.menuCoinBank = document.getElementById('menuCoinBank');
+      this.shopCoinBank = document.getElementById('shopCoinBank');
+      this.gameoverBankTotal = document.getElementById('gameoverBankTotal');
+      this.equippedCostumeName = document.getElementById('equippedCostumeName');
+
+      // Avatar canvas preview
+      this.avatarCanvas = document.getElementById('avatarCanvas');
+      this.avatarCtx = this.avatarCanvas ? this.avatarCanvas.getContext('2d') : null;
+      this.avatarAnimTime = 0;
+
       this.menuBestScore.textContent = this.bestScore;
+      this.updateBankDisplays();
 
       // Systems
       this.parallax = new ParallaxCity();
@@ -1426,6 +1853,86 @@
       try {
         localStorage.setItem(STORAGE_KEY, String(score));
       } catch (e) {}
+    }
+
+    loadBankCoins() {
+      try {
+        const val = localStorage.getItem(COINS_STORAGE_KEY);
+        // Start new players with 150 welcome coins to experience the Armory immediately
+        return val !== null ? parseInt(val, 10) || 0 : 150;
+      } catch (e) {
+        return 150;
+      }
+    }
+
+    saveBankCoins(coins) {
+      try {
+        localStorage.setItem(COINS_STORAGE_KEY, String(coins));
+      } catch (e) {}
+    }
+
+    loadUnlockedCostumes() {
+      try {
+        const val = localStorage.getItem(COSTUMES_STORAGE_KEY);
+        if (val) {
+          const arr = JSON.parse(val);
+          if (Array.isArray(arr) && arr.length) return arr;
+        }
+      } catch (e) {}
+      return ['neo'];
+    }
+
+    saveUnlockedCostumes(arr) {
+      try {
+        localStorage.setItem(COSTUMES_STORAGE_KEY, JSON.stringify(arr));
+      } catch (e) {}
+    }
+
+    loadEquippedCostume() {
+      try {
+        const val = localStorage.getItem(EQUIPPED_STORAGE_KEY);
+        if (val && COSTUMES[val]) return val;
+      } catch (e) {}
+      return 'neo';
+    }
+
+    saveEquippedCostume(id) {
+      try {
+        localStorage.setItem(EQUIPPED_STORAGE_KEY, id);
+      } catch (e) {}
+    }
+
+    loadUpgrades() {
+      try {
+        const val = localStorage.getItem(UPGRADES_STORAGE_KEY);
+        if (val) {
+          const parsed = JSON.parse(val);
+          if (parsed && typeof parsed === 'object') {
+            return {
+              magnet: parsed.magnet || 1,
+              multiplier: parsed.multiplier || 1,
+              shield: parsed.shield || 0
+            };
+          }
+        }
+      } catch (e) {}
+      return { magnet: 1, multiplier: 1, shield: 0 };
+    }
+
+    saveUpgrades(upgrades) {
+      try {
+        localStorage.setItem(UPGRADES_STORAGE_KEY, JSON.stringify(upgrades));
+      } catch (e) {}
+    }
+
+    updateBankDisplays() {
+      if (this.menuCoinBank) this.menuCoinBank.textContent = this.bankCoins;
+      if (this.shopCoinBank) this.shopCoinBank.textContent = this.bankCoins;
+      if (this.gameoverBankTotal) this.gameoverBankTotal.textContent = this.bankCoins;
+      if (this.equippedCostumeName) {
+        const current = COSTUMES[this.equippedCostume] || COSTUMES.neo;
+        this.equippedCostumeName.textContent = current.name;
+      }
     }
 
     loadSelectedBg() {
@@ -1477,13 +1984,24 @@
       this.speed = this.baseSpeed;
       this.speedRamp = 3.5;
 
-      this.player = new Player();
+      const currentCostume = COSTUMES[this.equippedCostume] || COSTUMES.neo;
+      this.player = new Player(currentCostume);
       this.track = new TrackManager();
       this.collectibles = new CollectibleManager();
 
+      // Retrieve player's upgraded stats
+      const magnetLevel = this.upgrades.magnet || 1;
+      const magnetConf = UPGRADES.magnet.levels[magnetLevel - 1] || UPGRADES.magnet.levels[0];
+
+      const multiplierLevel = this.upgrades.multiplier || 1;
+      const multiplierConf = UPGRADES.multiplier.levels[multiplierLevel - 1] || UPGRADES.multiplier.levels[0];
+
+      const shieldLevel = this.upgrades.shield || 0;
+      const shieldConf = UPGRADES.shield.levels[shieldLevel] || UPGRADES.shield.levels[0];
+
       this.track.onObstacleSpawned = (o) => this.collectibles.onObstacleSpawned(o);
       this.track.reset();
-      this.collectibles.reset();
+      this.collectibles.reset(shieldConf.shields, magnetConf.duration, magnetConf.radius, multiplierConf.duration);
 
       // Maintain user's chosen background
       this.themeIndex = this.selectedBgIndex;
@@ -1496,6 +2014,213 @@
       return Math.floor(this.distance / 10) + this.collectibles.coinScore;
     }
 
+    /* ---------------- ARMORY SHOP SYSTEM ---------------- */
+    renderCostumesList() {
+      const container = document.getElementById('costumesList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      for (const suit of Object.values(COSTUMES)) {
+        const isUnlocked = this.unlockedCostumes.includes(suit.id);
+        const isEquipped = this.equippedCostume === suit.id;
+
+        const card = document.createElement('div');
+        card.className = `costume-item-card ${isEquipped ? 'equipped' : ''}`;
+
+        const left = document.createElement('div');
+        left.className = 'costume-info-left';
+
+        const orb = document.createElement('div');
+        orb.className = 'costume-avatar-orb';
+        orb.style.background = suit.swatch;
+
+        const text = document.createElement('div');
+        text.className = 'costume-text';
+        text.innerHTML = `<span class="costume-name">${suit.name}</span><span class="costume-desc">${suit.desc}</span>`;
+
+        left.appendChild(orb);
+        left.appendChild(text);
+        card.appendChild(left);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'shop-action-btn';
+
+        if (isEquipped) {
+          btn.classList.add('equipped-btn');
+          btn.textContent = 'EQUIPPED';
+          btn.disabled = true;
+        } else if (isUnlocked) {
+          btn.classList.add('equip-btn');
+          btn.textContent = 'EQUIP';
+          btn.addEventListener('click', () => this.equipCostume(suit.id));
+        } else {
+          btn.classList.add('buy-btn');
+          btn.innerHTML = `BUY 🪙 ${suit.price}`;
+          if (this.bankCoins < suit.price) {
+            btn.disabled = true;
+          }
+          btn.addEventListener('click', () => this.buyCostume(suit.id));
+        }
+
+        card.appendChild(btn);
+        container.appendChild(card);
+      }
+    }
+
+    buyCostume(suitId) {
+      const suit = COSTUMES[suitId];
+      if (!suit || this.bankCoins < suit.price) return;
+
+      this.bankCoins -= suit.price;
+      this.unlockedCostumes.push(suitId);
+      this.equippedCostume = suitId;
+
+      this.saveBankCoins(this.bankCoins);
+      this.saveUnlockedCostumes(this.unlockedCostumes);
+      this.saveEquippedCostume(this.equippedCostume);
+
+      SoundSystem.buy();
+      this.updateBankDisplays();
+      this.renderCostumesList();
+    }
+
+    equipCostume(suitId) {
+      if (!this.unlockedCostumes.includes(suitId)) return;
+      this.equippedCostume = suitId;
+      this.saveEquippedCostume(suitId);
+
+      SoundSystem.equip();
+      this.updateBankDisplays();
+      this.renderCostumesList();
+    }
+
+    renderUpgradesList() {
+      const container = document.getElementById('upgradesList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      for (const [id, upDef] of Object.entries(UPGRADES)) {
+        const currLevel = this.upgrades[id] || (id === 'shield' ? 0 : 1);
+        const isMax = currLevel >= upDef.maxLevel;
+
+        const card = document.createElement('div');
+        card.className = 'upgrade-item-card';
+
+        const left = document.createElement('div');
+        left.className = 'upgrade-info-left';
+
+        const iconBox = document.createElement('div');
+        iconBox.className = 'upgrade-icon-box';
+        iconBox.textContent = upDef.icon;
+
+        const text = document.createElement('div');
+        text.className = 'upgrade-text';
+
+        // Title row with level pips
+        const titleRow = document.createElement('div');
+        titleRow.className = 'upgrade-title-row';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'upgrade-name';
+        nameSpan.textContent = upDef.name;
+
+        const pipsWrap = document.createElement('div');
+        pipsWrap.className = 'upgrade-level-pips';
+        for (let i = 1; i <= upDef.maxLevel; i++) {
+          const pip = document.createElement('span');
+          pip.className = `level-pip ${i <= currLevel ? 'filled' : ''}`;
+          pipsWrap.appendChild(pip);
+        }
+
+        titleRow.appendChild(nameSpan);
+        titleRow.appendChild(pipsWrap);
+
+        const descSpan = document.createElement('span');
+        descSpan.className = 'upgrade-desc';
+
+        const currentConf = id === 'shield' ? upDef.levels[currLevel] : upDef.levels[currLevel - 1];
+        const nextConf = !isMax ? (id === 'shield' ? upDef.levels[currLevel + 1] : upDef.levels[currLevel]) : null;
+
+        if (isMax) {
+          descSpan.textContent = `MAX: ${currentConf.desc}`;
+        } else {
+          descSpan.textContent = `Next: ${nextConf.desc}`;
+        }
+
+        text.appendChild(titleRow);
+        text.appendChild(descSpan);
+        left.appendChild(iconBox);
+        left.appendChild(text);
+        card.appendChild(left);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'upgrade-btn';
+
+        if (isMax) {
+          btn.classList.add('max-btn');
+          btn.textContent = 'MAX LEVEL';
+          btn.disabled = true;
+        } else {
+          btn.innerHTML = `UPGRADE 🪙 ${nextConf.cost}`;
+          if (this.bankCoins < nextConf.cost) {
+            btn.disabled = true;
+          }
+          btn.addEventListener('click', () => this.buyUpgrade(id));
+        }
+
+        card.appendChild(btn);
+        container.appendChild(card);
+      }
+    }
+
+    buyUpgrade(upgradeId) {
+      const upDef = UPGRADES[upgradeId];
+      if (!upDef) return;
+
+      const currLevel = this.upgrades[upgradeId] || (upgradeId === 'shield' ? 0 : 1);
+      if (currLevel >= upDef.maxLevel) return;
+
+      const nextConf = upgradeId === 'shield' ? upDef.levels[currLevel + 1] : upDef.levels[currLevel];
+      if (!nextConf || this.bankCoins < nextConf.cost) return;
+
+      this.bankCoins -= nextConf.cost;
+      this.upgrades[upgradeId] = currLevel + 1;
+
+      this.saveBankCoins(this.bankCoins);
+      this.saveUpgrades(this.upgrades);
+
+      SoundSystem.buy();
+      this.updateBankDisplays();
+      this.renderUpgradesList();
+    }
+
+    /* ---------------- AVATAR PREVIEW (PEDESTAL) ---------------- */
+    renderAvatarPreview(dt) {
+      if (!this.avatarCtx || !this.avatarCanvas) return;
+      this.avatarAnimTime += dt;
+
+      const actx = this.avatarCtx;
+      actx.clearRect(0, 0, this.avatarCanvas.width, this.avatarCanvas.height);
+
+      const suit = COSTUMES[this.equippedCostume] || COSTUMES.neo;
+      // Draw running/breathing humanoid runner in center of canvas
+      drawHumanoidRunner(
+        actx,
+        this.avatarCanvas.width / 2,
+        this.avatarCanvas.height - 24,
+        this.avatarAnimTime,
+        false,
+        false,
+        0,
+        0,
+        suit,
+        0,
+        false
+      );
+    }
+
     initEventListeners() {
       // Menu Play
       document.getElementById('playBtn').addEventListener('click', () => {
@@ -1503,6 +2228,90 @@
         SoundSystem.startBgm();
         this.resetRun();
         this.setState(GameStates.PLAYING);
+      });
+
+      // Settings Modal Open/Close
+      const settingsModal = this.settingsModal;
+      document.getElementById('menuSettingsBtn').addEventListener('click', () => {
+        SoundSystem.ensure();
+        settingsModal.classList.remove('hidden');
+      });
+      document.getElementById('closeSettingsBtn').addEventListener('click', () => {
+        settingsModal.classList.add('hidden');
+      });
+      document.getElementById('applySettingsBtn').addEventListener('click', () => {
+        settingsModal.classList.add('hidden');
+      });
+
+      // Settings Tabs
+      const setupModalTabs = (tabBtnClass, contentIdPrefix) => {
+        const tabBtns = document.querySelectorAll(tabBtnClass);
+        tabBtns.forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const targetId = btn.getAttribute('data-tab');
+            const contents = btn.closest('.glass-panel').querySelectorAll('.tab-content');
+            contents.forEach(c => {
+              if (c.id === targetId) c.classList.remove('hidden');
+              else c.classList.add('hidden');
+            });
+          });
+        });
+      };
+      setupModalTabs('.modal-nav-tabs .tab-btn', 'tab');
+
+      // Audio volume & toggle controls in Settings
+      const bgmToggle = document.getElementById('settingsBgmToggle');
+      const bgmSlider = document.getElementById('settingsBgmSlider');
+      if (bgmToggle && bgmSlider) {
+        bgmToggle.addEventListener('click', () => {
+          const active = SoundSystem.toggleBgm();
+          bgmToggle.textContent = active ? 'ON' : 'OFF';
+          if (active) bgmToggle.classList.add('active');
+          else bgmToggle.classList.remove('active');
+        });
+        bgmSlider.addEventListener('input', (e) => {
+          const val = parseFloat(e.target.value) / 100;
+          SoundSystem.setBgmVolume(val);
+        });
+      }
+
+      const sfxToggle = document.getElementById('settingsSfxToggle');
+      const sfxSlider = document.getElementById('settingsSfxSlider');
+      if (sfxToggle && sfxSlider) {
+        sfxToggle.addEventListener('click', () => {
+          const active = SoundSystem.toggleSfx();
+          sfxToggle.textContent = active ? 'ON' : 'OFF';
+          if (active) sfxToggle.classList.add('active');
+          else sfxToggle.classList.remove('active');
+        });
+        sfxSlider.addEventListener('input', (e) => {
+          const val = parseFloat(e.target.value) / 100;
+          SoundSystem.setSfxVolume(val);
+        });
+      }
+
+      // Shop Modal Open/Close
+      const shopModal = this.shopModal;
+      const openShop = () => {
+        SoundSystem.ensure();
+        this.renderCostumesList();
+        this.renderUpgradesList();
+        this.updateBankDisplays();
+        shopModal.classList.remove('hidden');
+      };
+      document.getElementById('menuShopBtn').addEventListener('click', openShop);
+      const gameoverShopBtn = document.getElementById('gameoverShopBtn');
+      if (gameoverShopBtn) gameoverShopBtn.addEventListener('click', openShop);
+
+      document.getElementById('closeShopBtn').addEventListener('click', () => {
+        shopModal.classList.add('hidden');
+        this.updateBankDisplays();
+      });
+      document.getElementById('leaveShopBtn').addEventListener('click', () => {
+        shopModal.classList.add('hidden');
+        this.updateBankDisplays();
       });
 
       // Pause / Resume
@@ -1528,7 +2337,7 @@
         this.setState(GameStates.MENU);
       });
 
-      // Audio toggles
+      // Audio toggles in HUD
       const muteBtn = document.getElementById('muteBtn');
       muteBtn.addEventListener('click', () => {
         const active = SoundSystem.toggleSfx();
@@ -1638,7 +2447,6 @@
           });
         }
       }
-      // Initialize active background state and label
       this.selectBackground(this.selectedBgIndex);
     }
 
@@ -1654,6 +2462,7 @@
 
       if (next === GameStates.MENU) {
         this.menuBestScore.textContent = this.bestScore;
+        this.updateBankDisplays();
         this.menuScreen.classList.remove('hidden');
       } else if (next === GameStates.PLAYING) {
         this.hud.classList.remove('hidden');
@@ -1670,6 +2479,7 @@
         document.getElementById('finalScore').textContent = score;
         document.getElementById('finalCoins').textContent = this.collectibles.coinCount;
         document.getElementById('bestScore').textContent = this.bestScore;
+        this.updateBankDisplays();
         this.gameOverScreen.classList.remove('hidden');
       }
     }
@@ -1717,6 +2527,12 @@
       SoundSystem.crash();
       ScreenShake.trigger(18, 0.45);
       this.particles.burst(this.player.x, GROUND_Y - this.player.height / 2, '#ff3366', 32, 100, 320);
+
+      // Deposit collected coins into bank
+      const earned = this.collectibles.coinCount;
+      this.bankCoins += earned;
+      this.saveBankCoins(this.bankCoins);
+
       this.setState(GameStates.GAMEOVER);
     }
 
@@ -1864,6 +2680,7 @@
         this.updateTheme(dt);
         this.particles.update(dt);
         ScreenShake.update(dt);
+        this.renderAvatarPreview(dt);
       }
 
       this.update(dt);
