@@ -329,15 +329,16 @@
     _createLayer(count, minH, maxH) {
       const b = [];
       const colWidth = DESIGN_WIDTH / count;
+      const signs = ['ラーメン', 'すし', 'TOKYO', 'SUBWAY', 'SURF', 'TAKO'];
       for (let i = 0; i < count; i++) {
         b.push({
           x: i * colWidth,
-          w: colWidth * randRange(0.6, 0.9),
+          w: colWidth * randRange(0.65, 0.92),
           h: randRange(minH, maxH),
-          windows: Math.random() > 0.25,
-          beacon: Math.random() > 0.35,
-          beaconColor: Math.random() > 0.5 ? '#ff3366' : '#00f0ff',
-          neonSign: Math.random() > 0.65 ? (['RUN', 'V2.0', 'NEO', 'CYBER'][Math.floor(Math.random() * 4)]) : null
+          windows: Math.random() > 0.2,
+          roofTrim: Math.random() > 0.35,
+          neonSign: Math.random() > 0.5 ? signs[Math.floor(Math.random() * signs.length)] : null,
+          signColor: ['#facc15', '#f43f5e', '#06b6d4', '#22c55e'][Math.floor(Math.random() * 4)]
         });
       }
       return b;
@@ -345,33 +346,7 @@
 
     update(dt, speedRatio = 1) {
       this.time += dt;
-
-      // Update shooting stars
-      if (this.shootingStar) {
-        this.shootingStar.life -= dt;
-        this.shootingStar.x += this.shootingStar.vx * dt;
-        this.shootingStar.y += this.shootingStar.vy * dt;
-        if (this.shootingStar.life <= 0) {
-          this.shootingStar = null;
-          this.shootingStarTimer = randRange(3.0, 6.5);
-        }
-      } else {
-        this.shootingStarTimer -= dt;
-        if (this.shootingStarTimer <= 0) {
-          this.shootingStar = {
-            x: randRange(20, DESIGN_WIDTH - 120),
-            y: randRange(20, 150),
-            vx: randRange(380, 650),
-            vy: randRange(180, 320),
-            len: randRange(55, 95),
-            life: randRange(0.35, 0.6),
-            maxLife: 0.6,
-            color: Math.random() > 0.5 ? '#4cc9f0' : '#ffd23f'
-          };
-        }
-      }
-
-      // Update speed wind streaks
+      // Scroll speed wind streaks (subtle speed lines)
       for (const s of this.speedStreaks) {
         s.y += 420 * s.speed * speedRatio * dt;
         if (s.y > DESIGN_HEIGHT + s.len) {
@@ -382,95 +357,43 @@
     }
 
     render(ctx, distance, theme, buildingColor, gridColor, speedRatio = 1) {
-      // 1. Starfield with smooth twinkling
-      ctx.save();
-      for (const st of this.stars) {
-        const twinkle = Math.sin(this.time * st.twinkleSpeed + st.twinklePhase);
-        const a = clamp(st.alpha + twinkle * 0.35, 0.1, 1);
-        ctx.globalAlpha = a;
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(st.x, st.y, st.radius, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
+      const isWestern = (theme && theme.type === 'western');
 
-      // 2. Shooting star streak
-      if (this.shootingStar) {
-        const ss = this.shootingStar;
-        const a = clamp(ss.life / ss.maxLife, 0, 1);
-        ctx.save();
-        ctx.globalAlpha = a;
-        ctx.strokeStyle = ss.color;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(ss.x, ss.y);
-        ctx.lineTo(ss.x - ss.vx * 0.08, ss.y - ss.vy * 0.08);
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      // 3. Celestial object (Retro Sun, Cyber Moon, or Nebula)
+      // 1. Celestial Sun (Warm cartoon sun in both Tokyo & Wild West)
       this._renderCelestial(ctx, theme);
 
-      // 4. Parallax skyline layers
-      this._renderBuildings(ctx, this.farBuildings, distance * 0.1, 240, buildingColor, 0.38, gridColor);
-      this._renderBuildings(ctx, this.midBuildings, distance * 0.26, 290, buildingColor, 0.70, gridColor);
-
-      // 5. Distant perspective grid on horizon
-      ctx.save();
-      ctx.strokeStyle = gridColor;
-      ctx.globalAlpha = 0.22;
-      ctx.lineWidth = 1;
-      const horizonY = 300;
-      for (let x = 0; x <= DESIGN_WIDTH; x += 30) {
-        ctx.beginPath();
-        ctx.moveTo(x, horizonY);
-        ctx.lineTo(x + (x - DESIGN_WIDTH / 2) * 1.6, GROUND_Y);
-        ctx.stroke();
+      // 2. Parallax Skyline: Tokyo Cartoon Skyscrapers or Western Sandstone Mesas
+      if (isWestern) {
+        // Multi-layered Red-Rock Sandstone Mesas in distance
+        this._renderWesternMesas(ctx, distance);
+      } else {
+        // Tokyo Colorful City Skyline with Japanese Food Signs
+        this._renderBuildings(ctx, this.farBuildings, distance * 0.1, 240, buildingColor, 0.45, gridColor);
+        this._renderBuildings(ctx, this.midBuildings, distance * 0.25, 290, buildingColor, 0.75, gridColor);
       }
-      ctx.restore();
 
-      // 6. Atmospheric horizon glow
+      // 3. Atmospheric Horizon Glow
       if (theme && theme.horizonGlow) {
         ctx.save();
-        const hGrad = ctx.createLinearGradient(0, horizonY - 40, 0, GROUND_Y + 12);
+        const hGrad = ctx.createLinearGradient(0, 210, 0, VP_Y + 40);
         hGrad.addColorStop(0, 'rgba(0,0,0,0)');
         hGrad.addColorStop(0.7, theme.horizonGlow);
         hGrad.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = hGrad;
-        ctx.fillRect(0, horizonY - 40, DESIGN_WIDTH, GROUND_Y - horizonY + 52);
+        ctx.fillRect(0, 210, DESIGN_WIDTH, VP_Y - 170);
         ctx.restore();
       }
 
-      // 7. Track border rails with animated neon LED guide nodes
-      ctx.save();
-      ctx.strokeStyle = gridColor;
-      ctx.lineWidth = 3.5;
-      ctx.beginPath();
-      ctx.moveTo(0, 260); ctx.lineTo(0, DESIGN_HEIGHT);
-      ctx.moveTo(DESIGN_WIDTH, 260); ctx.lineTo(DESIGN_WIDTH, DESIGN_HEIGHT);
-      ctx.stroke();
-
-      for (let y = 300; y < DESIGN_HEIGHT; y += 70) {
-        const offset = (this.time * 60 + y) % (DESIGN_HEIGHT - 300) + 300;
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(2, offset, 4, 10);
-        ctx.fillRect(DESIGN_WIDTH - 6, offset, 4, 10);
-      }
-      ctx.restore();
-
-      // 8. Dynamic speed wind streaks
-      if (speedRatio > 1.05) {
+      // 4. Subtle Speed Streaks when running fast
+      if (speedRatio > 1.15) {
         ctx.save();
-        ctx.strokeStyle = gridColor;
+        ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1.2;
-        const streakAlpha = clamp((speedRatio - 1.05) * 0.45, 0, 0.45);
-        ctx.globalAlpha = streakAlpha;
+        ctx.globalAlpha = clamp((speedRatio - 1.15) * 0.35, 0, 0.35);
         for (const s of this.speedStreaks) {
           ctx.beginPath();
           ctx.moveTo(s.x, s.y);
-          ctx.lineTo(s.x, s.y + s.len);
+          ctx.lineTo(s.x, s.y + s.len * 0.7);
           ctx.stroke();
         }
         ctx.restore();
@@ -480,116 +403,96 @@
     _renderCelestial(ctx, theme) {
       if (!theme) return;
       ctx.save();
+      const isWestern = theme.type === 'western';
 
-      if (theme.celestial === 'sun') {
-        // Retro Synthwave Sun
-        const sunX = DESIGN_WIDTH / 2;
-        const sunY = 250;
-        const radius = 68;
-
-        // Big outer radiant glow
-        const sunGlow = ctx.createRadialGradient(sunX, sunY, radius * 0.2, sunX, sunY, radius * 1.8);
-        sunGlow.addColorStop(0, 'rgba(255, 210, 63, 0.6)');
-        sunGlow.addColorStop(0.5, 'rgba(247, 37, 133, 0.3)');
-        sunGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = sunGlow;
+      if (isWestern) {
+        // Bright Desert Sun
+        const sunX = DESIGN_WIDTH * 0.72;
+        const sunY = 120;
+        const r = 38;
+        // Outer warm heat halo
+        const halo = ctx.createRadialGradient(sunX, sunY, r * 0.3, sunX, sunY, r * 2.4);
+        halo.addColorStop(0, 'rgba(254, 240, 138, 0.75)');
+        halo.addColorStop(0.5, 'rgba(251, 146, 60, 0.35)');
+        halo.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = halo;
         ctx.beginPath();
-        ctx.arc(sunX, sunY, radius * 1.8, 0, Math.PI * 2);
+        ctx.arc(sunX, sunY, r * 2.4, 0, Math.PI * 2);
         ctx.fill();
 
-        // Sun disc gradient
-        const discGrad = ctx.createLinearGradient(sunX, sunY - radius, sunX, sunY + radius);
-        discGrad.addColorStop(0, '#ffd23f');
-        discGrad.addColorStop(0.5, '#ff007f');
-        discGrad.addColorStop(1, '#7209b7');
-
-        ctx.fillStyle = discGrad;
+        // Solid golden sun disc
+        const sunGrad = ctx.createLinearGradient(sunX, sunY - r, sunX, sunY + r);
+        sunGrad.addColorStop(0, '#ffffff');
+        sunGrad.addColorStop(0.4, '#fef08a');
+        sunGrad.addColorStop(1, '#f97316');
+        ctx.fillStyle = sunGrad;
         ctx.beginPath();
-        ctx.arc(sunX, sunY, radius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Iconic horizontal retro blinds
-        ctx.fillStyle = '#240523';
-        const startCutY = sunY - 10;
-        for (let i = 0; i < 7; i++) {
-          const sy = startCutY + i * 11;
-          const sliceH = 2 + i * 1.2;
-          ctx.fillRect(sunX - radius, sy, radius * 2, sliceH);
-        }
-      } else if (theme.celestial === 'moon') {
-        // Cyber Matrix Digital Moon
-        const moonX = DESIGN_WIDTH * 0.72;
-        const moonY = 160;
-        const radius = 42;
-
-        const moonGlow = ctx.createRadialGradient(moonX, moonY, radius * 0.3, moonX, moonY, radius * 2.2);
-        moonGlow.addColorStop(0, 'rgba(76, 201, 240, 0.5)');
-        moonGlow.addColorStop(0.6, 'rgba(0, 240, 255, 0.15)');
-        moonGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = moonGlow;
-        ctx.beginPath();
-        ctx.arc(moonX, moonY, radius * 2.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        const moonGrad = ctx.createLinearGradient(moonX - radius, moonY - radius, moonX + radius, moonY + radius);
-        moonGrad.addColorStop(0, '#e0f7fa');
-        moonGrad.addColorStop(0.5, '#4cc9f0');
-        moonGrad.addColorStop(1, '#09162c');
-
-        ctx.fillStyle = moonGrad;
-        ctx.beginPath();
-        ctx.arc(moonX, moonY, radius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Orbiting cyan data rings
-        ctx.strokeStyle = 'rgba(76, 201, 240, 0.7)';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.ellipse(moonX, moonY, radius * 1.5, radius * 0.48, -0.28, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Orbiting satellite data node
-        const satAngle = this.time * 1.8;
-        const satX = moonX + Math.cos(satAngle) * radius * 1.5;
-        const satY = moonY + Math.sin(satAngle) * radius * 0.48;
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(satX, satY, 2.5, 0, Math.PI * 2);
+        ctx.arc(sunX, sunY, r, 0, Math.PI * 2);
         ctx.fill();
       } else {
-        // Cosmic Void Nebula & Pulsar
-        const nebX = DESIGN_WIDTH * 0.38;
-        const nebY = 175;
-
-        const nebGrad = ctx.createRadialGradient(nebX, nebY, 20, nebX, nebY, 140);
-        nebGrad.addColorStop(0, 'rgba(181, 23, 158, 0.35)');
-        nebGrad.addColorStop(0.4, 'rgba(114, 9, 183, 0.22)');
-        nebGrad.addColorStop(0.8, 'rgba(76, 201, 240, 0.12)');
-        nebGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = nebGrad;
+        // Tokyo Sunset Golden Hour Sun
+        const sunX = DESIGN_WIDTH * 0.5;
+        const sunY = 195;
+        const r = 46;
+        const halo = ctx.createRadialGradient(sunX, sunY, r * 0.2, sunX, sunY, r * 2.2);
+        halo.addColorStop(0, 'rgba(254, 240, 138, 0.7)');
+        halo.addColorStop(0.4, 'rgba(244, 63, 94, 0.3)');
+        halo.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = halo;
         ctx.beginPath();
-        ctx.arc(nebX, nebY, 140, 0, Math.PI * 2);
+        ctx.arc(sunX, sunY, r * 2.2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Radiant Pulsar Star
-        const pX = DESIGN_WIDTH * 0.42;
-        const pY = 160;
-        const pSize = 5 + Math.sin(this.time * 5) * 1.5;
-        ctx.fillStyle = '#ffd23f';
+        const sunGrad = ctx.createLinearGradient(sunX, sunY - r, sunX, sunY + r);
+        sunGrad.addColorStop(0, '#fffbeb');
+        sunGrad.addColorStop(0.5, '#facc15');
+        sunGrad.addColorStop(1, '#db2777');
+        ctx.fillStyle = sunGrad;
         ctx.beginPath();
-        ctx.arc(pX, pY, pSize, 0, Math.PI * 2);
+        ctx.arc(sunX, sunY, r, 0, Math.PI * 2);
         ctx.fill();
+      }
+      ctx.restore();
+    }
 
-        // Cross flare
-        ctx.strokeStyle = 'rgba(255, 210, 63, 0.6)';
-        ctx.lineWidth = 1.5;
-        const rayLen = 22 + Math.sin(this.time * 5) * 6;
+    _renderWesternMesas(ctx, distance) {
+      ctx.save();
+      const period = DESIGN_WIDTH;
+      // Far mesas
+      const farShift = (distance * 0.06) % period;
+      ctx.fillStyle = '#7c2d12';
+      ctx.globalAlpha = 0.55;
+      for (let r = -1; r <= 1; r++) {
+        const ox = r * period - farShift;
         ctx.beginPath();
-        ctx.moveTo(pX - rayLen, pY); ctx.lineTo(pX + rayLen, pY);
-        ctx.moveTo(pX, pY - rayLen); ctx.lineTo(pX, pY + rayLen);
-        ctx.stroke();
+        ctx.moveTo(ox, VP_Y);
+        ctx.lineTo(ox + 40, VP_Y - 65);
+        ctx.lineTo(ox + 160, VP_Y - 65);
+        ctx.lineTo(ox + 210, VP_Y);
+        ctx.lineTo(ox + 260, VP_Y - 80);
+        ctx.lineTo(ox + 390, VP_Y - 80);
+        ctx.lineTo(ox + 440, VP_Y);
+        ctx.closePath();
+        ctx.fill();
       }
 
+      // Mid mesas (warmer sandstone)
+      const midShift = (distance * 0.16) % period;
+      ctx.fillStyle = '#9a3412';
+      ctx.globalAlpha = 0.85;
+      for (let r = -1; r <= 1; r++) {
+        const ox = r * period - midShift;
+        ctx.beginPath();
+        ctx.moveTo(ox + 60, VP_Y);
+        ctx.lineTo(ox + 110, VP_Y - 45);
+        ctx.lineTo(ox + 220, VP_Y - 45);
+        ctx.lineTo(ox + 260, VP_Y);
+        ctx.lineTo(ox + 310, VP_Y - 55);
+        ctx.lineTo(ox + 420, VP_Y - 55);
+        ctx.lineTo(ox + 460, VP_Y);
+        ctx.closePath();
+        ctx.fill();
+      }
       ctx.restore();
     }
 
@@ -605,16 +508,25 @@
         for (let r = -1; r <= 1; r++) {
           const bx = b.x - shift + r * period;
           if (bx < -b.w || bx > DESIGN_WIDTH) continue;
+          // Building silhouette
           ctx.fillRect(bx, baseY - b.h, b.w, b.h);
 
-          // Glowing windows
+          // Roof antenna / pagoda trim
+          if (b.roofTrim) {
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(bx + 4, baseY - b.h - 3, b.w - 8, 3);
+            ctx.fillRect(bx + b.w / 2 - 1.5, baseY - b.h - 14, 3, 11);
+            ctx.fillStyle = color;
+          }
+
+          // Glowing windows (warm cartoon yellow & fuchsia)
           if (b.windows) {
-            ctx.fillStyle = '#ffd23f';
-            ctx.globalAlpha = alpha * 0.45;
-            for (let wy = baseY - b.h + 16; wy < baseY - 16; wy += 18) {
-              for (let wx = bx + 6; wx < bx + b.w - 10; wx += 14) {
-                if (Math.sin(wx * 11 + wy) > 0.2) {
-                  ctx.fillRect(wx, wy, 5, 8);
+            ctx.fillStyle = '#fef08a';
+            ctx.globalAlpha = alpha * 0.7;
+            for (let wy = baseY - b.h + 14; wy < baseY - 12; wy += 18) {
+              for (let wx = bx + 6; wx < bx + b.w - 8; wx += 12) {
+                if (Math.sin(wx * 7 + wy * 13) > 0.1) {
+                  ctx.fillRect(wx, wy, 6, 9);
                 }
               }
             }
@@ -622,29 +534,14 @@
             ctx.globalAlpha = alpha;
           }
 
-          // Rooftop beacon
-          if (b.beacon) {
-            const blink = Math.sin(this.time * 4 + bx) > 0;
-            if (blink) {
-              ctx.save();
-              ctx.fillStyle = b.beaconColor;
-              ctx.globalAlpha = 0.9;
-              ctx.fillRect(bx + b.w / 2 - 1, baseY - b.h - 8, 2, 8);
-              ctx.beginPath();
-              ctx.arc(bx + b.w / 2, baseY - b.h - 9, 2.5, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.restore();
-            }
-          }
-
-          // Neon advertising sign
-          if (b.neonSign && b.w > 36) {
+          // Japanese / Subway neon sign
+          if (b.neonSign && b.w > 32) {
             ctx.save();
-            ctx.globalAlpha = 0.85;
-            ctx.font = 'bold 9px "Orbitron", sans-serif';
+            ctx.globalAlpha = 0.95;
+            ctx.font = '900 11px "Titan One", "Noto Sans JP", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillStyle = accentColor || '#4cc9f0';
-            ctx.fillText(b.neonSign, bx + b.w / 2, baseY - b.h + 20);
+            ctx.fillStyle = b.signColor || '#facc15';
+            ctx.fillText(b.neonSign, bx + b.w / 2, baseY - b.h + 24);
             ctx.restore();
           }
         }
@@ -654,85 +551,97 @@
   }
 
   /* ============================================================
-     CYBER SUITS / COSTUMES SYSTEM
+     SUBWAY SURFERS CHARACTERS & OUTFITS
      ============================================================ */
   const COSTUMES = {
-    neo: {
-      id: 'neo',
-      name: 'NEO RUNNER',
+    jake: {
+      id: 'jake',
+      name: 'JAKE',
+      character: 'jake',
       price: 0,
-      desc: 'Standard issue cyber athlete suit with agility exo-struts.',
-      suitDark: '#101c38',
-      suitLight: '#4cc9f0',
-      visor: '#ffd23f',
-      visorGlow: 'rgba(255, 210, 63, 0.9)',
-      skin: '#f4c7ab',
-      hair: '#00f0ff',
-      shoes: '#ffffff',
-      accent: '#4cc9f0',
-      swatch: 'linear-gradient(135deg, #101c38, #4cc9f0, #ffd23f)'
+      desc: 'The legendary Subway Surfer with backwards red cap, white hoodie & graffiti spray can!',
+      cap: '#ef4444',
+      hoodie: '#f8fafc',
+      vest: '#2563eb',
+      jeans: '#3b82f6',
+      shoes: '#dc2626',
+      skin: '#fed7aa',
+      hair: '#78350f',
+      accessory: 'spraycan',
+      swatch: 'linear-gradient(135deg, #ef4444 0%, #f8fafc 50%, #2563eb 100%)'
     },
-    ninja: {
-      id: 'ninja',
-      name: 'CYBER NINJA',
+    tricky: {
+      id: 'tricky',
+      name: 'TRICKY',
+      character: 'tricky',
       price: 100,
-      desc: 'Stealth carbon weave with crimson energy scarf & razor visor.',
-      suitDark: '#0b0c10',
-      suitLight: '#1f222e',
-      visor: '#ff0055',
-      visorGlow: 'rgba(255, 0, 85, 0.95)',
-      skin: '#d8b090',
-      hair: '#ff0055',
-      shoes: '#ff0055',
-      accent: '#ff0055',
-      swatch: 'linear-gradient(135deg, #0b0c10, #ff0055, #1f222e)'
+      desc: 'Smart skater girl with cute blonde pigtails, sky-blue beanie & green cargo pants!',
+      cap: '#0284c7',
+      hoodie: '#ffffff',
+      vest: '#f43f5e',
+      jeans: '#16a34a',
+      shoes: '#ffffff',
+      skin: '#fed7aa',
+      hair: '#facc15',
+      accessory: 'skateboard',
+      swatch: 'linear-gradient(135deg, #0284c7 0%, #facc15 50%, #16a34a 100%)'
     },
-    rebel: {
-      id: 'rebel',
-      name: 'SYNTH REBEL',
+    fresh: {
+      id: 'fresh',
+      name: 'FRESH',
+      character: 'fresh',
       price: 200,
-      desc: 'Outrun street jacket with UV sunglasses visor & radioactive kicks.',
-      suitDark: '#280638',
-      suitLight: '#f72585',
-      visor: '#00f0ff',
-      visorGlow: 'rgba(0, 240, 255, 0.95)',
-      skin: '#eec7a7',
-      hair: '#f72585',
-      shoes: '#06d6a0',
-      accent: '#f72585',
-      swatch: 'linear-gradient(135deg, #280638, #f72585, #00f0ff)'
+      desc: 'Cool music lover with high-top fade haircut, retro shades & 80s boombox stereo!',
+      cap: '#1e1b4b',
+      hoodie: '#22c55e',
+      vest: '#eab308',
+      jeans: '#dc2626',
+      shoes: '#ffffff',
+      skin: '#78350f',
+      hair: '#0f172a',
+      accessory: 'boombox',
+      swatch: 'linear-gradient(135deg, #22c55e 0%, #dc2626 50%, #fde047 100%)'
     },
-    apex: {
-      id: 'apex',
-      name: 'GOLDEN APEX',
+    spike: {
+      id: 'spike',
+      name: 'SPIKE',
+      character: 'spike',
       price: 350,
-      desc: 'Gilded aerospace exoskeleton reserved for syndicate champions.',
-      suitDark: '#171410',
-      suitLight: '#ffd23f',
-      visor: '#ff7b00',
-      visorGlow: 'rgba(255, 123, 0, 0.95)',
-      skin: '#d8a682',
-      hair: '#ffd23f',
-      shoes: '#ffd23f',
-      accent: '#ffd23f',
-      swatch: 'linear-gradient(135deg, #171410, #ffd23f, #ff7b00)'
+      desc: 'Rockstar rebel with bright red punk mohawk, black leather vest & skate kicks!',
+      cap: '#ef4444',
+      hoodie: '#1e293b',
+      vest: '#f59e0b',
+      jeans: '#2563eb',
+      shoes: '#000000',
+      skin: '#fed7aa',
+      hair: '#ef4444',
+      accessory: 'guitar',
+      swatch: 'linear-gradient(135deg, #ef4444 0%, #1e293b 50%, #f59e0b 100%)'
     },
-    titan: {
-      id: 'titan',
-      name: 'TITAN ENFORCER',
+    yutani: {
+      id: 'yutani',
+      name: 'YUTANI',
+      character: 'yutani',
       price: 500,
-      desc: 'Heavy titanium kinetic plating powered by emerald fusion micro-cells.',
-      suitDark: '#e2e8f0',
-      suitLight: '#06d6a0',
-      visor: '#00f0ff',
-      visorGlow: 'rgba(0, 240, 255, 0.95)',
-      skin: '#c28552',
-      hair: '#1e293b',
-      shoes: '#06d6a0',
-      accent: '#06d6a0',
-      swatch: 'linear-gradient(135deg, #e2e8f0, #06d6a0, #00f0ff)'
+      desc: 'Genius inventor kid in her iconic green alien mascot suit with cute big eyes!',
+      cap: '#22c55e',
+      hoodie: '#16a34a',
+      vest: '#a855f7',
+      jeans: '#15803d',
+      shoes: '#a855f7',
+      skin: '#86efac',
+      hair: '#22c55e',
+      accessory: 'gadget',
+      swatch: 'linear-gradient(135deg, #22c55e 0%, #a855f7 50%, #fde047 100%)'
     }
   };
+
+  // Backwards compatibility aliases for saved profiles
+  COSTUMES.neo = COSTUMES.jake;
+  COSTUMES.ninja = COSTUMES.tricky;
+  COSTUMES.rebel = COSTUMES.fresh;
+  COSTUMES.apex = COSTUMES.spike;
+  COSTUMES.titan = COSTUMES.yutani;
 
   /* ============================================================
      TECH UPGRADES SYSTEM
@@ -776,14 +685,11 @@
   };
 
   /* ============================================================
-     HUMANOID RUNNER RENDER PIPELINE
+     AUTHENTIC SUBWAY SURFERS 3D CARTOON RUNNER RENDER PIPELINE
      ============================================================ */
-  /* ============================================================
-     HUMANOID RUNNER RENDER PIPELINE (CRASH-PROOF & HIGH-DEFINITION)
-     ============================================================ */
-  function drawHumanoidRunner(ctx, cx, groundY, animTime, isJumping, isSliding, jumpHeight, tilt, costume, squash, hasShield, scaleFactor = 1.0, baseHeight = 0) {
+  function drawHumanoidRunner(ctx, cx, groundY, animTime, isJumping, isSliding, jumpHeight, tilt, costume, squash, hasShield, scaleFactor = 1.0, baseHeight = 0, isFrontView = false) {
     try {
-      const c = costume || COSTUMES.neo;
+      const c = costume || COSTUMES.jake;
       ctx.save();
       ctx.translate(cx, groundY);
       if (scaleFactor && scaleFactor !== 1.0) {
@@ -791,366 +697,644 @@
       }
       if (tilt) ctx.rotate(tilt);
 
-      // Surface elevation: if running on train roof or ramp, translate to surface elevation first
+      // Surface elevation: train roof or ramp
       if (baseHeight > 0) {
         ctx.translate(0, -baseHeight);
       }
 
-      // 1. Dynamic ground/roof shadow that scales with jump height
+      // 1. Soft Cartoon Ground / Roof Shadow
       if (jumpHeight !== undefined) {
         ctx.save();
-        const shadowScale = clamp(1 - (jumpHeight || 0) / 280, 0.25, 1);
+        const shadowScale = clamp(1 - (jumpHeight || 0) / 260, 0.25, 1);
         ctx.globalAlpha = 0.45 * shadowScale;
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = '#0f172a';
         ctx.beginPath();
-        const sw = Math.max(4, 22 * shadowScale);
-        const sh = Math.max(2, 6 * shadowScale);
+        const sw = Math.max(5, 26 * shadowScale);
+        const sh = Math.max(2, 7 * shadowScale);
         ctx.ellipse(0, 4, sw, sh, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       }
 
-      // Lift body by jumpHeight above the current surface
+      // Lift body by jumpHeight
       ctx.translate(0, -(jumpHeight || 0));
 
-      // 2. Dual Hex Shield if active
+      // Shield Aura
       if (hasShield) {
+        ctx.save();
+        ctx.translate(0, -42);
         const pulse = Math.sin(animTime * 6) * 3;
-        const r = 36 + pulse;
-
-        // Outer rotating hexagon
-        ctx.save();
-        ctx.translate(0, -40);
-        ctx.rotate(animTime * 2.2);
+        const r = 40 + pulse;
         ctx.strokeStyle = '#06d6a0';
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-          const a = (i * Math.PI) / 3;
-          const hx = Math.cos(a) * r, hy = Math.sin(a) * r;
-          if (i === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
-        }
-        ctx.closePath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.restore();
-
-        // Inner counter-rotating ring
-        ctx.save();
-        ctx.translate(0, -40);
-        ctx.rotate(-animTime * 1.8);
-        ctx.strokeStyle = '#4cc9f0';
-        ctx.lineWidth = 1.8;
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-          const a = (i * Math.PI) / 3;
-          const hx = Math.cos(a) * (r * 0.78), hy = Math.sin(a) * (r * 0.78);
-          if (i === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
-        }
-        ctx.closePath();
-        ctx.stroke();
+        ctx.fillStyle = 'rgba(6, 214, 160, 0.18)';
+        ctx.fill();
         ctx.restore();
       }
 
+      const capCol = c.cap || '#ef4444';
+      const hoodieCol = c.hoodie || '#f8fafc';
+      const vestCol = c.vest || '#2563eb';
+      const jeansCol = c.jeans || '#3b82f6';
+      const shoesCol = c.shoes || '#dc2626';
+      const skinCol = c.skin || '#fed7aa';
+      const hairCol = c.hair || '#78350f';
+
+      // ============================================================
+      // A. FRONT-FACING HEROIC POSE (FOR HOME SCREEN / MENU)
+      // ============================================================
+      if (isFrontView) {
+        const breath = Math.sin(animTime * 3) * 2;
+        ctx.save();
+        ctx.translate(0, -42 + breath);
+
+        // --- SUBWAY SURFERS HOVERBOARD / SKATEBOARD STANDING BESIDE JAKE ---
+        ctx.save();
+        ctx.translate(34, 10);
+        ctx.rotate(0.12);
+        // Deck body
+        const boardGrad = ctx.createLinearGradient(-7, -42, 7, 36);
+        boardGrad.addColorStop(0, '#facc15');
+        boardGrad.addColorStop(0.5, '#ec4899');
+        boardGrad.addColorStop(1, '#06b6d4');
+        ctx.fillStyle = boardGrad;
+        ctx.beginPath();
+        ctx.roundRect(-8, -42, 16, 78, [8, 8, 8, 8]);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        // Deck graffiti star
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px "Titan One", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('★', 0, -2);
+        // Trucks and wheels
+        ctx.fillStyle = '#64748b';
+        ctx.fillRect(-10, -28, 20, 4);
+        ctx.fillRect(-10, 20, 20, 4);
+        ctx.fillStyle = '#22c55e';
+        ctx.beginPath();
+        ctx.arc(-11, -26, 4, 0, Math.PI * 2);
+        ctx.arc(11, -26, 4, 0, Math.PI * 2);
+        ctx.arc(-11, 22, 4, 0, Math.PI * 2);
+        ctx.arc(11, 22, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // 1. LEGS (STURDY CARTOON SKATER STANCE)
+        ctx.fillStyle = jeansCol;
+        // Left leg
+        ctx.beginPath();
+        ctx.roundRect(-16, 6, 12, 28, [4, 4, 2, 2]);
+        ctx.fill();
+        // Right leg
+        ctx.beginPath();
+        ctx.roundRect(4, 6, 12, 28, [4, 4, 2, 2]);
+        ctx.fill();
+        // Dark denim seam
+        ctx.strokeStyle = '#1d4ed8';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(-10, 8); ctx.lineTo(-10, 32);
+        ctx.moveTo(10, 8); ctx.lineTo(10, 32);
+        ctx.stroke();
+
+        // 2. CHUNKY SNEAKERS (FRONT VIEW)
+        // Left shoe
+        ctx.fillStyle = shoesCol;
+        ctx.beginPath();
+        ctx.roundRect(-20, 32, 16, 12, [5, 5, 3, 3]);
+        ctx.fill();
+        // White rubber toe bumper & sole
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.roundRect(-20, 39, 16, 5, [0, 0, 3, 3]);
+        ctx.fill();
+        ctx.fillRect(-18, 32, 12, 4); // white toe cap
+        // White laces
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(-16, 35, 8, 2);
+
+        // Right shoe
+        ctx.fillStyle = shoesCol;
+        ctx.beginPath();
+        ctx.roundRect(4, 32, 16, 12, [5, 5, 3, 3]);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.roundRect(4, 39, 16, 5, [0, 0, 3, 3]);
+        ctx.fill();
+        ctx.fillRect(6, 32, 12, 4);
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(8, 35, 8, 2);
+
+        // 3. TORSO (WHITE HOODIE + BLUE DENIM VEST)
+        // White hoodie body
+        ctx.fillStyle = hoodieCol;
+        ctx.beginPath();
+        ctx.roundRect(-16, -22, 32, 30, [6, 6, 4, 4]);
+        ctx.fill();
+        // Inner tee shirt visible at neckline
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.moveTo(-7, -22); ctx.lineTo(7, -22); ctx.lineTo(0, -10);
+        ctx.closePath();
+        ctx.fill();
+        // Denim blue vest open in front
+        ctx.fillStyle = vestCol;
+        // Left vest panel
+        ctx.beginPath();
+        ctx.moveTo(-16, -22); ctx.lineTo(-6, -22); ctx.lineTo(-5, 8); ctx.lineTo(-16, 8);
+        ctx.closePath();
+        ctx.fill();
+        // Right vest panel
+        ctx.beginPath();
+        ctx.moveTo(16, -22); ctx.lineTo(6, -22); ctx.lineTo(5, 8); ctx.lineTo(16, 8);
+        ctx.closePath();
+        ctx.fill();
+        // Brass vest buttons
+        ctx.fillStyle = '#fde047';
+        ctx.beginPath();
+        ctx.arc(-7, -12, 1.8, 0, Math.PI * 2);
+        ctx.arc(-7, -3, 1.8, 0, Math.PI * 2);
+        ctx.arc(-7, 5, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+        // Puffy hood collar around neck
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.roundRect(-14, -26, 28, 7, [4, 4, 4, 4]);
+        ctx.fill();
+
+        // 4. ARMS & SPRAY CAN
+        // Left arm (casual on hip/board)
+        ctx.fillStyle = hoodieCol;
+        ctx.fillRect(15, -20, 9, 14); // upper sleeve
+        ctx.fillStyle = skinCol;
+        ctx.fillRect(17, -6, 7, 14); // forearm
+        ctx.beginPath();
+        ctx.arc(20, 10, 4.5, 0, Math.PI * 2); // hand
+        ctx.fill();
+
+        // Right arm holding Spray Can
+        ctx.fillStyle = hoodieCol;
+        ctx.fillRect(-24, -20, 9, 14);
+        ctx.fillStyle = skinCol;
+        ctx.fillRect(-24, -6, 7, 14);
+        // Spray Can in right hand
+        ctx.save();
+        ctx.translate(-26, 4);
+        // Silver can body
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.roundRect(-5, -6, 10, 18, [2, 2, 2, 2]);
+        ctx.fill();
+        // Cyan spray can cap/nozzle
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(-3, -10, 6, 4);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-1, -12, 2, 2);
+        // Can label stripe
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(-5, 0, 10, 6);
+        ctx.restore();
+        // Hand gripping can
+        ctx.fillStyle = skinCol;
+        ctx.beginPath();
+        ctx.arc(-24, 7, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 5. CARTOON HEAD & BACKWARDS RED BASEBALL CAP (FRONT VIEW)
+        // Neck
+        ctx.fillStyle = skinCol;
+        ctx.fillRect(-5, -28, 10, 6);
+
+        // Head
+        ctx.fillStyle = skinCol;
+        ctx.beginPath();
+        ctx.arc(0, -36, 13, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Big cartoon eyes
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(-5, -37, 4, 5, 0, 0, Math.PI * 2);
+        ctx.ellipse(5, -37, 4, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Dark blue pupils
+        ctx.fillStyle = '#1e3a8a';
+        ctx.beginPath();
+        ctx.arc(-4.5, -36.5, 2.2, 0, Math.PI * 2);
+        ctx.arc(5.5, -36.5, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        // Specular glint in eyes
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(-5.5, -38, 1, 0, Math.PI * 2);
+        ctx.arc(4.5, -38, 1, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Happy smile & rosy cheeks
+        ctx.strokeStyle = '#b45309';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(0, -32, 5, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.35)';
+        ctx.beginPath();
+        ctx.arc(-8, -32, 2.5, 0, Math.PI * 2);
+        ctx.arc(8, -32, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Brown cartoon bangs/hair on forehead
+        ctx.fillStyle = hairCol;
+        ctx.beginPath();
+        ctx.moveTo(-12, -43);
+        ctx.lineTo(-4, -39);
+        ctx.lineTo(2, -42);
+        ctx.lineTo(10, -40);
+        ctx.lineTo(12, -44);
+        ctx.closePath();
+        ctx.fill();
+
+        // Red Backwards Baseball Cap
+        ctx.fillStyle = capCol;
+        ctx.beginPath();
+        ctx.arc(0, -44, 13, Math.PI, 0);
+        ctx.closePath();
+        ctx.fill();
+        // Visor peak turned slightly to the side/back
+        ctx.beginPath();
+        ctx.roundRect(-14, -46, 28, 5, [3, 3, 1, 1]);
+        ctx.fill();
+        // White Subway logo badge on center of cap
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(0, -48, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ef4444';
+        ctx.font = 'bold 5px "Titan One", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('S', 0, -46);
+
+        ctx.restore();
+        ctx.restore();
+        return;
+      }
+
+      // ============================================================
+      // B. REAR CHASE CAMERA VIEW (IN-GAME RUNNING / JUMPING / SLIDING)
+      // ============================================================
       if (isSliding) {
-        // ----------------------------------------------------
-        // SLIDING HUMAN POSE: low angled skid on asphalt
-        // ----------------------------------------------------
+        // SLIDING POSE: Athletic low skid across tracks
         ctx.save();
         ctx.translate(0, -18);
-        ctx.rotate(-0.35); // Leaning backwards
+        ctx.rotate(-0.35);
 
         // Rear stretched leg
-        ctx.fillStyle = c.suitDark;
-        ctx.beginPath();
-        ctx.moveTo(-18, 2); ctx.lineTo(6, 2); ctx.lineTo(4, 10); ctx.lineTo(-18, 10);
-        ctx.closePath();
-        ctx.fill();
-
-        // Rear glowing sneaker
-        ctx.fillStyle = c.shoes;
-        ctx.fillRect(-24, 2, 7, 9);
-
-        // Front bent knee forward
-        ctx.fillStyle = c.suitLight;
-        ctx.beginPath();
-        ctx.moveTo(2, -4); ctx.lineTo(20, -4); ctx.lineTo(16, 8); ctx.lineTo(0, 8);
-        ctx.closePath();
-        ctx.fill();
-
-        // Knee friction spark armor pad
-        ctx.fillStyle = c.visor;
-        ctx.fillRect(16, -2, 6, 8);
-
-        // Friction spark trails
+        ctx.fillStyle = jeansCol;
+        ctx.fillRect(-18, 2, 24, 9);
+        // Skate shoe skidding
+        ctx.fillStyle = shoesCol;
+        ctx.fillRect(-22, 2, 8, 9);
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(20 + Math.sin(animTime * 30) * 4, 3, 3, 3);
-        ctx.fillRect(16 + Math.cos(animTime * 25) * 5, 5, 2, 2);
+        ctx.fillRect(-22, 9, 8, 3); // white sole
 
-        // Torso / cyber jacket
-        ctx.fillStyle = c.suitDark;
+        // Front bent leg
+        ctx.fillStyle = jeansCol;
+        ctx.fillRect(2, -6, 12, 10);
+
+        // Torso with white hoodie & denim vest
+        ctx.fillStyle = hoodieCol;
+        ctx.fillRect(-12, -22, 24, 20);
+        ctx.fillStyle = vestCol;
+        ctx.fillRect(-10, -20, 20, 16);
+        // "SUB SURF" patch
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(-7, -16, 14, 8);
+
+        // Folded hood on neck
+        ctx.fillStyle = '#e2e8f0';
         ctx.beginPath();
-        ctx.moveTo(-12, -22); ctx.lineTo(12, -22); ctx.lineTo(10, 0); ctx.lineTo(-10, 0);
-        ctx.closePath();
+        ctx.ellipse(0, -22, 10, 4, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Jacket chestplate
-        ctx.fillStyle = c.suitLight;
-        ctx.fillRect(-8, -20, 16, 10);
-
-        // Torso glowing core
-        ctx.fillStyle = c.accent;
+        // Head with red backwards baseball cap
+        ctx.fillStyle = capCol;
         ctx.beginPath();
-        ctx.arc(0, -12, 4, 0, Math.PI * 2);
+        ctx.arc(0, -32, 11, 0, Math.PI * 2);
         ctx.fill();
-
-        // Arms in slide bracing position
-        ctx.fillStyle = c.suitDark;
-        ctx.fillRect(-18, -14, 12, 6);
-        ctx.fillRect(6, -10, 14, 6);
-        ctx.fillStyle = c.skin;
-        ctx.fillRect(-22, -14, 5, 5);
-        ctx.fillRect(19, -10, 5, 5);
-
-        // Head / cyber helmet
-        ctx.fillStyle = c.suitDark;
+        // Cap visor extending back over neck
+        ctx.fillStyle = capCol;
         ctx.beginPath();
-        ctx.arc(0, -32, 10, 0, Math.PI * 2);
+        ctx.roundRect(-9, -24, 18, 4.5, [2, 2, 2, 2]);
         ctx.fill();
-
-        // Helmet crest / energy hair flying back
-        ctx.fillStyle = c.hair;
-        ctx.beginPath();
-        ctx.moveTo(-6, -36);
-        ctx.lineTo(-24, -30 + Math.sin(animTime * 16) * 3);
-        ctx.lineTo(-8, -27);
-        ctx.closePath();
-        ctx.fill();
-
-        // Glowing Visor
-        ctx.fillStyle = c.visor;
-        ctx.fillRect(2, -35, 9, 6);
 
         ctx.restore();
 
       } else if (isJumping) {
-        // ----------------------------------------------------
-        // JUMPING HUMAN POSE: tucked athletic mid-air stride
-        // ----------------------------------------------------
+        // JUMPING POSE: Athletic parkour tuck stride
         ctx.save();
         ctx.translate(0, -38);
 
-        // Left leg tucked forward-up
-        ctx.fillStyle = c.suitDark;
-        ctx.fillRect(-14, 4, 10, 14);
-        ctx.fillStyle = c.suitLight;
-        ctx.fillRect(-14, 16, 12, 10);
-        ctx.fillStyle = c.shoes;
-        ctx.fillRect(-16, 24, 14, 7);
+        // Left leg tucked forward
+        ctx.fillStyle = jeansCol;
+        ctx.fillRect(-14, 4, 10, 16);
+        ctx.fillStyle = shoesCol;
+        ctx.fillRect(-16, 20, 14, 8);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-16, 26, 14, 3);
 
         // Right leg bent back
-        ctx.fillStyle = c.suitDark;
-        ctx.fillRect(4, 4, 10, 12);
-        ctx.fillStyle = c.suitLight;
-        ctx.fillRect(8, 14, 12, 10);
-        ctx.fillStyle = c.shoes;
-        ctx.fillRect(10, 22, 14, 7);
+        ctx.fillStyle = jeansCol;
+        ctx.fillRect(4, 4, 10, 14);
+        ctx.fillStyle = shoesCol;
+        ctx.fillRect(10, 18, 14, 8);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(10, 24, 14, 3);
 
-        // Torso / chestplate
-        ctx.fillStyle = c.suitDark;
+        // Torso: White hoodie + Denim vest + "SUB SURF" patch
+        ctx.fillStyle = hoodieCol;
         ctx.beginPath();
-        ctx.moveTo(-12, -22); ctx.lineTo(12, -22); ctx.lineTo(10, 4); ctx.lineTo(-10, 4);
-        ctx.closePath();
+        ctx.roundRect(-14, -22, 28, 26, [5, 5, 3, 3]);
         ctx.fill();
 
-        ctx.fillStyle = c.suitLight;
-        ctx.fillRect(-8, -20, 16, 14);
-
-        // Chest reactor core
-        ctx.fillStyle = c.accent;
+        ctx.fillStyle = vestCol;
         ctx.beginPath();
-        ctx.arc(0, -10, 4.5, 0, Math.PI * 2);
+        ctx.roundRect(-11, -20, 22, 22, [4, 4, 2, 2]);
         ctx.fill();
 
-        // Outstretched arms for balance
-        ctx.fillStyle = c.suitDark;
-        ctx.fillRect(-22, -18, 11, 7);
-        ctx.fillRect(-25, -24, 6, 9);
-        ctx.fillRect(11, -18, 11, 7);
-        ctx.fillRect(19, -24, 6, 9);
-        ctx.fillStyle = c.skin;
-        ctx.fillRect(-26, -27, 6, 5);
-        ctx.fillRect(19, -27, 6, 5);
-
-        // Head / Cyber Helmet
-        ctx.fillStyle = c.suitDark;
+        // Graffiti Sub Surf Patch on back
+        ctx.fillStyle = '#1e293b';
         ctx.beginPath();
-        ctx.arc(0, -32, 10, 0, Math.PI * 2);
+        ctx.roundRect(-9, -15, 18, 13, [3, 3, 3, 3]);
+        ctx.fill();
+        ctx.fillStyle = '#facc15';
+        ctx.font = '900 6px "Titan One", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('SUB', 0, -8);
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillText('SURF', 0, -3);
+
+        // Folded hood collar
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.ellipse(0, -22, 12, 5, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Neck
-        ctx.fillStyle = c.skin;
-        ctx.fillRect(-4, -24, 8, 4);
-
-        // Cyber Hair / Crest in wind
-        ctx.fillStyle = c.hair;
+        // Head & Backwards Red Cap
+        ctx.fillStyle = capCol;
         ctx.beginPath();
-        ctx.moveTo(-5, -36);
-        ctx.lineTo(-20, -42 + Math.sin(animTime * 14) * 3);
-        ctx.lineTo(-8, -30);
-        ctx.closePath();
+        ctx.arc(0, -33, 11, 0, Math.PI * 2);
         ctx.fill();
-
-        // Glowing Visor
-        ctx.fillStyle = c.visor;
-        ctx.fillRect(-1, -35, 10, 6);
-
-        // Thruster flames from jet boots
-        const flameH = 12 + Math.sin(animTime * 24) * 4;
-        ctx.fillStyle = '#00f0ff';
+        // Curved cap peak pointing backwards
         ctx.beginPath();
-        ctx.moveTo(-16, 31); ctx.lineTo(-10, 31 + flameH); ctx.lineTo(-4, 31);
-        ctx.moveTo(10, 29); ctx.lineTo(16, 29 + flameH); ctx.lineTo(22, 29);
+        ctx.roundRect(-8, -25, 16, 4.5, [2, 2, 2, 2]);
         ctx.fill();
+        // Hair poking out under cap
+        ctx.fillStyle = hairCol;
+        ctx.fillRect(-9, -27, 4, 3);
+        ctx.fillRect(5, -27, 4, 3);
+
+        // Arms spread for balance holding spray can
+        ctx.fillStyle = hoodieCol;
+        ctx.fillRect(-22, -18, 9, 8);
+        ctx.fillRect(13, -18, 9, 8);
+        ctx.fillStyle = skinCol;
+        ctx.fillRect(-25, -24, 6, 8);
+        ctx.fillRect(19, -24, 6, 8);
+
+        // Spray can held high in right hand
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(20, -34, 7, 12);
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(21, -37, 5, 3);
 
         ctx.restore();
 
       } else {
-        // ----------------------------------------------------
-        // ATHLETIC RUNNING / SPRINTING CYBER ATHLETE
-        // ----------------------------------------------------
-        const phase = (animTime * 14) % (Math.PI * 2);
+        // ATHLETIC CARTOON RUNNING STRIDE (AUTHENTIC SUBWAY SURFERS JAKE)
+        const phase = (animTime * 15) % (Math.PI * 2);
         const legSwing = Math.sin(phase);
         const bobY = -Math.abs(Math.sin(phase)) * 4 + (squash || 0) * 8;
 
         ctx.save();
         ctx.translate(0, -38 + bobY);
 
-        // 1. BACK ARM (Swings opposite to front leg)
-        const backArmAngle = legSwing * 0.7;
+        // 1. BACK ARM (Holding spray paint can, swings opposite to leg)
+        const backArmAngle = legSwing * 0.75;
         ctx.save();
-        ctx.translate(-9, -16);
+        ctx.translate(-11, -16);
         ctx.rotate(backArmAngle);
-        ctx.fillStyle = c.suitDark;
-        ctx.fillRect(-3, 0, 6, 14); // upper arm
-        ctx.fillStyle = c.suitLight;
-        ctx.fillRect(-3, 12, 6, 12); // forearm gauntlet
-        ctx.fillStyle = c.skin;
-        ctx.fillRect(-2, 22, 5, 5); // fist
+        // White hoodie sleeve rolled up
+        ctx.fillStyle = hoodieCol;
+        ctx.beginPath();
+        ctx.roundRect(-4, 0, 8, 14, [3, 3, 2, 2]);
+        ctx.fill();
+        // Forearm
+        ctx.fillStyle = skinCol;
+        ctx.fillRect(-3, 12, 6, 12);
+        // Spray Can held in fist
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(-5, 18, 8, 14);
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(-4, 15, 6, 3);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(-5, 23, 8, 4); // can label
+        // Hand fist
+        ctx.fillStyle = skinCol;
+        ctx.beginPath();
+        ctx.arc(0, 24, 4, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
 
         // 2. BACK LEG
-        const backLegAngle = -legSwing * 0.75;
+        const backLegAngle = -legSwing * 0.8;
         ctx.save();
-        ctx.translate(-5, 6);
+        ctx.translate(-6, 6);
         ctx.rotate(backLegAngle);
-        ctx.fillStyle = c.suitDark;
-        ctx.fillRect(-4, 0, 8, 16); // thigh
-        ctx.fillStyle = c.suitLight;
-        ctx.fillRect(-4, 14, 8, 16); // shin guard
-        // Back shoe
-        ctx.fillStyle = c.shoes;
-        ctx.fillRect(-4, 28, 13, 7);
+        // Denim blue jean thigh
+        ctx.fillStyle = jeansCol;
+        ctx.beginPath();
+        ctx.roundRect(-5, 0, 10, 16, [3, 3, 2, 2]);
+        ctx.fill();
+        // Shin
+        ctx.fillRect(-4, 14, 9, 16);
+        // Seams
+        ctx.strokeStyle = '#1d4ed8';
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(-4, 14, 9, 16);
+        // Chunky skater sneaker
+        ctx.fillStyle = shoesCol;
+        ctx.beginPath();
+        ctx.roundRect(-5, 28, 15, 8, [4, 4, 2, 2]);
+        ctx.fill();
+        // Crisp white rubber rim & toe
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-5, 33, 15, 4);
+        ctx.fillRect(6, 28, 4, 7);
+        // Black rubber tread
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(-5, 36, 15, 1.5);
         ctx.restore();
 
-        // 3. HUMAN ATHLETIC TORSO & CYBER JACKET
-        ctx.fillStyle = c.suitDark;
+        // 3. HUMAN TORSO: WHITE HOODIE + DENIM "SUB SURF" VEST
+        // Puffy white hoodie base
+        ctx.fillStyle = hoodieCol;
         ctx.beginPath();
-        ctx.moveTo(-12, -22); ctx.lineTo(12, -22); ctx.lineTo(10, 4); ctx.lineTo(-10, 4);
-        ctx.closePath();
+        ctx.roundRect(-15, -22, 30, 28, [6, 6, 4, 4]);
         ctx.fill();
 
-        // Jacket chestplate & armor accents
-        ctx.fillStyle = c.suitLight;
-        ctx.fillRect(-8, -20, 16, 14);
-
-        // Shoulder pauldrons
-        ctx.fillStyle = c.suitLight;
+        // Blue denim vest worn over hoodie
+        ctx.fillStyle = vestCol;
         ctx.beginPath();
-        ctx.arc(-11, -16, 5, 0, Math.PI * 2);
-        ctx.arc(11, -16, 5, 0, Math.PI * 2);
+        ctx.roundRect(-12, -20, 24, 23, [4, 4, 2, 2]);
         ctx.fill();
+        // Denim armhole hems
+        ctx.strokeStyle = '#1d4ed8';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(-12, -20, 24, 23);
 
-        // Chest glowing cyber reactor core
-        ctx.fillStyle = c.accent;
+        // VIBRANT "SUB SURF" GRAFFITI PATCH ON BACK (SCREENSHOT 1 & 2)
+        ctx.fillStyle = '#1e293b';
         ctx.beginPath();
-        ctx.arc(0, -11, 4.5, 0, Math.PI * 2);
+        ctx.roundRect(-10, -16, 20, 15, [4, 4, 4, 4]);
         ctx.fill();
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
 
-        // Belt & utility buckle
-        ctx.fillStyle = '#070a12';
-        ctx.fillRect(-11, 2, 22, 4);
-        ctx.fillStyle = c.visor;
-        ctx.fillRect(-3, 2, 6, 4);
+        ctx.fillStyle = '#facc15';
+        ctx.font = '900 7px "Titan One", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('SUB', 0, -9);
+        ctx.fillStyle = '#06b6d4';
+        ctx.font = '900 6.5px "Titan One", sans-serif';
+        ctx.fillText('SURF', 0, -3);
+
+        // Folded white hood collar resting on neck
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.ellipse(0, -22, 13, 5.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
         // 4. FRONT LEG (Swings forward)
-        const frontLegAngle = legSwing * 0.75;
+        const frontLegAngle = legSwing * 0.8;
         ctx.save();
-        ctx.translate(5, 6);
+        ctx.translate(6, 6);
         ctx.rotate(frontLegAngle);
-        ctx.fillStyle = c.suitDark;
-        ctx.fillRect(-4, 0, 8, 16); // thigh
-        ctx.fillStyle = c.suitLight;
-        ctx.fillRect(-4, 14, 8, 16); // shin guard
-        // Front shoe with glowing neon sole
-        ctx.fillStyle = c.shoes;
-        ctx.fillRect(-3, 28, 14, 7);
-        ctx.fillStyle = c.accent;
-        ctx.fillRect(-3, 33, 14, 2.5); // glowing sole
+        // Denim jean thigh
+        ctx.fillStyle = jeansCol;
+        ctx.beginPath();
+        ctx.roundRect(-5, 0, 10, 16, [3, 3, 2, 2]);
+        ctx.fill();
+        // Shin
+        ctx.fillRect(-4, 14, 9, 16);
+        ctx.strokeStyle = '#1d4ed8';
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(-4, 14, 9, 16);
+        // Chunky skater sneaker
+        ctx.fillStyle = shoesCol;
+        ctx.beginPath();
+        ctx.roundRect(-4, 28, 15, 8, [4, 4, 2, 2]);
+        ctx.fill();
+        // White rubber rim & toe
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-4, 33, 15, 4);
+        ctx.fillRect(7, 28, 4, 7);
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(-4, 36, 15, 1.5);
         ctx.restore();
 
-        // 5. HUMAN HEAD & CYBER HELMET
+        // 5. CARTOON HEAD & BACKWARDS RED BASEBALL CAP (REAR VIEW)
         // Neck
-        ctx.fillStyle = c.skin;
-        ctx.fillRect(-4, -24, 8, 4);
+        ctx.fillStyle = skinCol;
+        ctx.fillRect(-5, -28, 10, 6);
 
-        // Cyber Helmet shell
-        ctx.fillStyle = c.suitDark;
+        // Cap Crown (Red Dome)
+        ctx.fillStyle = capCol;
         ctx.beginPath();
-        ctx.arc(0, -32, 10, 0, Math.PI * 2);
+        ctx.arc(0, -34, 12, 0, Math.PI * 2);
         ctx.fill();
 
-        // Chin / faceplate
-        ctx.fillStyle = c.skin;
+        // Curved Cap Visor Peak pointing backwards over nape of neck
+        ctx.fillStyle = capCol;
         ctx.beginPath();
-        ctx.arc(4, -27, 4, 0, Math.PI * 2);
+        ctx.roundRect(-9, -25, 18, 5, [3, 3, 2, 2]);
         ctx.fill();
+        ctx.strokeStyle = '#b91c1c';
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
-        // Cyber Hair / Wind crest
-        ctx.fillStyle = c.hair;
-        ctx.beginPath();
-        ctx.moveTo(-4, -36);
-        ctx.lineTo(-22, -35 + Math.sin(phase) * 4);
-        ctx.lineTo(-8, -28);
-        ctx.closePath();
-        ctx.fill();
-
-        // Visor eye-slit
-        ctx.fillStyle = c.visor;
-        ctx.fillRect(0, -35, 10, 6);
-
-        // Visor animated laser scanner beam
-        const scanX = 0 + ((Math.sin(animTime * 12) + 1) * 0.5) * 7;
+        // White button on top of cap
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(scanX, -35, 3, 6);
+        ctx.beginPath();
+        ctx.arc(0, -45, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Brown cartoon hair peeking out at sides of cap
+        ctx.fillStyle = hairCol;
+        ctx.beginPath();
+        ctx.fillRect(-11, -29, 4, 5);
+        ctx.fillRect(7, -29, 4, 5);
+
+        // Special Character Head Accents
+        if (c.character === 'tricky') {
+          // Blonde pigtails flying out left and right
+          ctx.fillStyle = '#facc15';
+          const pigtailWave = Math.sin(phase) * 4;
+          // Left pigtail
+          ctx.beginPath();
+          ctx.ellipse(-16, -30 + pigtailWave, 5, 8, -0.4, 0, Math.PI * 2);
+          ctx.fill();
+          // Right pigtail
+          ctx.beginPath();
+          ctx.ellipse(16, -30 - pigtailWave, 5, 8, 0.4, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (c.character === 'fresh') {
+          // Hi-top fade dark hair
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(-8, -48, 16, 12);
+        } else if (c.character === 'spike') {
+          // Red punk mohawk
+          ctx.fillStyle = '#ef4444';
+          ctx.beginPath();
+          ctx.moveTo(-3, -46); ctx.lineTo(0, -56); ctx.lineTo(3, -46);
+          ctx.closePath();
+          ctx.fill();
+        } else if (c.character === 'yutani') {
+          // Green alien mascot antennae
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(-8, -50, 2, 7);
+          ctx.fillRect(6, -50, 2, 7);
+          ctx.fillStyle = '#facc15';
+          ctx.beginPath();
+          ctx.arc(-7, -51, 3, 0, Math.PI * 2);
+          ctx.arc(7, -51, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
 
         // 6. FRONT ARM (Swings opposite to back arm)
-        const frontArmAngle = -legSwing * 0.7;
+        const frontArmAngle = -legSwing * 0.75;
         ctx.save();
-        ctx.translate(9, -16);
+        ctx.translate(11, -16);
         ctx.rotate(frontArmAngle);
-        ctx.fillStyle = c.suitDark;
-        ctx.fillRect(-3, 0, 6, 14); // upper arm
-        ctx.fillStyle = c.suitLight;
-        ctx.fillRect(-3, 12, 6, 12); // forearm gauntlet
-        ctx.fillStyle = c.skin;
-        ctx.fillRect(-2, 22, 5, 5); // fist
+        ctx.fillStyle = hoodieCol;
+        ctx.beginPath();
+        ctx.roundRect(-4, 0, 8, 14, [3, 3, 2, 2]);
+        ctx.fill();
+        ctx.fillStyle = skinCol;
+        ctx.fillRect(-3, 12, 6, 12);
+        ctx.beginPath();
+        ctx.arc(0, 24, 4, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
-
-        // Jet thruster flames on heels when running fast
-        const flameH = 6 + Math.sin(animTime * 24) * 3;
-        ctx.fillStyle = c.visor;
-        ctx.fillRect(-10, 30, 4, flameH);
-        ctx.fillRect(6, 30, 4, flameH);
 
         ctx.restore();
       }
@@ -1333,7 +1517,7 @@
       }
     }
 
-    render(ctx, customZ, customScale) {
+    render(ctx, customZ, customScale, isFrontView = false) {
       const z = (customZ !== undefined) ? customZ : PLAYER_Z;
       const pPos = project3D(this.laneNorm, z);
       const s = (customScale !== undefined) ? customScale : pPos.scale;
@@ -1350,7 +1534,8 @@
         this.squash,
         this.hasShield,
         s,
-        this.baseHeight  // Base surface elevation (train roof or ground)
+        this.baseHeight, // Base surface elevation (train roof or ground)
+        isFrontView
       );
     }
   }
@@ -2508,10 +2693,12 @@
         const val = localStorage.getItem(COSTUMES_STORAGE_KEY);
         if (val) {
           const arr = JSON.parse(val);
-          if (Array.isArray(arr) && arr.length) return arr;
+          if (Array.isArray(arr) && arr.length) {
+            return arr.map(id => (COSTUMES[id] ? COSTUMES[id].id : id));
+          }
         }
       } catch (e) {}
-      return ['neo'];
+      return ['jake'];
     }
 
     saveUnlockedCostumes(arr) {
@@ -2522,10 +2709,16 @@
 
     loadEquippedCostume() {
       try {
+        const ver = localStorage.getItem('subway_costume_ver');
+        if (ver !== 'v14') {
+          localStorage.setItem('subway_costume_ver', 'v14');
+          localStorage.setItem(EQUIPPED_STORAGE_KEY, 'jake');
+          return 'jake';
+        }
         const val = localStorage.getItem(EQUIPPED_STORAGE_KEY);
-        if (val && COSTUMES[val]) return val;
+        if (val && COSTUMES[val]) return COSTUMES[val].id;
       } catch (e) {}
-      return 'neo';
+      return 'jake';
     }
 
     saveEquippedCostume(id) {
@@ -3038,12 +3231,12 @@
       const actx = this.avatarCtx;
       actx.clearRect(0, 0, this.avatarCanvas.width, this.avatarCanvas.height);
 
-      const suit = COSTUMES[this.equippedCostume] || COSTUMES.neo;
-      // Draw running/breathing humanoid runner in center of canvas
+      const suit = COSTUMES[this.equippedCostume] || COSTUMES.jake;
+      // Draw front-facing Subway Surfer on pedestal
       drawHumanoidRunner(
         actx,
         this.avatarCanvas.width / 2,
-        this.avatarCanvas.height - 24,
+        this.avatarCanvas.height - 18,
         this.avatarAnimTime,
         false,
         false,
@@ -3051,7 +3244,10 @@
         0,
         suit,
         0,
-        false
+        false,
+        0.95,
+        0,
+        true
       );
     }
 
@@ -3713,6 +3909,56 @@
       ctx.fillStyle = groundCol;
       ctx.fillRect(0, VP_Y, DESIGN_WIDTH, DESIGN_HEIGHT - VP_Y);
 
+      // Authentic Subway Surfers trackside verges:
+      if (to.type === 'western') {
+        // Bright green grass strips flanking both sides of the railroad (Screenshot 2)
+        ctx.fillStyle = '#22c55e';
+        // Left grass verge
+        ctx.beginPath();
+        ctx.moveTo(0, VP_Y);
+        ctx.lineTo(VP_X - ROAD_WIDTH_BG / 2 - 10, VP_Y);
+        ctx.lineTo(VP_X - ROAD_WIDTH_FG / 2 - 25, DESIGN_HEIGHT);
+        ctx.lineTo(0, DESIGN_HEIGHT);
+        ctx.closePath();
+        ctx.fill();
+
+        // Right grass verge
+        ctx.beginPath();
+        ctx.moveTo(DESIGN_WIDTH, VP_Y);
+        ctx.lineTo(VP_X + ROAD_WIDTH_BG / 2 + 10, VP_Y);
+        ctx.lineTo(VP_X + ROAD_WIDTH_FG / 2 + 25, DESIGN_HEIGHT);
+        ctx.lineTo(DESIGN_WIDTH, DESIGN_HEIGHT);
+        ctx.closePath();
+        ctx.fill();
+
+        // Wooden boardwalk sidewalks flanking the tracks
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(0, DESIGN_HEIGHT - 65, Math.max(0, VP_X - ROAD_WIDTH_FG / 2 - 32), 65);
+        ctx.fillRect(VP_X + ROAD_WIDTH_FG / 2 + 32, DESIGN_HEIGHT - 65, DESIGN_WIDTH, 65);
+      } else {
+        // Tokyo Food Street: Concrete elevated embankment with yellow & black hazard stripes (Screenshot 1)
+        const leftWallX = VP_X - ROAD_WIDTH_FG / 2 - 32;
+        const rightWallX = VP_X + ROAD_WIDTH_FG / 2 + 32;
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(0, VP_Y, Math.max(0, leftWallX), DESIGN_HEIGHT - VP_Y);
+        ctx.fillRect(rightWallX, VP_Y, DESIGN_WIDTH - rightWallX, DESIGN_HEIGHT - VP_Y);
+
+        // Yellow and black diagonal hazard barrier curb stripes
+        ctx.save();
+        const curbW = 12;
+        const stripeStep = 24;
+        const sOffset = (this.distance * 0.8) % stripeStep;
+        for (let sy = VP_Y - 20; sy < DESIGN_HEIGHT; sy += stripeStep) {
+          ctx.fillStyle = '#facc15';
+          ctx.fillRect(leftWallX, sy + sOffset, curbW, stripeStep / 2);
+          ctx.fillRect(rightWallX - curbW, sy + sOffset, curbW, stripeStep / 2);
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(leftWallX, sy + sOffset + stripeStep / 2, curbW, stripeStep / 2);
+          ctx.fillRect(rightWallX - curbW, sy + sOffset + stripeStep / 2, curbW, stripeStep / 2);
+        }
+        ctx.restore();
+      }
+
       // 4. 3D Railroad Ballast Bed (Gravel trapezoid converging into vanishing point)
       ctx.save();
       const ballastGrad = ctx.createLinearGradient(0, VP_Y, 0, DESIGN_HEIGHT);
@@ -4295,10 +4541,9 @@
       const renderList = [];
 
       if (this.state === GameStates.MENU) {
-        // Full Subway Surfers 3D menu: runner stands proudly on center track
-        // Render at z = 270 (y ≈ 499px, scale ≈ 0.68) so runner is prominently visible
-        // right in the center between the side buttons and above the TAP TO PLAY button!
-        renderList.push({ z: 270, type: 'player', item: this.player, customZ: 270, customScale: 0.68 });
+        // Full Subway Surfers 3D menu: Jake stands proudly in the foreground on center track facing the camera!
+        // Render in foreground at y = 485px with scale = 1.22 (height ~115px) with skateboard & spray can
+        renderList.push({ z: 160, type: 'player', item: this.player, customZ: 160, customScale: 1.22, isFrontView: true });
       } else {
         // Obstacles (trains, hurdles, barriers)
         for (const o of this.track.obstacles) {
@@ -4335,7 +4580,7 @@
         } else if (entity.type === 'collectible') {
           this.collectibles.renderItem(ctx, entity.item);
         } else if (entity.type === 'player') {
-          this.player.render(ctx, entity.customZ, entity.customScale);
+          this.player.render(ctx, entity.customZ, entity.customScale, entity.isFrontView);
         }
       }
 
@@ -4378,10 +4623,9 @@
             this.player.jumping = false;
             this.player.sliding = false;
             this.player.animTime += dt * 0.8;
-            const pPos = project3D(0, 270);
-            this.player.x = pPos.x;
-            this.player.groundY = pPos.y;
-            this.player.scale = 0.68;
+            this.player.x = VP_X;
+            this.player.groundY = 485;
+            this.player.scale = 1.22;
           }
         }
 

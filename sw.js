@@ -1,14 +1,14 @@
-const CACHE_NAME = 'subway-surf-3d-v13';
+const CACHE_NAME = 'subway-surf-3d-v14';
 const STATIC_ASSETS = [
   './',
-  './index.html?v=subway3d_v13',
-  './style.css?v=subway3d_v13',
-  './game.js?v=subway3d_v13',
-  './audio.js?v=subway3d_v13',
+  './index.html?v=subway3d_v14',
+  './style.css?v=subway3d_v14',
+  './game.js?v=subway3d_v14',
+  './audio.js?v=subway3d_v14',
   './manifest.webmanifest',
-  './pwa.js?v=subway3d_v13',
+  './pwa.js?v=subway3d_v14',
   './icon.svg',
-  './splash.png?v=subway3d_v13'
+  './splash.png?v=subway3d_v14'
 ];
 
 self.addEventListener('install', (event) => {
