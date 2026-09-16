@@ -1860,6 +1860,78 @@
         }
       }
 
+      // 1.5 Undercarriage Bogie Trucks & Steel Wheels (Sitting on Track Rails)
+      const bogieOffsets = [55, Math.max(75, o.length - 65)];
+      for (const bOffset of bogieOffsets) {
+        if (bOffset >= o.length) continue;
+        const bZ = o.z + bOffset;
+        const pB = project3D(o.laneNorm, bZ, 0);
+        const sB = pB.scale;
+        const wB = o.w * sB;
+        const wheelR = Math.max(3, 7.5 * sB);
+        const bogieY = pB.y - 3 * sB;
+
+        // Bogie frame (dark cast iron crossbar)
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(pB.x - wB * 0.46, bogieY - 5 * sB, wB * 0.92, 4 * sB);
+
+        // Left wheel set
+        const lWheelX = pB.x - wB * 0.45;
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(lWheelX, bogieY, wheelR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = Math.max(1, 1.8 * sB);
+        ctx.stroke();
+        // Inner wheel hub
+        ctx.fillStyle = '#64748b';
+        ctx.beginPath();
+        ctx.arc(lWheelX, bogieY, wheelR * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Right wheel set
+        const rWheelX = pB.x + wB * 0.45;
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(rWheelX, bogieY, wheelR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = Math.max(1, 1.8 * sB);
+        ctx.stroke();
+        // Inner wheel hub
+        ctx.fillStyle = '#64748b';
+        ctx.beginPath();
+        ctx.arc(rWheelX, bogieY, wheelR * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 1.6 Multi-Car Accordion Gangway (Bellows joint between cars)
+      if (o.length >= 220) {
+        const midZ = o.z + o.length * 0.5;
+        const pMid = project3D(o.laneNorm, midZ, 0);
+        const sMid = pMid.scale;
+        const wMid = (o.w + 2) * sMid;
+        const hMid = o.h * sMid;
+        const bxMid = pMid.x - wMid / 2;
+        const byMid = pMid.y - hMid;
+
+        // Dark flexible rubber joint band
+        ctx.fillStyle = '#090d16';
+        ctx.fillRect(bxMid - 2 * sMid, byMid, wMid + 4 * sMid, hMid);
+
+        // Rubber bellows pleats
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = Math.max(1, 2 * sMid);
+        for (let pleat = -6; pleat <= 6; pleat += 4) {
+          const px = pMid.x + pleat * sMid;
+          ctx.beginPath();
+          ctx.moveTo(px, byMid);
+          ctx.lineTo(px, pMid.y);
+          ctx.stroke();
+        }
+      }
+
       // 2. Corrugated Roof Walkway
       ctx.fillStyle = livery.roof;
       ctx.beginPath();
@@ -1880,6 +1952,34 @@
         ctx.moveTo(pr.x - prW / 2, pr.y);
         ctx.lineTo(pr.x + prW / 2, pr.y);
         ctx.stroke();
+      }
+
+      // 2.5 Rooftop HVAC / Air Conditioner Ventilation Pods
+      const acOffsets = [o.length * 0.28, o.length * 0.74];
+      for (const acOff of acOffsets) {
+        const acZ = o.z + acOff;
+        const pAC = project3D(o.laneNorm, acZ, o.h);
+        const sAC = pAC.scale;
+        const acW = o.w * 0.55 * sAC;
+        const acH = 7 * sAC;
+        const acX = pAC.x - acW / 2;
+        const acY = pAC.y - acH;
+
+        // Pod housing
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(acX, acY, acW, acH);
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = Math.max(1, 1.2 * sAC);
+        ctx.strokeRect(acX, acY, acW, acH);
+
+        // Circular exhaust vents
+        if (sAC > 0.3) {
+          ctx.fillStyle = '#475569';
+          ctx.beginPath();
+          ctx.arc(pAC.x - acW * 0.25, acY + acH * 0.5, Math.max(1.5, 2.5 * sAC), 0, Math.PI * 2);
+          ctx.arc(pAC.x + acW * 0.25, acY + acH * 0.5, Math.max(1.5, 2.5 * sAC), 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       // 3. Train Front Cab Face
@@ -1989,6 +2089,42 @@
           ctx.fill();
         }
         ctx.globalAlpha = 1.0;
+
+        // Side Safety Handrails (Yellow tubular safety rails along ramp edges)
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = Math.max(1.5, 2.5 * sFront);
+
+        // Left safety rail
+        ctx.beginPath();
+        ctx.moveTo(bxRamp + 2, pRampBase.y);
+        ctx.lineTo(bxFront + 2, byFront);
+        ctx.stroke();
+
+        // Right safety rail
+        ctx.beginPath();
+        ctx.moveTo(bxRamp + wRampBase - 2, pRampBase.y);
+        ctx.lineTo(bxFront + wFront - 2, byFront);
+        ctx.stroke();
+
+        // Vertical safety stanchion posts on ramp edges
+        const postSteps = [0.25, 0.5, 0.75];
+        for (const pst of postSteps) {
+          const pPost = project3D(o.laneNorm, Math.max(0, o.z - rampDepth * (1 - pst)), o.h * pst);
+          const sPost = pPost.scale;
+          const postW = o.w * sPost;
+          const leftPostX = pPost.x - postW / 2;
+          const rightPostX = pPost.x + postW / 2;
+          const postH = 10 * sPost;
+
+          ctx.strokeStyle = '#facc15';
+          ctx.lineWidth = Math.max(1, 1.8 * sPost);
+          ctx.beginPath();
+          ctx.moveTo(leftPostX, pPost.y);
+          ctx.lineTo(leftPostX, pPost.y - postH);
+          ctx.moveTo(rightPostX, pPost.y);
+          ctx.lineTo(rightPostX, pPost.y - postH);
+          ctx.stroke();
+        }
 
         // Glowing "▲ CLIMB ROOF ▲" prompt
         if (sFront > 0.35) {
@@ -2313,6 +2449,7 @@
      MAIN GAME ENGINE
      ============================================================ */
   const GameStates = Object.freeze({
+    SPLASH: 'SPLASH',
     MENU: 'MENU',
     PLAYING: 'PLAYING',
     PAUSED: 'PAUSED',
@@ -2329,7 +2466,27 @@
 
   class GameApp {
     constructor() {
-      this.state = GameStates.MENU;
+      // Start in Subway Surfers Splash Loading Screen (Page 1)
+      this.state = GameStates.SPLASH;
+      this.splashProgress = 0;
+      this.splashDuration = 2.0; // 2 seconds loading
+      this.splashDismissed = false;
+
+      this.splashScreen = document.getElementById('splashScreen');
+      this.splashProgressFill = document.getElementById('splashProgressFill');
+      this.splashPercentText = document.getElementById('splashPercentText');
+      this.splashTipText = document.getElementById('splashTipText');
+
+      if (this.splashScreen) {
+        const tapToSkip = () => {
+          if (this.state === GameStates.SPLASH) {
+            this.dismissSplash();
+          }
+        };
+        this.splashScreen.addEventListener('click', tapToSkip);
+        this.splashScreen.addEventListener('touchend', tapToSkip);
+      }
+
       this.bestScore = this.loadBest();
 
       // Persistent Bank, Costumes & Tech Upgrades
@@ -3226,6 +3383,20 @@
       this.selectBackground(this.selectedBgIndex);
     }
 
+    dismissSplash() {
+      if (this.splashDismissed) return;
+      this.splashDismissed = true;
+      if (this.splashProgressFill) this.splashProgressFill.style.width = '100%';
+      if (this.splashPercentText) this.splashPercentText.textContent = '100%';
+      if (this.splashScreen) {
+        this.splashScreen.classList.add('fade-out');
+        setTimeout(() => {
+          this.splashScreen.classList.add('hidden');
+        }, 650);
+      }
+      this.setState(GameStates.MENU);
+    }
+
     setState(next) {
       this.state = next;
 
@@ -3236,7 +3407,12 @@
       this.hud.classList.add('hidden');
       this.virtualControls.classList.add('hidden');
 
-      if (next === GameStates.MENU) {
+      if (next === GameStates.SPLASH) {
+        if (this.splashScreen) {
+          this.splashScreen.classList.remove('hidden');
+          this.splashScreen.classList.remove('fade-out');
+        }
+      } else if (next === GameStates.MENU) {
         this.menuBestScore.textContent = this.bestScore;
         this.updateBankDisplays();
         this.menuScreen.classList.remove('hidden');
@@ -3724,8 +3900,14 @@
       dt = Math.min(Math.max(dt, 0.001), 0.033);
 
       try {
-        // Gentle ambient updates when on menu
-        if (this.state !== GameStates.PLAYING) {
+        if (this.state === GameStates.SPLASH) {
+          this.splashProgress = Math.min(100, this.splashProgress + (dt / this.splashDuration) * 100);
+          if (this.splashProgressFill) this.splashProgressFill.style.width = this.splashProgress + '%';
+          if (this.splashPercentText) this.splashPercentText.textContent = Math.floor(this.splashProgress) + '%';
+          if (this.splashProgress >= 100) {
+            this.dismissSplash();
+          }
+        } else if (this.state !== GameStates.PLAYING) {
           this.distance += 45 * dt;
           this.parallax.update(dt, 0.35);
           this.updateTheme(dt);
