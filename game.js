@@ -18,18 +18,37 @@
   }
 
   /* ============================================================
-     CANVAS CONFIGURATION & VIEWPORT
+     3D PERSPECTIVE CONFIGURATION (SUBWAY RUNNER PROJECTION)
      ============================================================ */
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   const DESIGN_WIDTH = 480;
   const DESIGN_HEIGHT = 800;
   const LANE_COUNT = 3;
-  const LANE_WIDTH = DESIGN_WIDTH / LANE_COUNT;
-  const GROUND_Y = 640;
+
+  // 3D Perspective Camera & World Constants
+  const VP_X = DESIGN_WIDTH / 2;     // Horizon Vanishing Point X (240)
+  const VP_Y = 270;                  // Horizon Vanishing Point Y (270)
+  const GROUND_Y = 720;              // Camera Foreground Road Y (720)
+  const ROAD_WIDTH_FG = 440;         // Road width at foreground (440)
+  const ROAD_WIDTH_BG = 54;          // Road width at horizon (54)
+  const FOCAL_LENGTH = 280;          // Perspective projection focal length
+  const Z_SPAWN = 950;               // Distance where obstacles spawn at horizon
+  const PLAYER_Z = 110;              // Fixed 3D camera chase depth of the player runner
+
+  // 3D Perspective Projection Function
+  function project3D(laneNorm, z, heightOffset = 0) {
+    const scale = FOCAL_LENGTH / (Math.max(8, z) + FOCAL_LENGTH);
+    const roadW = ROAD_WIDTH_FG * scale;
+    const laneSpan = roadW / LANE_COUNT;
+    const screenX = VP_X + laneNorm * laneSpan;
+    const screenY = VP_Y + (GROUND_Y - VP_Y) * scale - heightOffset * scale;
+    return { x: screenX, y: screenY, scale, roadW, laneSpan };
+  }
 
   function laneX(lane) {
-    return LANE_WIDTH * lane + LANE_WIDTH / 2;
+    const norm = lane - 1; // 0 -> -1, 1 -> 0, 2 -> 1
+    return project3D(norm, PLAYER_Z).x;
   }
 
   function resize() {
@@ -780,11 +799,14 @@
   /* ============================================================
      HUMANOID RUNNER RENDER PIPELINE (CRASH-PROOF & HIGH-DEFINITION)
      ============================================================ */
-  function drawHumanoidRunner(ctx, cx, groundY, animTime, isJumping, isSliding, jumpHeight, tilt, costume, squash, hasShield) {
+  function drawHumanoidRunner(ctx, cx, groundY, animTime, isJumping, isSliding, jumpHeight, tilt, costume, squash, hasShield, scaleFactor = 1.0) {
     try {
       const c = costume || COSTUMES.neo;
       ctx.save();
       ctx.translate(cx, groundY);
+      if (scaleFactor && scaleFactor !== 1.0) {
+        ctx.scale(scaleFactor, scaleFactor);
+      }
       if (tilt) ctx.rotate(tilt);
 
       // 1. Dynamic ground shadow that scales with jump height
@@ -1199,20 +1221,19 @@
   class Player {
     constructor(costume) {
       this.costume = costume || COSTUMES.neo;
-      this.lane = 1;
-      this.x = laneX(1);
-      this.targetX = this.x;
+      this.lane = 1;         // Target lane: 0 (Left), 1 (Center), 2 (Right)
+      this.laneNorm = 0;     // Continuous lateral position: -1, 0, +1
       this.tilt = 0;
 
       this.jumpHeight = 0;
       this.jumpVel = 0;
       this.jumping = false;
-      this.gravity = 2700;
-      this.jumpImpulse = 960;
+      this.gravity = 2500;
+      this.jumpImpulse = 920;
 
       this.sliding = false;
       this.slideTimer = 0;
-      this.slideDuration = 0.52;
+      this.slideDuration = 0.54;
 
       this.width = 46;
       this.height = 80;
@@ -1221,21 +1242,25 @@
       this.hasShield = false;
       this.animTime = 0;
       this.squash = 0;
+
+      // Project initial 3D position
+      const pPos = project3D(this.laneNorm, PLAYER_Z);
+      this.x = pPos.x;
+      this.groundY = pPos.y;
+      this.scale = pPos.scale;
     }
 
     moveLeft() {
       if (this.lane > 0) {
         this.lane--;
-        this.targetX = laneX(this.lane);
-        SoundSystem.laneSwitch();
+        try { SoundSystem.laneSwitch(); } catch (e) {}
       }
     }
 
     moveRight() {
       if (this.lane < LANE_COUNT - 1) {
         this.lane++;
-        this.targetX = laneX(this.lane);
-        SoundSystem.laneSwitch();
+        try { SoundSystem.laneSwitch(); } catch (e) {}
       }
     }
 
@@ -1243,7 +1268,7 @@
       if (!this.jumping && !this.sliding) {
         this.jumping = true;
         this.jumpVel = this.jumpImpulse;
-        SoundSystem.jump();
+        try { SoundSystem.jump(); } catch (e) {}
       }
     }
 
@@ -1251,30 +1276,36 @@
       if (!this.jumping && !this.sliding) {
         this.sliding = true;
         this.slideTimer = this.slideDuration;
-        SoundSystem.slide();
+        try { SoundSystem.slide(); } catch (e) {}
       }
     }
 
     update(dt, particles) {
       this.animTime += dt;
 
-      // Critically damped exponential lane approach for buttery 60/120fps smoothness
-      const dx = this.targetX - this.x;
-      const moveAlpha = 1 - Math.exp(-24 * dt);
-      this.x += dx * moveAlpha;
+      // 3D smooth exponential lane shifting
+      const targetNorm = this.lane - 1;
+      const dNorm = targetNorm - this.laneNorm;
+      this.laneNorm += dNorm * (1 - Math.exp(-22 * dt));
 
-      // Dynamic banking tilt when changing lanes
-      const targetTilt = clamp(dx * 0.0035, -0.22, 0.22);
+      // Dynamic 3D banking tilt
+      const targetTilt = clamp(dNorm * 0.45, -0.22, 0.22);
       this.tilt = lerp(this.tilt, targetTilt, 1 - Math.exp(-18 * dt));
 
-      // Emit lateral trail sparks during lane change
-      if (Math.abs(dx) > 1.5) {
-        particles.trail(this.x, GROUND_Y - 20, this.costume.accent);
+      // Calculate current 3D screen position
+      const pPos = project3D(this.laneNorm, PLAYER_Z);
+      this.x = pPos.x;
+      this.groundY = pPos.y;
+      this.scale = pPos.scale;
+
+      // Lateral trail sparks when shifting lanes
+      if (Math.abs(dNorm) > 0.08 && particles) {
+        particles.trail(this.x, this.groundY - 14 * this.scale, this.costume.accent);
       }
 
-      // Jump physics with apex smoothing
+      // 3D Jump physics with apex smoothing
       if (this.jumping) {
-        const apexFloat = Math.abs(this.jumpVel) < 200 ? 0.78 : 1.0;
+        const apexFloat = Math.abs(this.jumpVel) < 180 ? 0.78 : 1.0;
         this.jumpVel -= this.gravity * apexFloat * dt;
         this.jumpHeight += this.jumpVel * dt;
         if (this.jumpHeight <= 0) {
@@ -1282,7 +1313,7 @@
           this.jumping = false;
           this.jumpVel = 0;
           this.squash = 1; // Landing squash
-          particles.burst(this.x, GROUND_Y, this.costume.accent, 10, 50, 130);
+          if (particles) particles.burst(this.x, this.groundY, this.costume.accent, 10, 50, 130);
         }
       }
 
@@ -1290,60 +1321,53 @@
         this.squash = Math.max(0, this.squash - dt * 5);
       }
 
-      // Slide countdown
+      // Slide countdown & road sparks
       if (this.sliding) {
         this.slideTimer -= dt;
-        particles.trail(this.x, GROUND_Y - 8, this.costume.visor);
+        if (particles && Math.random() < 0.6) {
+          particles.trail(this.x, this.groundY - 4 * this.scale, this.costume.visor);
+        }
         if (this.slideTimer <= 0) {
           this.sliding = false;
         }
       }
 
       // Continuous dual cyber thruster particles
-      if (!this.jumping && Math.random() < 0.5) {
-        particles.trail(this.x - 8, GROUND_Y - 2, this.costume.accent);
-        particles.trail(this.x + 8, GROUND_Y - 2, this.costume.visor);
+      if (!this.jumping && particles && Math.random() < 0.5) {
+        particles.trail(this.x - 6 * this.scale, this.groundY - 2, this.costume.accent);
+        particles.trail(this.x + 6 * this.scale, this.groundY - 2, this.costume.visor);
       }
     }
 
-    getBounds() {
-      const h = this.sliding ? this.slideHeight : this.height;
-      const bottom = GROUND_Y - this.jumpHeight;
-      return {
-        x: this.x - this.width / 2,
-        y: bottom - h,
-        w: this.width,
-        h: h,
-        lane: this.lane
-      };
-    }
-
     render(ctx) {
+      const pPos = project3D(this.laneNorm, PLAYER_Z);
       drawHumanoidRunner(
         ctx,
-        this.x,
-        GROUND_Y,
+        pPos.x,
+        pPos.y,
         this.animTime,
         this.jumping,
         this.sliding,
-        this.jumpHeight,
+        this.jumpHeight * pPos.scale,
         this.tilt,
         this.costume,
         this.squash,
-        this.hasShield
+        this.hasShield,
+        pPos.scale
       );
     }
   }
 
   /* ============================================================
-     OBSTACLES: LOW (Jump), HIGH (Slide), BLOCK (Switch Lane)
+     OBSTACLES: LOW (Jump), HIGH (Slide), BLOCK (Switch Lane) - 3D PERSPECTIVE
      ============================================================ */
   const OBSTACLE_DEFS = {
     LOW: {
       id: 'LOW',
       name: 'Electric Barrier',
-      w: 118,
-      h: 42,
+      w: 106,
+      h: 44,
+      depth: 32,
       action: 'jump',
       color: '#ff3366',
       accent: '#ffe066'
@@ -1351,9 +1375,10 @@
     HIGH: {
       id: 'HIGH',
       name: 'Laser Gate',
-      w: 122,
-      h: 110,
+      w: 110,
+      h: 112,
       gap: 48,
+      depth: 26,
       action: 'slide',
       color: '#7209b7',
       accent: '#4cc9f0'
@@ -1361,10 +1386,11 @@
     BLOCK: {
       id: 'BLOCK',
       name: 'Cyber Monolith',
-      w: 130,
-      h: 146,
+      w: 115,
+      h: 135,
+      depth: 55,
       action: 'switch',
-      color: '#1a2238',
+      color: '#161c2d',
       accent: '#ff0055'
     }
   };
@@ -1373,25 +1399,27 @@
     constructor() {
       this.obstacles = [];
       this.laneCooldowns = [0, 0, 0];
-      this.globalCooldown = 2.2;
-      this.minGapTime = 2.4;
-      this.maxGapTime = 4.8;
-      this.globalMinInterval = 2.0;
-      this.minWorldGap = 650;
+      this.globalCooldown = 2.0;
+      this.minGapTime = 2.2;
+      this.maxGapTime = 4.5;
+      this.globalMinInterval = 1.9;
+      this.minZGap = 420; // Minimum depth separation in same lane
       this.onObstacleSpawned = null;
     }
 
     reset() {
       this.obstacles = [];
       this.laneCooldowns = [0, 0, 0];
-      this.globalCooldown = 2.5;
+      this.globalCooldown = 2.4;
     }
 
     update(dt, speed, elapsed) {
+      // Advance obstacles along 3D depth towards camera
       for (const o of this.obstacles) {
-        o.y += speed * dt;
+        o.z -= speed * dt;
       }
-      this.obstacles = this.obstacles.filter(o => o.y < DESIGN_HEIGHT + 160);
+      // Clean up obstacles once they pass behind camera
+      this.obstacles = this.obstacles.filter(o => o.z > -90);
 
       this.globalCooldown = Math.max(0, this.globalCooldown - dt);
       for (let i = 0; i < LANE_COUNT; i++) {
@@ -1404,9 +1432,9 @@
     _canSpawnInLane(lane) {
       const inLane = this.obstacles.filter(o => o.lane === lane);
       if (!inLane.length) return true;
-      let topY = Infinity;
-      for (const o of inLane) topY = Math.min(topY, o.y);
-      return topY >= this.minWorldGap;
+      let maxZ = -Infinity;
+      for (const o of inLane) maxZ = Math.max(maxZ, o.z);
+      return maxZ <= (Z_SPAWN - this.minZGap);
     }
 
     _spawn(elapsed) {
@@ -1420,11 +1448,10 @@
       }
       if (!candidates.length) return;
 
-      // Keep lanes generous and spacious
+      // Keep lanes navigable: at least one lane is always open
       const maxSpawns = Math.min(candidates.length, LANE_COUNT - 1);
       let count = 1;
-      // Only after 90+ seconds allow a very rare 2-obstacle wave
-      if (maxSpawns >= 2 && elapsed > 90 && Math.random() < 0.12) {
+      if (maxSpawns >= 2 && elapsed > 80 && Math.random() < 0.14) {
         count = 2;
       }
 
@@ -1436,9 +1463,9 @@
         const def = OBSTACLE_DEFS[typeId];
         const obstacle = {
           type: def,
-          lane,
-          x: laneX(lane),
-          y: -70,
+          lane: lane,
+          laneNorm: lane - 1,
+          z: Z_SPAWN,
           w: def.w,
           h: def.h,
           hit: false
@@ -1453,109 +1480,202 @@
 
     render(ctx) {
       for (const o of this.obstacles) {
-        ctx.save();
-        const ox = o.x - o.w / 2;
-        const oy = o.y - o.h;
+        this.renderObstacle(ctx, o);
+      }
+    }
 
-        if (o.type.id === 'LOW') {
-          // Low Barrier with caution stripes and electric arcs
-          ctx.fillStyle = o.type.color;
-          ctx.shadowColor = o.type.color;
-          ctx.shadowBlur = 12;
-          ctx.fillRect(ox, oy, o.w, o.h);
+    renderObstacle(ctx, o) {
+      if (o.z < -60 || o.z > Z_SPAWN + 80) return;
+      ctx.save();
 
-          // Glowing danger line
-          ctx.fillStyle = o.type.accent;
-          ctx.fillRect(ox + 4, oy + 4, o.w - 8, 6);
+      const base = project3D(o.laneNorm, o.z, 0);
+      const s = base.scale;
+      const bw = o.type.w * s;
+      const bh = o.type.h * s;
+      const bx = base.x - bw / 2;
+      const by = base.y - bh;
 
-          // Animated electric lightning sparks across top edge
-          ctx.strokeStyle = '#00f0ff';
-          ctx.shadowColor = '#00f0ff';
-          ctx.shadowBlur = 10;
-          ctx.lineWidth = 2;
+      // 3D Ground drop shadow
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.beginPath();
+      ctx.ellipse(base.x, base.y, bw * 0.55, 6 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (o.type.id === 'LOW') {
+        // 3D Electric Barrier (Low jump hurdle with depth extrusion)
+        const topBack = project3D(o.laneNorm, o.z + o.type.depth, o.type.h);
+        const topBackW = o.type.w * topBack.scale;
+
+        // Top depth face
+        ctx.fillStyle = '#b81440';
+        ctx.beginPath();
+        ctx.moveTo(bx, by);
+        ctx.lineTo(bx + bw, by);
+        ctx.lineTo(topBack.x + topBackW / 2, topBack.y);
+        ctx.lineTo(topBack.x - topBackW / 2, topBack.y);
+        ctx.closePath();
+        ctx.fill();
+
+        // Front Face
+        ctx.fillStyle = o.type.color;
+        ctx.shadowColor = o.type.color;
+        ctx.shadowBlur = 10 * s;
+        ctx.fillRect(bx, by, bw, bh);
+
+        // Glowing top caution line
+        ctx.fillStyle = o.type.accent;
+        ctx.fillRect(bx + 2 * s, by + 2 * s, bw - 4 * s, 5 * s);
+
+        // Electric lightning sparks across top edge
+        ctx.strokeStyle = '#00f0ff';
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 8 * s;
+        ctx.lineWidth = Math.max(1, 2 * s);
+        ctx.beginPath();
+        let arcX = bx + 4 * s;
+        ctx.moveTo(arcX, by + 4 * s);
+        while (arcX < bx + bw - 6 * s) {
+          arcX += randRange(8 * s, 16 * s);
+          const arcY = by + 4 * s + (Math.random() * 6 * s - 3 * s);
+          ctx.lineTo(Math.min(arcX, bx + bw - 4 * s), arcY);
+        }
+        ctx.stroke();
+
+        // Caution diagonal hazard stripes
+        ctx.fillStyle = '#000000';
+        ctx.globalAlpha = 0.32;
+        const stripeW = 14 * s;
+        for (let sx = bx; sx < bx + bw; sx += stripeW) {
           ctx.beginPath();
-          let arcX = ox + 6;
-          ctx.moveTo(arcX, oy + 6);
-          while (arcX < ox + o.w - 8) {
-            arcX += randRange(10, 20);
-            const arcY = oy + 6 + (Math.random() * 8 - 4);
-            ctx.lineTo(Math.min(arcX, ox + o.w - 6), arcY);
-          }
-          ctx.stroke();
+          ctx.moveTo(sx, by + bh);
+          ctx.lineTo(sx + 8 * s, by);
+          ctx.lineTo(sx + stripeW, by);
+          ctx.lineTo(sx + stripeW - 8 * s, by + bh);
+          ctx.fill();
+        }
+      } else if (o.type.id === 'HIGH') {
+        // 3D Laser Gate (Slide Archway with dual cyber pylons and laser curtain)
+        const pylonW = 12 * s;
+        const solidH = (o.type.h - o.type.gap) * s;
+        const gapH = o.type.gap * s;
 
-          // Caution diagonal stripes
-          ctx.fillStyle = '#000';
-          ctx.globalAlpha = 0.28;
-          for (let sx = ox; sx < ox + o.w; sx += 18) {
-            ctx.beginPath();
-            ctx.moveTo(sx, oy + o.h);
-            ctx.lineTo(sx + 10, oy);
-            ctx.lineTo(sx + 18, oy);
-            ctx.lineTo(sx + 8, oy + o.h);
-            ctx.fill();
-          }
-        } else if (o.type.id === 'HIGH') {
-          // Overhead High Beam with slide gap
-          const solidH = o.h - o.type.gap;
+        // Left Pylon
+        ctx.fillStyle = '#241040';
+        ctx.shadowColor = o.type.accent;
+        ctx.shadowBlur = 6 * s;
+        ctx.fillRect(bx, by, pylonW, bh);
 
-          // Upper beam structure
-          ctx.fillStyle = o.type.color;
-          ctx.shadowColor = o.type.accent;
-          ctx.shadowBlur = 14;
-          ctx.fillRect(ox, oy, o.w, solidH);
+        // Right Pylon
+        ctx.fillRect(bx + bw - pylonW, by, pylonW, bh);
 
-          // Pulsing laser emitter beam
-          const laserPulse = (Math.sin(Date.now() * 0.012) + 1) * 0.5;
-          ctx.fillStyle = o.type.accent;
-          ctx.shadowColor = o.type.accent;
-          ctx.shadowBlur = 12 + laserPulse * 10;
-          ctx.fillRect(ox + 6, oy + solidH - 8, o.w - 12, 6);
+        // Pylon Neon Accents
+        ctx.fillStyle = o.type.accent;
+        ctx.fillRect(bx + 2 * s, by, 2.5 * s, bh);
+        ctx.fillRect(bx + bw - 4.5 * s, by, 2.5 * s, bh);
 
-          // Subtle holographic clearance indicator below
-          ctx.fillStyle = o.type.accent;
-          ctx.globalAlpha = 0.14 + laserPulse * 0.08;
-          ctx.fillRect(ox, oy + solidH, o.w, o.type.gap);
+        // Top Arch Crossbar
+        ctx.fillStyle = o.type.color;
+        ctx.fillRect(bx, by, bw, solidH);
 
-          ctx.globalAlpha = 0.85;
-          ctx.font = 'bold 11px "Orbitron", sans-serif';
+        // Top Arch Glow Beam
+        const laserPulse = (Math.sin(Date.now() * 0.012) + 1) * 0.5;
+        ctx.fillStyle = o.type.accent;
+        ctx.shadowColor = o.type.accent;
+        ctx.shadowBlur = (10 + laserPulse * 8) * s;
+        ctx.fillRect(bx + pylonW, by + solidH - 6 * s, bw - pylonW * 2, 5 * s);
+
+        // Lethal Laser Curtain
+        ctx.fillStyle = 'rgba(76, 201, 240, 0.22)';
+        ctx.fillRect(bx + pylonW, by + solidH, bw - pylonW * 2, bh - solidH - gapH);
+
+        // Sliding Clearance Opening at bottom
+        ctx.fillStyle = 'rgba(76, 201, 240, 0.08)';
+        ctx.fillRect(bx + pylonW, base.y - gapH, bw - pylonW * 2, gapH);
+
+        // "SLIDE" Holo Badge
+        if (s > 0.42) {
+          ctx.globalAlpha = 0.88;
+          ctx.fillStyle = '#4cc9f0';
+          ctx.font = `bold ${Math.max(9, 11 * s)}px "Orbitron", sans-serif`;
           ctx.textAlign = 'center';
-          ctx.fillText('▼ SLIDE UNDER ▼', o.x, oy + solidH + 26);
-        } else {
-          // Block Monolith with tech circuitry
-          ctx.fillStyle = o.type.color;
-          ctx.fillRect(ox, oy, o.w, o.h);
+          ctx.fillText('▼ SLIDE ▼', base.x, base.y - gapH * 0.45);
+        }
+      } else {
+        // 3D Cyber Monolith (Massive volumetric 3D column)
+        const topBack = project3D(o.laneNorm, o.z + o.type.depth, o.type.h);
+        const topBackW = o.type.w * topBack.scale;
 
-          // Glowing edge frame
-          ctx.strokeStyle = o.type.accent;
-          ctx.shadowColor = o.type.accent;
-          ctx.shadowBlur = 16;
-          ctx.lineWidth = 3;
-          ctx.strokeRect(ox + 2, oy + 2, o.w - 4, o.h - 4);
-
-          // Digital circuit trace lines
-          ctx.strokeStyle = 'rgba(255, 0, 85, 0.45)';
-          ctx.lineWidth = 1.5;
+        // Side Depth Face (visible if off-center)
+        if (base.x < VP_X - 10) {
+          // Right side is visible
+          const baseBack = project3D(o.laneNorm, o.z + o.type.depth, 0);
+          ctx.fillStyle = '#0f1422';
           ctx.beginPath();
-          ctx.moveTo(ox + 10, oy + 18); ctx.lineTo(ox + o.w - 10, oy + 18);
-          ctx.moveTo(ox + 10, oy + o.h - 18); ctx.lineTo(ox + o.w - 10, oy + o.h - 18);
-          ctx.moveTo(ox + o.w / 2, oy + 18); ctx.lineTo(ox + o.w / 2, oy + o.h - 18);
-          ctx.stroke();
-
-          // Pulsing Hazard symbol
-          const hazardPulse = Math.sin(Date.now() * 0.008) * 2;
-          ctx.fillStyle = o.type.accent;
-          ctx.font = `bold ${20 + hazardPulse}px "Orbitron", sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.fillText('⚠', o.x, oy + o.h / 2 + 7);
+          ctx.moveTo(bx + bw, by);
+          ctx.lineTo(topBack.x + topBackW / 2, topBack.y);
+          ctx.lineTo(baseBack.x + (o.type.w * baseBack.scale) / 2, baseBack.y);
+          ctx.lineTo(bx + bw, base.y);
+          ctx.closePath();
+          ctx.fill();
+        } else if (base.x > VP_X + 10) {
+          // Left side is visible
+          const baseBack = project3D(o.laneNorm, o.z + o.type.depth, 0);
+          ctx.fillStyle = '#0f1422';
+          ctx.beginPath();
+          ctx.moveTo(bx, by);
+          ctx.lineTo(topBack.x - topBackW / 2, topBack.y);
+          ctx.lineTo(baseBack.x - (o.type.w * baseBack.scale) / 2, baseBack.y);
+          ctx.lineTo(bx, base.y);
+          ctx.closePath();
+          ctx.fill();
         }
 
-        ctx.restore();
+        // Top Depth Face
+        ctx.fillStyle = '#1c2438';
+        ctx.beginPath();
+        ctx.moveTo(bx, by);
+        ctx.lineTo(bx + bw, by);
+        ctx.lineTo(topBack.x + topBackW / 2, topBack.y);
+        ctx.lineTo(topBack.x - topBackW / 2, topBack.y);
+        ctx.closePath();
+        ctx.fill();
+
+        // Front Face
+        ctx.fillStyle = o.type.color;
+        ctx.fillRect(bx, by, bw, bh);
+
+        // Glowing frame
+        ctx.strokeStyle = o.type.accent;
+        ctx.shadowColor = o.type.accent;
+        ctx.shadowBlur = 12 * s;
+        ctx.lineWidth = Math.max(1.5, 2.5 * s);
+        ctx.strokeRect(bx + 2 * s, by + 2 * s, bw - 4 * s, bh - 4 * s);
+
+        // Circuitry lines
+        ctx.strokeStyle = 'rgba(255, 0, 85, 0.5)';
+        ctx.lineWidth = Math.max(1, 1.5 * s);
+        ctx.beginPath();
+        ctx.moveTo(bx + 8 * s, by + 16 * s); ctx.lineTo(bx + bw - 8 * s, by + 16 * s);
+        ctx.moveTo(bx + 8 * s, by + bh - 16 * s); ctx.lineTo(bx + bw - 8 * s, by + bh - 16 * s);
+        ctx.moveTo(base.x, by + 16 * s); ctx.lineTo(base.x, by + bh - 16 * s);
+        ctx.stroke();
+
+        // Hazard symbol
+        if (s > 0.38) {
+          const hazardPulse = Math.sin(Date.now() * 0.008) * (2 * s);
+          ctx.fillStyle = o.type.accent;
+          ctx.font = `bold ${Math.max(11, (18 + hazardPulse) * s)}px "Orbitron", sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.fillText('⚠', base.x, by + bh * 0.52);
+        }
       }
+
+      ctx.restore();
     }
   }
 
   /* ============================================================
-     COLLECTIBLES & POWER-UPS
+     COLLECTIBLES & POWER-UPS - 3D PERSPECTIVE
      ============================================================ */
   const POWERUP_METAS = {
     magnet: { name: 'MAGNET', duration: 8, color: '#4cc9f0', icon: '🧲' },
@@ -1564,27 +1684,17 @@
   };
 
   class CollectibleItem {
-    constructor(lane, y, type, opts = {}) {
+    constructor(lane, z, type, opts = {}) {
       this.lane = lane;
-      this.x = laneX(lane);
-      this.y = y;
+      this.laneNorm = lane - 1;
+      this.z = z;
       this.type = type;
       this.collected = false;
-      this.radius = type === 'coin' ? 10 : 15;
+      this.radius = type === 'coin' ? 14 : 18;
       this.requiresJump = !!opts.requiresJump;
       this.requiresSlide = !!opts.requiresSlide;
-      this.height = opts.height || 0;
+      this.heightOffset = opts.heightOffset || (this.requiresJump ? 58 : 0);
       this.spin = Math.random() * Math.PI * 2;
-    }
-
-    getBounds() {
-      const r = this.radius;
-      return {
-        x: this.x - r,
-        y: this.y - this.height - r,
-        w: r * 2,
-        h: r * 2
-      };
     }
   }
 
@@ -1596,9 +1706,9 @@
       this.activePowerUps = {};
       this.shieldCharges = 0;
       this.coinTimer = 1.0;
-      this.powerupTimer = 11.0;
+      this.powerupTimer = 10.0;
       this.magnetRadius = 160;
-      this.magnetSpeed = 700;
+      this.magnetSpeed = 650;
     }
 
     reset(startingShields = 0, magnetDur = 8, magnetRad = 160, multiplierDur = 10) {
@@ -1611,102 +1721,103 @@
       this.magnetRadius = magnetRad;
       this.multiplierDuration = multiplierDur;
       this.coinTimer = 1.0;
-      this.powerupTimer = 11.0;
+      this.powerupTimer = 10.0;
     }
 
     onObstacleSpawned(obstacle) {
       if (obstacle.type.id === 'LOW') {
-        this._spawnArcTrail(obstacle.lane, obstacle.y, true);
+        this._spawnArcTrail(obstacle.lane, obstacle.z, true);
       } else if (obstacle.type.id === 'HIGH') {
-        this._spawnCoinLine(obstacle.lane, obstacle.y + 60, 3, 28, { requiresSlide: true });
+        this._spawnCoinLine(obstacle.lane, obstacle.z + 50, 3, 40, { requiresSlide: true, heightOffset: 0 });
       } else {
         const others = [0, 1, 2].filter(l => l !== obstacle.lane);
         const freeLane = others[Math.floor(Math.random() * others.length)];
-        this._spawnCoinLine(freeLane, obstacle.y, 3, 32, {});
+        this._spawnCoinLine(freeLane, obstacle.z, 3, 45, {});
       }
     }
 
-    _spawnCoinLine(lane, startY, count, spacing, opts) {
+    _spawnCoinLine(lane, startZ, count, spacingZ, opts = {}) {
       for (let i = 0; i < count; i++) {
-        this.items.push(new CollectibleItem(lane, startY - i * spacing, 'coin', opts));
+        this.items.push(new CollectibleItem(lane, startZ + i * spacingZ, 'coin', opts));
       }
     }
 
-    _spawnArcTrail(lane, obstacleY, requiresJump) {
-      const count = 5, spread = 120, peak = 75;
+    _spawnArcTrail(lane, obstacleZ, requiresJump) {
+      const count = 5, spreadZ = 180, peak = 75;
       for (let i = 0; i < count; i++) {
         const t = i / (count - 1);
-        const y = obstacleY + spread / 2 - t * spread;
-        const height = Math.sin(t * Math.PI) * peak;
-        this.items.push(new CollectibleItem(lane, y, 'coin', { requiresJump, height }));
+        const z = obstacleZ - spreadZ / 2 + t * spreadZ;
+        const heightOffset = Math.sin(t * Math.PI) * peak;
+        this.items.push(new CollectibleItem(lane, z, 'coin', { requiresJump, heightOffset }));
       }
     }
 
-    _spawnPowerup(lane, y, type) {
-      this.items.push(new CollectibleItem(lane, y, type));
+    _spawnPowerup(lane, z, type) {
+      this.items.push(new CollectibleItem(lane, z, type, { heightOffset: 15 }));
     }
 
     update(dt, player, speed, particles) {
-      // Coin spawn pacing
+      // Coin spawn timer
       this.coinTimer -= dt;
       if (this.coinTimer <= 0) {
-        this.coinTimer = randRange(1.1, 1.8);
+        this.coinTimer = randRange(1.2, 1.9);
         const l = Math.floor(Math.random() * LANE_COUNT);
         if (Math.random() < 0.65) {
-          this._spawnCoinLine(l, -50, 4, 32, {});
+          this._spawnCoinLine(l, Z_SPAWN, 4, 45, {});
         } else {
-          this._spawnArcTrail(l, -50, false);
+          this._spawnArcTrail(l, Z_SPAWN, false);
         }
       }
 
-      // Power-up spawn pacing
+      // Powerup spawn timer
       this.powerupTimer -= dt;
       if (this.powerupTimer <= 0) {
-        this.powerupTimer = randRange(12, 19);
+        this.powerupTimer = randRange(12, 18);
         const l = Math.floor(Math.random() * LANE_COUNT);
         const keys = Object.keys(POWERUP_METAS);
         const chosen = keys[Math.floor(Math.random() * keys.length)];
-        this._spawnPowerup(l, -60, chosen);
+        this._spawnPowerup(l, Z_SPAWN, chosen);
       }
 
-      // Move items down
+      // Move items along z towards camera
       for (const item of this.items) {
-        item.y += speed * dt;
+        item.z -= speed * dt;
         item.spin += dt * 4;
       }
 
-      // Magnet suction pull
+      // 3D Magnet suction pull towards player
       if (this.activePowerUps.magnet) {
-        const playerY = GROUND_Y - player.jumpHeight - player.height / 2;
         for (const item of this.items) {
           if (item.collected || item.type !== 'coin') continue;
-          const dx = player.x - item.x;
-          const dy = playerY - item.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist < this.magnetRadius) {
-            const pull = this.magnetSpeed * dt;
-            item.x += (dx / (dist || 1)) * pull;
-            item.y += (dy / (dist || 1)) * pull;
+          const dz = item.z - PLAYER_Z;
+          const dLane = item.laneNorm - player.laneNorm;
+          if (dz > -40 && dz < 420) {
+            // Smoothly magnetize towards player's lane and position
+            item.laneNorm -= dLane * 7.5 * dt;
+            item.z -= Math.sign(dz) * 140 * dt;
           }
         }
       }
 
-      // Check player collection
-      const pBounds = player.getBounds();
+      // 3D Collision / Collection check
       for (const item of this.items) {
         if (item.collected) continue;
 
         const isMagnetized = this.activePowerUps.magnet && item.type === 'coin';
-        if (item.lane !== player.lane && !isMagnetized) continue;
-        if (item.requiresJump && !player.jumping && !isMagnetized) continue;
-        if (item.requiresSlide && !player.sliding && !isMagnetized) continue;
+        const depthDiff = Math.abs(item.z - PLAYER_Z);
+        const laneDiff = Math.abs(player.laneNorm - item.laneNorm);
 
-        if (rectsOverlap(pBounds, item.getBounds())) {
-          this._collect(item, particles);
+        // Collectible pickup tolerance
+        if (depthDiff < 42 && (laneDiff < 0.58 || isMagnetized)) {
+          if (item.requiresJump && !player.jumping && !isMagnetized) continue;
+          if (item.requiresSlide && !player.sliding && !isMagnetized) continue;
+
+          this._collect(item, player, particles);
         }
       }
 
-      this.items = this.items.filter(i => !i.collected && i.y < DESIGN_HEIGHT + 80);
+      // Filter collected and out-of-screen items
+      this.items = this.items.filter(i => !i.collected && i.z > -80);
 
       // Decrement active timed power-ups
       for (const key of Object.keys(this.activePowerUps)) {
@@ -1717,104 +1828,133 @@
       }
     }
 
-    _collect(item, particles) {
+    _collect(item, player, particles) {
       item.collected = true;
+      const pos = project3D(item.laneNorm, item.z, item.heightOffset);
 
       if (item.type === 'coin') {
         this.coinCount++;
         const multiplier = this.activePowerUps.multiplier ? 2 : 1;
         const gain = 10 * multiplier;
         this.coinScore += gain;
-        SoundSystem.coin();
-        particles.burst(item.x, item.y - item.height, '#ffd23f', 8, 40, 120);
-        particles.spawnText(item.x, item.y - item.height, `+${gain}`, '#ffd23f');
+        try { SoundSystem.coin(); } catch (e) {}
+        if (particles) {
+          particles.burst(pos.x, pos.y, '#ffd23f', 8, 40, 120);
+          particles.spawnText(pos.x, pos.y - 10, `+${gain}`, '#ffd23f');
+        }
       } else if (item.type === 'shield') {
         this.shieldCharges = Math.min(3, this.shieldCharges + 1);
-        SoundSystem.powerup();
-        particles.burst(item.x, item.y, '#06d6a0', 16, 60, 200);
-        particles.spawnText(item.x, item.y, 'SHIELD ARMED', '#06d6a0');
+        try { SoundSystem.powerup(); } catch (e) {}
+        if (particles) {
+          particles.burst(pos.x, pos.y, '#06d6a0', 16, 60, 200);
+          particles.spawnText(pos.x, pos.y - 12, 'SHIELD ARMED', '#06d6a0');
+        }
       } else {
         const meta = POWERUP_METAS[item.type];
         let duration = meta.duration;
         if (item.type === 'magnet' && this.magnetDuration) duration = this.magnetDuration;
         if (item.type === 'multiplier' && this.multiplierDuration) duration = this.multiplierDuration;
         this.activePowerUps[item.type] = duration;
-        SoundSystem.powerup();
-        particles.burst(item.x, item.y, meta.color, 16, 60, 200);
-        particles.spawnText(item.x, item.y, meta.name, meta.color);
+        try { SoundSystem.powerup(); } catch (e) {}
+        if (particles) {
+          particles.burst(pos.x, pos.y, meta.color, 16, 60, 200);
+          particles.spawnText(pos.x, pos.y - 12, meta.name, meta.color);
+        }
       }
     }
 
     render(ctx) {
       for (const item of this.items) {
-        const b = item.getBounds();
-        const cx = b.x + b.w / 2;
-        const cy = b.y + b.h / 2;
+        this.renderItem(ctx, item);
+      }
+    }
 
-        ctx.save();
-        if (item.type === 'coin') {
-          // 3D Spinning Gold Coin with metallic sheen
-          const wobble = Math.abs(Math.cos(item.spin));
-          const w = Math.max(3, item.radius * wobble);
+    renderItem(ctx, item) {
+      if (item.z < -60 || item.z > Z_SPAWN + 80) return;
+      ctx.save();
 
-          const coinGrad = ctx.createLinearGradient(cx - w, cy - item.radius, cx + w, cy + item.radius);
-          coinGrad.addColorStop(0, '#fffbe0');
-          coinGrad.addColorStop(0.5, '#ffd23f');
-          coinGrad.addColorStop(1, '#ff9100');
+      const pos = project3D(item.laneNorm, item.z, item.heightOffset);
+      const groundPos = project3D(item.laneNorm, item.z, 0);
+      const s = pos.scale;
+      const r = item.radius * s;
 
-          ctx.fillStyle = coinGrad;
-          ctx.shadowColor = '#ffd23f';
-          ctx.shadowBlur = 10;
+      if (item.type === 'coin') {
+        // 3D Ground shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(groundPos.x, groundPos.y, r * 0.9, 3.5 * s, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 3D Spinning Gold Coin
+        const wobble = Math.cos(item.spin);
+        const w = Math.max(2, r * Math.abs(wobble));
+
+        const coinGrad = ctx.createLinearGradient(pos.x - w, pos.y - r, pos.x + w, pos.y + r);
+        coinGrad.addColorStop(0, '#fffbe0');
+        coinGrad.addColorStop(0.5, '#ffd23f');
+        coinGrad.addColorStop(1, '#ff9100');
+
+        ctx.fillStyle = coinGrad;
+        ctx.shadowColor = '#ffd23f';
+        ctx.shadowBlur = 8 * s;
+        ctx.beginPath();
+        ctx.ellipse(pos.x, pos.y, w, r, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = Math.max(1, 1.2 * s);
+        ctx.stroke();
+
+        // Inner metallic rim when facing camera
+        if (w > 4 * s) {
+          ctx.strokeStyle = 'rgba(184, 93, 0, 0.55)';
+          ctx.lineWidth = Math.max(0.8, 1 * s);
           ctx.beginPath();
-          ctx.ellipse(cx, cy, w, item.radius, 0, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 1.2;
+          ctx.ellipse(pos.x, pos.y, w * 0.65, r * 0.65, 0, 0, Math.PI * 2);
           ctx.stroke();
+        }
+      } else {
+        // Power-up Orb with orbiting energy aura rings
+        const meta = POWERUP_METAS[item.type];
 
-          // Inner metallic rim when facing viewer
-          if (w > 5) {
-            ctx.strokeStyle = 'rgba(184, 93, 0, 0.55)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.ellipse(cx, cy, w * 0.65, item.radius * 0.65, 0, 0, Math.PI * 2);
-            ctx.stroke();
-          }
-        } else {
-          // Power-up Orb with orbiting energy aura rings
-          const meta = POWERUP_METAS[item.type];
+        // Ground shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        ctx.beginPath();
+        ctx.ellipse(groundPos.x, groundPos.y, r * 1.1, 4 * s, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-          // Outer rotating halo ring
-          ctx.strokeStyle = meta.color;
-          ctx.shadowColor = meta.color;
-          ctx.shadowBlur = 14;
-          ctx.lineWidth = 1.8;
-          ctx.beginPath();
-          ctx.ellipse(cx, cy, item.radius * 1.5, item.radius * 0.6, item.spin * 2.2, 0, Math.PI * 2);
-          ctx.stroke();
+        // Outer rotating halo ring
+        ctx.strokeStyle = meta.color;
+        ctx.shadowColor = meta.color;
+        ctx.shadowBlur = 12 * s;
+        ctx.lineWidth = Math.max(1, 1.8 * s);
+        ctx.beginPath();
+        ctx.ellipse(pos.x, pos.y, r * 1.5, r * 0.6, item.spin * 2.2, 0, Math.PI * 2);
+        ctx.stroke();
 
-          // Core Orb
-          const orbGrad = ctx.createRadialGradient(cx - 3, cy - 3, 2, cx, cy, item.radius);
-          orbGrad.addColorStop(0, '#ffffff');
-          orbGrad.addColorStop(0.4, meta.color);
-          orbGrad.addColorStop(1, '#0b0f19');
+        // Core Orb
+        const orbGrad = ctx.createRadialGradient(pos.x - 3 * s, pos.y - 3 * s, 2 * s, pos.x, pos.y, r);
+        orbGrad.addColorStop(0, '#ffffff');
+        orbGrad.addColorStop(0.4, meta.color);
+        orbGrad.addColorStop(1, '#0b0f19');
 
-          ctx.fillStyle = orbGrad;
-          ctx.beginPath();
-          ctx.arc(cx, cy, item.radius, 0, Math.PI * 2);
-          ctx.fill();
+        ctx.fillStyle = orbGrad;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
+        ctx.fill();
 
-          // Icon
+        // Icon
+        if (s > 0.35) {
           ctx.fillStyle = '#ffffff';
-          ctx.shadowBlur = 4;
-          ctx.font = 'bold 15px sans-serif';
+          ctx.shadowBlur = 3 * s;
+          ctx.font = `bold ${Math.max(10, 14 * s)}px sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(meta.icon, cx, cy);
+          ctx.fillText(meta.icon, pos.x, pos.y);
         }
-        ctx.restore();
       }
+
+      ctx.restore();
     }
   }
 
@@ -1834,6 +1974,7 @@
   const COSTUMES_STORAGE_KEY = 'run_and_run_unlocked_costumes';
   const EQUIPPED_STORAGE_KEY = 'run_and_run_equipped_costume';
   const UPGRADES_STORAGE_KEY = 'run_and_run_upgrades';
+  const PROFILE_STORAGE_KEY = 'run_and_run_pilot_profile';
 
   class GameApp {
     constructor() {
@@ -1879,6 +2020,10 @@
 
       this.menuBestScore.textContent = this.bestScore;
       this.updateBankDisplays();
+
+      // Pilot Profile & Rank
+      this.profile = this.loadProfile();
+      this.updateProfileUI();
 
       // Systems
       this.parallax = new ParallaxCity();
@@ -1992,6 +2137,82 @@
         const current = COSTUMES[this.equippedCostume] || COSTUMES.neo;
         this.equippedCostumeName.textContent = current.name;
       }
+    }
+
+    loadProfile() {
+      try {
+        const val = localStorage.getItem(PROFILE_STORAGE_KEY);
+        if (val) {
+          const parsed = JSON.parse(val);
+          if (parsed && typeof parsed === 'object') {
+            return {
+              callsign: (parsed.callsign || 'CYBER_RUNNER').trim().slice(0, 14),
+              avatar: parsed.avatar || '🤖'
+            };
+          }
+        }
+      } catch (e) {}
+      return { callsign: 'NEO_KARTIK', avatar: '🤖' };
+    }
+
+    saveProfile(callsign, avatar) {
+      if (!this.profile) this.profile = { callsign: 'NEO_KARTIK', avatar: '🤖' };
+      if (callsign !== undefined) this.profile.callsign = (callsign || 'CYBER_RUNNER').trim().slice(0, 14);
+      if (avatar !== undefined) this.profile.avatar = avatar || '🤖';
+      try {
+        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(this.profile));
+      } catch (e) {}
+      this.updateProfileUI();
+    }
+
+    getProfileRank(score) {
+      if (score >= 7000) return { title: '👑 GRAND APEX', tier: 'TIER 5' };
+      if (score >= 3500) return { title: '⚡ PHANTOM V', tier: 'TIER 4' };
+      if (score >= 1500) return { title: '🚀 CYBER ACE', tier: 'TIER 3' };
+      if (score >= 500) return { title: '🛡️ RUNNER II', tier: 'TIER 2' };
+      return { title: '🤖 ROOKIE RUNNER', tier: 'TIER 1' };
+    }
+
+    updateProfileUI() {
+      const callsign = this.profile ? this.profile.callsign : 'CYBER_RUNNER';
+      const avatar = this.profile ? this.profile.avatar : '🤖';
+      const rankInfo = this.getProfileRank(this.bestScore);
+
+      // Top bar profile button
+      const avatarPill = document.getElementById('profileAvatarPill');
+      const callsignPill = document.getElementById('profileCallsignPill');
+      if (avatarPill) avatarPill.textContent = avatar;
+      if (callsignPill) callsignPill.textContent = callsign;
+
+      // Settings Modal Profile Tab
+      const bigAvatar = document.getElementById('profileBigAvatar');
+      const rankBadge = document.getElementById('profileRankBadge');
+      const input = document.getElementById('profileCallsignInput');
+      const statBest = document.getElementById('profileStatBest');
+      const statBank = document.getElementById('profileStatBank');
+      const statTier = document.getElementById('profileStatTier');
+
+      if (bigAvatar) bigAvatar.textContent = avatar;
+      if (rankBadge) rankBadge.textContent = rankInfo.title;
+      if (input && document.activeElement !== input) input.value = callsign;
+      if (statBest) statBest.textContent = this.bestScore;
+      if (statBank) statBank.textContent = this.bankCoins;
+      if (statTier) statTier.textContent = rankInfo.tier;
+
+      // Highlight active avatar chip in picker
+      document.querySelectorAll('.avatar-chip').forEach(chip => {
+        if (chip.getAttribute('data-avatar') === avatar) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+
+      // Game Over debrief
+      const goAvatar = document.getElementById('gameoverAvatar');
+      const goCallsign = document.getElementById('gameoverCallsign');
+      if (goAvatar) goAvatar.textContent = avatar;
+      if (goCallsign) goCallsign.textContent = callsign;
     }
 
     loadSelectedBg() {
@@ -2363,6 +2584,7 @@
       const settingsModal = this.settingsModal;
       this.attachButtonAction('menuSettingsBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
+        this.updateProfileUI();
         if (settingsModal) settingsModal.classList.remove('hidden');
       });
       this.attachButtonAction('closeSettingsBtn', () => {
@@ -2370,6 +2592,51 @@
       });
       this.attachButtonAction('applySettingsBtn', () => {
         if (settingsModal) settingsModal.classList.add('hidden');
+      });
+
+      // Pilot Profile Card button on Home Screen -> opens Settings directly to Profile tab
+      this.attachButtonAction('menuProfileBtn', () => {
+        try { SoundSystem.ensure(); } catch (e) {}
+        this.updateProfileUI();
+        if (settingsModal) {
+          settingsModal.classList.remove('hidden');
+          const pTabBtn = document.getElementById('tabBtnProfile');
+          if (pTabBtn) pTabBtn.click();
+        }
+      });
+
+      // Profile Save button
+      this.attachButtonAction('profileSaveBtn', () => {
+        const input = document.getElementById('profileCallsignInput');
+        const name = input ? input.value : this.profile.callsign;
+        this.saveProfile(name, this.profile.avatar);
+        try { SoundSystem.equip(); } catch (e) {}
+        const btn = document.getElementById('profileSaveBtn');
+        if (btn) {
+          const orig = btn.textContent;
+          btn.textContent = 'SAVED!';
+          setTimeout(() => { btn.textContent = orig; }, 1200);
+        }
+      });
+
+      // Preset Callsign Chips
+      document.querySelectorAll('.callsign-chip').forEach(chip => {
+        this.attachButtonAction(chip, () => {
+          const name = chip.getAttribute('data-name');
+          const input = document.getElementById('profileCallsignInput');
+          if (input) input.value = name;
+          this.saveProfile(name, this.profile.avatar);
+          try { SoundSystem.equip(); } catch (e) {}
+        });
+      });
+
+      // Avatar Chips in Picker
+      document.querySelectorAll('.avatar-chip').forEach(chip => {
+        this.attachButtonAction(chip, () => {
+          const av = chip.getAttribute('data-avatar');
+          this.saveProfile(this.profile.callsign, av);
+          try { SoundSystem.equip(); } catch (e) {}
+        });
       });
 
       // Shop Modal Open/Close
@@ -2640,59 +2907,35 @@
       if (this.state !== GameStates.PLAYING) return;
       if (!this.player || !this.track) return;
 
-      const playerFeet = GROUND_Y - this.player.jumpHeight;
-      const playerHead = playerFeet - (this.player.sliding ? this.player.slideHeight : this.player.height);
-      const playerLeft = this.player.x - 20;
-      const playerRight = this.player.x + 20;
-
       for (const o of this.track.obstacles) {
         if (o.hit) continue;
 
-        // Broad vertical culling: ignore obstacles far above or far below the player
-        if (o.y < GROUND_Y - 140 || o.y - o.h > GROUND_Y + 60) continue;
+        // 3D Depth collision window around player position (PLAYER_Z = 110)
+        const depthDiff = Math.abs(o.z - PLAYER_Z);
+        if (depthDiff > 36) continue;
 
-        // Horizontal body collision check (accurate whether in lane or during lateral dash)
-        const obsLeft = o.x - o.w / 2 + 10;
-        const obsRight = o.x + o.w / 2 - 10;
-        const overlapX = playerRight > obsLeft && playerLeft < obsRight;
-        if (!overlapX) continue;
+        // Lateral lane overlap between smooth player position and obstacle lane
+        const laneDiff = Math.abs(this.player.laneNorm - o.laneNorm);
+        if (laneDiff > 0.58) continue;
 
-        // Obstacle-specific vertical intersection & evasion mechanics
+        // Obstacle-specific 3D mechanics: Jump over LOW, Slide under HIGH, Dodge BLOCK
         let collided = false;
 
         if (o.type.id === 'LOW') {
-          // Electric Barrier (h: 44, requires JUMP)
-          const barrierTop = o.y - o.h;
-          const barrierBottom = o.y;
-
-          // Contact with low ground barrier
-          const overlapY = (playerFeet > barrierTop + 4) && (playerHead < barrierBottom);
-          const clearedJump = this.player.jumping && (this.player.jumpHeight >= o.h * 0.72);
-
-          if (overlapY && !clearedJump) {
+          // Electric Barrier: Player must jump over it
+          const clearedJump = this.player.jumping && (this.player.jumpHeight >= 28);
+          if (!clearedJump) {
             collided = true;
           }
         } else if (o.type.id === 'HIGH') {
-          // Laser Gate (h: 110, gap: 48, requires SLIDE)
-          const solidBeamTop = o.y - o.h;
-          const solidBeamBottom = o.y - o.type.gap; // o.y - 48
-
-          // Contact with overhead lethal beam
-          const overlapBeam = (playerFeet > solidBeamTop) && (playerHead < solidBeamBottom);
-          const safelySliding = this.player.sliding && (this.player.jumpHeight <= 5);
-
-          if (overlapBeam && !safelySliding) {
+          // Laser Gate: Player must slide underneath clearance gap
+          const safelySliding = this.player.sliding && (this.player.jumpHeight <= 8);
+          if (!safelySliding) {
             collided = true;
           }
         } else {
-          // BLOCK Monolith (Full solid pillar, cannot be jumped or slid under)
-          const blockTop = o.y - o.h;
-          const blockBottom = o.y;
-          const overlapBlock = (playerFeet > blockTop + 4) && (playerHead < blockBottom);
-
-          if (overlapBlock) {
-            collided = true;
-          }
+          // BLOCK Monolith: Impassable barrier; requires lane switch to dodge
+          collided = true;
         }
 
         if (collided) {
@@ -2702,9 +2945,10 @@
           if (this.collectibles.shieldCharges > 0) {
             this.collectibles.shieldCharges--;
             try { SoundSystem.shieldBreak(); } catch (e) {}
-            ScreenShake.trigger(10, 0.3);
-            this.particles.burst(o.x, o.y - o.h / 2, '#06d6a0', 24);
-            this.particles.spawnText(this.player.x, GROUND_Y - 100, 'SHIELD BROKEN', '#ff3366');
+            ScreenShake.trigger(12, 0.35);
+            const pos = project3D(o.laneNorm, o.z, o.type.h / 2);
+            this.particles.burst(pos.x, pos.y, '#06d6a0', 24);
+            this.particles.spawnText(this.player.x, this.player.groundY - 100, 'SHIELD BROKEN', '#ff3366');
             this.track.obstacles = this.track.obstacles.filter(item => item !== o);
           } else {
             // Fatal Crash -> Runner dies immediately
@@ -2723,13 +2967,14 @@
         console.warn('[Audio] Crash SFX error:', e);
       }
       ScreenShake.trigger(20, 0.5);
-      this.particles.burst(this.player.x, GROUND_Y - this.player.height / 2, '#ff3366', 36, 120, 360);
+      this.particles.burst(this.player.x, this.player.groundY - 40 * this.player.scale, '#ff3366', 36, 120, 360);
 
       // Deposit collected coins into bank
       const earned = this.collectibles.coinCount;
       this.bankCoins += earned;
       this.saveBankCoins(this.bankCoins);
 
+      this.updateProfileUI();
       this.setState(GameStates.GAMEOVER);
     }
 
@@ -2803,45 +3048,132 @@
       const gridCol = t < 1 ? lerpColor(from.grid, to.grid, t) : to.grid;
       const speedRatio = this.state === GameStates.PLAYING ? (this.speed / this.baseSpeed) : 0.6;
 
-      // Dynamic Sky Gradient
-      const grad = ctx.createLinearGradient(0, 0, 0, DESIGN_HEIGHT);
+      // 1. Dynamic Sky Gradient
+      const grad = ctx.createLinearGradient(0, 0, 0, VP_Y + 40);
       grad.addColorStop(0, skyTop);
       grad.addColorStop(1, skyBot);
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT);
 
-      // Parallax Cityscape with Celestial Objects & Speed Streaks
+      // 2. Parallax Cityscape with Celestial Objects & Horizon Skyline
       this.parallax.render(ctx, this.distance, to, bldgCol, gridCol, speedRatio);
 
-      // Ground Track
-      ctx.fillStyle = groundCol;
-      ctx.fillRect(0, GROUND_Y + 12, DESIGN_WIDTH, DESIGN_HEIGHT - GROUND_Y - 12);
+      // 3. Ground / Sub-road baseline fill
+      ctx.fillStyle = '#060913';
+      ctx.fillRect(0, VP_Y, DESIGN_WIDTH, DESIGN_HEIGHT - VP_Y);
 
-      // Neon Lane Lines
+      // 4. 3D Subway / Cyber Road Surface (Trapezoid converging into horizon at VP_Y = 270)
+      const roadGrad = ctx.createLinearGradient(0, VP_Y, 0, GROUND_Y);
+      roadGrad.addColorStop(0, '#0c1020');
+      roadGrad.addColorStop(0.3, '#10172e');
+      roadGrad.addColorStop(1, '#182038');
+
       ctx.save();
+      ctx.fillStyle = roadGrad;
+      ctx.beginPath();
+      // Horizon road top
+      ctx.moveTo(VP_X - ROAD_WIDTH_BG / 2, VP_Y);
+      ctx.lineTo(VP_X + ROAD_WIDTH_BG / 2, VP_Y);
+      // Foreground road bottom (flaring out to screen edge)
+      ctx.lineTo(VP_X + ROAD_WIDTH_FG / 2 + 20, DESIGN_HEIGHT);
+      ctx.lineTo(VP_X - ROAD_WIDTH_FG / 2 - 20, DESIGN_HEIGHT);
+      ctx.closePath();
+      ctx.fill();
+
+      // 5. 3D Road Speed Cross-ties / Sleepers (Scrolling with distance)
+      const sleeperStep = 55;
+      const sleeperOffset = (this.distance * 0.8) % sleeperStep;
+      ctx.lineWidth = 2;
+      for (let sz = sleeperOffset; sz < 850; sz += sleeperStep) {
+        const pLeft = project3D(-1.5, sz, 0);
+        const pRight = project3D(1.5, sz, 0);
+        const alpha = clamp(pLeft.scale * 1.1, 0.05, 0.45);
+
+        ctx.strokeStyle = gridCol;
+        ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        ctx.moveTo(pLeft.x, pLeft.y);
+        ctx.lineTo(pRight.x, pRight.y);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1.0;
+
+      // 6. 3D Converging Lane Dividers (Dashed lines between lanes 0-1 and 1-2)
       ctx.strokeStyle = gridCol;
       ctx.shadowColor = gridCol;
       ctx.shadowBlur = 8;
-      ctx.lineWidth = 3;
-      ctx.setLineDash([24, 20]);
-      ctx.lineDashOffset = -(this.distance % 44);
+      ctx.lineWidth = 2.5;
 
-      for (let i = 1; i < LANE_COUNT; i++) {
-        const lx = LANE_WIDTH * i;
-        ctx.beginPath();
-        ctx.moveTo(lx, 260);
-        ctx.lineTo(lx, DESIGN_HEIGHT);
-        ctx.stroke();
+      const dividerNorms = [-0.5, 0.5];
+      for (const norm of dividerNorms) {
+        for (let dz = (this.distance * 1.2) % 60; dz < 900; dz += 60) {
+          const p1 = project3D(norm, dz + 25, 0);
+          const p2 = project3D(norm, dz, 0);
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
       }
-      ctx.restore();
 
-      // Ground horizon divider
-      ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+      // 7. Glowing Outer Guardrail Curbs
+      ctx.shadowBlur = 12;
       ctx.lineWidth = 4;
+      // Left Curb
+      ctx.strokeStyle = gridCol;
       ctx.beginPath();
-      ctx.moveTo(0, GROUND_Y + 12);
-      ctx.lineTo(DESIGN_WIDTH, GROUND_Y + 12);
+      const leftTop = project3D(-1.55, 950, 0);
+      const leftBot = project3D(-1.55, -40, 0);
+      ctx.moveTo(leftTop.x, leftTop.y);
+      ctx.lineTo(leftBot.x, leftBot.y);
       ctx.stroke();
+
+      // Right Curb
+      ctx.beginPath();
+      const rightTop = project3D(1.55, 950, 0);
+      const rightBot = project3D(1.55, -40, 0);
+      ctx.moveTo(rightTop.x, rightTop.y);
+      ctx.lineTo(rightBot.x, rightBot.y);
+      ctx.stroke();
+
+      // 8. Roadside 3D Cyber Light Pillars rushing backward
+      const poleStep = 220;
+      const poleOffset = (this.distance * 1.0) % poleStep;
+      for (let pz = poleOffset; pz < 920; pz += poleStep) {
+        // Left lightpost
+        const pL = project3D(-1.75, pz, 0);
+        const pLTop = project3D(-1.75, pz, 48);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.lineWidth = Math.max(1, 2 * pL.scale);
+        ctx.beginPath();
+        ctx.moveTo(pL.x, pL.y);
+        ctx.lineTo(pLTop.x, pLTop.y);
+        ctx.stroke();
+
+        // Neon beacon orb on top
+        ctx.fillStyle = gridCol;
+        ctx.shadowColor = gridCol;
+        ctx.shadowBlur = 8 * pL.scale;
+        ctx.beginPath();
+        ctx.arc(pLTop.x, pLTop.y, Math.max(2, 4 * pL.scale), 0, Math.PI * 2);
+        ctx.fill();
+
+        // Right lightpost
+        const pR = project3D(1.75, pz, 0);
+        const pRTop = project3D(1.75, pz, 48);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.beginPath();
+        ctx.moveTo(pR.x, pR.y);
+        ctx.lineTo(pRTop.x, pRTop.y);
+        ctx.stroke();
+
+        ctx.fillStyle = gridCol;
+        ctx.beginPath();
+        ctx.arc(pRTop.x, pRTop.y, Math.max(2, 4 * pR.scale), 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
     }
 
     draw() {
@@ -2854,9 +3186,36 @@
       this.drawBackground();
 
       if (this.state !== GameStates.MENU) {
-        this.track.render(ctx);
-        this.collectibles.render(ctx);
-        this.player.render(ctx);
+        // 3D Back-to-front Depth Ordering (Subway Surfers Painter's Algorithm)
+        const renderList = [];
+
+        // Obstacles
+        for (const o of this.track.obstacles) {
+          renderList.push({ z: o.z, type: 'obstacle', item: o });
+        }
+
+        // Collectibles (Coins & Powerups)
+        for (const c of this.collectibles.items) {
+          renderList.push({ z: c.z, type: 'collectible', item: c });
+        }
+
+        // Player (at PLAYER_Z = 110)
+        renderList.push({ z: PLAYER_Z, type: 'player', item: this.player });
+
+        // Sort descending: highest z (furthest from camera) rendered first
+        renderList.sort((a, b) => b.z - a.z);
+
+        for (const entity of renderList) {
+          if (entity.type === 'obstacle') {
+            this.track.renderObstacle(ctx, entity.item);
+          } else if (entity.type === 'collectible') {
+            this.collectibles.renderItem(ctx, entity.item);
+          } else if (entity.type === 'player') {
+            this.player.render(ctx);
+          }
+        }
+
+        // Foreground 2D HUD text and particle effects
         this.particles.render(ctx);
       }
 

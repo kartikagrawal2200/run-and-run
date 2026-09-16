@@ -1,5 +1,5 @@
 /**
- * Web Audio Engine for Neon Lane Runner
+ * Web Audio Engine for Neon Lane Runner 3D
  * Pure synthesized retro/synthwave audio & sound effects (no external audio files needed).
  */
 const SoundSystem = (function () {
@@ -8,12 +8,24 @@ const SoundSystem = (function () {
   let ctx = null;
   let sfxMuted = false;
   let bgmMuted = false;
+  let sfxVolume = 1.0;
+  let bgmVolume = 0.55;
   let isPlayingBgm = false;
   let nextNoteTime = 0;
   let bgmStep = 0;
   let bgmTimer = null;
 
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  // Initialize saved audio preferences
+  try {
+    if (localStorage.getItem('runner_sfx_muted') === 'true') sfxMuted = true;
+    if (localStorage.getItem('runner_bgm_muted') === 'true') bgmMuted = true;
+    const sv = parseFloat(localStorage.getItem('runner_sfx_vol'));
+    if (!isNaN(sv)) sfxVolume = clamp(sv, 0, 1);
+    const bv = parseFloat(localStorage.getItem('runner_bgm_vol'));
+    if (!isNaN(bv)) bgmVolume = clamp(bv, 0, 1);
+  } catch (e) {}
 
   // 124 BPM Synthwave
   const tempo = 124;
@@ -37,20 +49,38 @@ const SoundSystem = (function () {
   ];
 
   function ensureAudio() {
-    if (!ctx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) {
-        ctx = new AudioCtx();
+    try {
+      if (!ctx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          ctx = new AudioCtx();
+        }
       }
-    }
-    if (ctx && ctx.state === 'suspended') {
-      ctx.resume();
-    }
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume();
+      }
+    } catch (e) {}
+    return ctx;
   }
+
+  // Proactive user-gesture audio unlocker for modern browsers
+  const unlockEvents = ['pointerdown', 'touchstart', 'keydown', 'click'];
+  function unlockAudio() {
+    try {
+      ensureAudio();
+      if (ctx && ctx.state === 'running') {
+        unlockEvents.forEach(evt => window.removeEventListener(evt, unlockAudio));
+      }
+    } catch (e) {}
+  }
+  unlockEvents.forEach(evt => window.addEventListener(evt, unlockAudio, { passive: true }));
 
   function playTone(freq, duration, type, startGain, delay, freqEnd) {
     try {
-      if (sfxMuted || !ctx) return;
+      if (sfxMuted) return;
+      ensureAudio();
+      if (!ctx || ctx.state !== 'running') return;
+
       const t0 = ctx.currentTime + (delay || 0);
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -74,7 +104,6 @@ const SoundSystem = (function () {
   // Sound effects
   function playJump() {
     try {
-      ensureAudio();
       playTone(320, 0.16, 'triangle', 0.18, 0, 780);
       playTone(540, 0.12, 'sine', 0.1, 0.04, 880);
     } catch (e) {}
@@ -82,21 +111,18 @@ const SoundSystem = (function () {
 
   function playSlide() {
     try {
-      ensureAudio();
       playTone(280, 0.22, 'sine', 0.16, 0, 110);
     } catch (e) {}
   }
 
   function playLaneSwitch() {
     try {
-      ensureAudio();
-      playTone(400, 0.06, 'triangle', 0.08, 0, 520);
+      playTone(400, 0.06, 'triangle', 0.09, 0, 560);
     } catch (e) {}
   }
 
   function playCoin() {
     try {
-      ensureAudio();
       playTone(1046.5, 0.08, 'square', 0.09, 0);       // C6
       playTone(1318.5, 0.09, 'square', 0.08, 0.04);    // E6
       playTone(1567.98, 0.14, 'square', 0.07, 0.08);   // G6
@@ -105,7 +131,6 @@ const SoundSystem = (function () {
 
   function playPowerup() {
     try {
-      ensureAudio();
       playTone(440, 0.08, 'sawtooth', 0.1, 0);
       playTone(554.37, 0.08, 'sawtooth', 0.1, 0.06);
       playTone(659.25, 0.08, 'sawtooth', 0.1, 0.12);
@@ -115,7 +140,6 @@ const SoundSystem = (function () {
 
   function playShieldBreak() {
     try {
-      ensureAudio();
       playTone(240, 0.25, 'sawtooth', 0.2, 0, 70);
       playTone(160, 0.3, 'square', 0.15, 0.05, 50);
     } catch (e) {}
@@ -123,8 +147,9 @@ const SoundSystem = (function () {
 
   function playCrash() {
     try {
+      if (sfxMuted) return;
       ensureAudio();
-      if (sfxMuted || !ctx) return;
+      if (!ctx) return;
       const t0 = ctx.currentTime;
 
       // Sub bass drop
@@ -157,6 +182,22 @@ const SoundSystem = (function () {
     } catch (e) {}
   }
 
+  function playBuy() {
+    try {
+      playTone(523.25, 0.08, 'square', 0.12, 0);       // C5
+      playTone(659.25, 0.08, 'square', 0.12, 0.06);    // E5
+      playTone(783.99, 0.08, 'square', 0.12, 0.12);    // G5
+      playTone(1046.5, 0.22, 'square', 0.15, 0.18);    // C6
+    } catch (e) {}
+  }
+
+  function playEquip() {
+    try {
+      playTone(330, 0.08, 'triangle', 0.14, 0, 660);
+      playTone(880, 0.15, 'sine', 0.12, 0.08);
+    } catch (e) {}
+  }
+
   /* ---------------- Procedural Synthwave BGM ---------------- */
   function scheduleBgmNote(time) {
     if (bgmMuted || !isPlayingBgm || !ctx) return;
@@ -166,54 +207,52 @@ const SoundSystem = (function () {
 
     // Kick on 1, 5, 9, 13 (four on the floor)
     if (step16 % 4 === 0) {
-      const kickOsc = ctx.createOscillator();
-      const kickGain = ctx.createGain();
-      kickOsc.frequency.setValueAtTime(120, time);
-      kickOsc.frequency.exponentialRampToValueAtTime(35, time + 0.1);
-      kickGain.gain.setValueAtTime(0.24, time);
-      kickGain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
-      kickOsc.connect(kickGain).connect(ctx.destination);
-      kickOsc.start(time);
-      kickOsc.stop(time + 0.13);
+      try {
+        const kickOsc = ctx.createOscillator();
+        const kickGain = ctx.createGain();
+        kickOsc.frequency.setValueAtTime(130, time);
+        kickOsc.frequency.exponentialRampToValueAtTime(32, time + 0.08);
+        kickGain.gain.setValueAtTime(0.24 * bgmVolume, time);
+        kickGain.gain.exponentialRampToValueAtTime(0.001, time + 0.09);
+        kickOsc.connect(kickGain).connect(ctx.destination);
+        kickOsc.start(time);
+        kickOsc.stop(time + 0.09);
+      } catch (e) {}
     }
 
-    // Snare / clap on 4, 12 (beats 2 and 4)
+    // Snare on 5, 13 (backbeat)
     if (step16 % 8 === 4) {
       try {
-        const snareLen = 0.12;
-        const buf = ctx.createBuffer(1, ctx.sampleRate * snareLen, ctx.sampleRate);
-        const d = buf.getChannelData(0);
-        for (let i = 0; i < d.length; i++) {
-          d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.03));
-        }
-        const snare = ctx.createBufferSource();
-        snare.buffer = buf;
-        const sGain = ctx.createGain();
-        sGain.gain.setValueAtTime(0.12, time);
-        sGain.gain.exponentialRampToValueAtTime(0.001, time + snareLen);
-        snare.connect(sGain).connect(ctx.destination);
-        snare.start(time);
+        const snareOsc = ctx.createOscillator();
+        const snareGain = ctx.createGain();
+        snareOsc.type = 'triangle';
+        snareOsc.frequency.setValueAtTime(180, time);
+        snareOsc.frequency.exponentialRampToValueAtTime(50, time + 0.12);
+        snareGain.gain.setValueAtTime(0.12 * bgmVolume, time);
+        snareGain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+        snareOsc.connect(snareGain).connect(ctx.destination);
+        snareOsc.start(time);
+        snareOsc.stop(time + 0.12);
       } catch (e) {}
     }
 
-    // Hi-hat on off-beats
-    if (step16 % 2 === 1) {
-      try {
-        const hatOsc = ctx.createOscillator();
-        const hatGain = ctx.createGain();
-        const hatFilter = ctx.createBiquadFilter();
-        hatOsc.type = 'square';
-        hatFilter.type = 'highpass';
-        hatFilter.frequency.setValueAtTime(7000, time);
-        hatGain.gain.setValueAtTime(0.02 * sfxVolume, time);
-        hatGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.03);
-        hatOsc.connect(hatFilter).connect(hatGain).connect(ctx.destination);
-        hatOsc.start(time);
-        hatOsc.stop(time + 0.035);
-      } catch (e) {}
-    }
+    // Hi-hat on every 16th note (using valid highpass filter)
+    try {
+      const hatOsc = ctx.createOscillator();
+      const hatFilter = ctx.createBiquadFilter();
+      const hatGain = ctx.createGain();
+      hatOsc.type = 'square';
+      hatOsc.frequency.setValueAtTime(7500, time);
+      hatFilter.type = 'highpass';
+      hatFilter.frequency.setValueAtTime(6000, time);
+      hatGain.gain.setValueAtTime(0.02 * bgmVolume, time);
+      hatGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.035);
+      hatOsc.connect(hatFilter).connect(hatGain).connect(ctx.destination);
+      hatOsc.start(time);
+      hatOsc.stop(time + 0.035);
+    } catch (e) {}
 
-    // Rolling 16th synth bassline
+    // Driving rolling synth bass
     try {
       const bassFreq = bassNotes[bassIdx];
       const bassOsc = ctx.createOscillator();
@@ -236,8 +275,8 @@ const SoundSystem = (function () {
       bassOsc.stop(time + stepTime);
     } catch (e) {}
 
-    // Occasional lead accent
-    if (step16 % 4 === 2 && Math.random() < 0.6) {
+    // Synth lead melody accents
+    if (step16 % 4 === 2 && Math.random() < 0.65) {
       try {
         const leadNote = leadNotes[bgmStep % leadNotes.length];
         const leadOsc = ctx.createOscillator();
@@ -256,7 +295,7 @@ const SoundSystem = (function () {
   function bgmScheduler() {
     if (!isPlayingBgm || !ctx) return;
     try {
-      while (nextNoteTime < ctx.currentTime + 0.1) {
+      while (nextNoteTime < ctx.currentTime + 0.12) {
         scheduleBgmNote(nextNoteTime);
         nextNoteTime += stepTime;
         bgmStep++;
@@ -269,12 +308,23 @@ const SoundSystem = (function () {
 
   function startBgm() {
     try {
+      if (bgmMuted) return;
       ensureAudio();
-      if (isPlayingBgm || !ctx) return;
-      isPlayingBgm = true;
-      bgmStep = 0;
-      nextNoteTime = (ctx && typeof ctx.currentTime === 'number') ? ctx.currentTime + 0.05 : 0;
-      bgmScheduler();
+      if (!ctx) return;
+
+      const launch = () => {
+        if (isPlayingBgm) return;
+        isPlayingBgm = true;
+        bgmStep = 0;
+        nextNoteTime = ctx.currentTime + 0.05;
+        bgmScheduler();
+      };
+
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(launch).catch(() => {});
+      } else {
+        launch();
+      }
     } catch (e) {
       console.warn('[Audio] Failed to start BGM:', e);
     }
@@ -288,33 +338,31 @@ const SoundSystem = (function () {
     }
   }
 
-  let sfxVolume = 1.0;
-  let bgmVolume = 0.55;
-
   function setSfxVolume(vol) {
     sfxVolume = clamp(vol, 0, 1);
+    try { localStorage.setItem('runner_sfx_vol', String(sfxVolume)); } catch (e) {}
   }
 
   function setBgmVolume(vol) {
     bgmVolume = clamp(vol, 0, 1);
+    try { localStorage.setItem('runner_bgm_vol', String(bgmVolume)); } catch (e) {}
   }
 
-  function playBuy() {
-    try {
-      ensureAudio();
-      playTone(523.25, 0.08, 'square', 0.12 * sfxVolume, 0);       // C5
-      playTone(659.25, 0.08, 'square', 0.12 * sfxVolume, 0.06);    // E5
-      playTone(783.99, 0.08, 'square', 0.12 * sfxVolume, 0.12);    // G5
-      playTone(1046.5, 0.22, 'square', 0.15 * sfxVolume, 0.18);    // C6
-    } catch (e) {}
+  function toggleSfx() {
+    sfxMuted = !sfxMuted;
+    try { localStorage.setItem('runner_sfx_muted', String(sfxMuted)); } catch (e) {}
+    return !sfxMuted;
   }
 
-  function playEquip() {
-    try {
-      ensureAudio();
-      playTone(330, 0.08, 'triangle', 0.14 * sfxVolume, 0, 660);
-      playTone(880, 0.15, 'sine', 0.12 * sfxVolume, 0.08);
-    } catch (e) {}
+  function toggleBgm() {
+    bgmMuted = !bgmMuted;
+    try { localStorage.setItem('runner_bgm_muted', String(bgmMuted)); } catch (e) {}
+    if (bgmMuted) {
+      stopBgm();
+    } else {
+      startBgm();
+    }
+    return !bgmMuted;
   }
 
   return {

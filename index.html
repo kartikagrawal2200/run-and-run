@@ -103,11 +103,12 @@
         <!-- Main Start Screen -->
         <section id="menuScreen" class="overlay">
           <div class="glass-panel menu-panel">
-            <!-- Top Navigation Bar: Settings (Left) & Shop / Bank (Right) -->
+            <!-- Top Navigation Bar: Pilot Profile (Left) & Shop / Bank (Right) -->
             <div class="menu-top-bar">
-              <button type="button" id="menuSettingsBtn" class="nav-cyber-btn" aria-label="Open Settings">
-                <span class="btn-icon">⚙️</span>
-                <span class="nav-btn-text">SETTINGS</span>
+              <button type="button" id="menuProfileBtn" class="profile-card-btn" aria-label="Open Profile & Settings">
+                <span id="profileAvatarPill" class="profile-avatar-pill">🤖</span>
+                <span id="profileCallsignPill" class="profile-callsign-pill">CYBER_RUNNER</span>
+                <span class="profile-gear-icon">⚙️</span>
               </button>
 
               <div class="menu-top-right">
@@ -122,10 +123,10 @@
               </div>
             </div>
 
-            <!-- Title & Branding -->
+            <!-- Title & Branding (Subway Surfers 3D Cyber Theme) -->
             <div class="logo-wrap">
-              <div class="neon-tag-v2">⚡ VERSION 2.0 • CYBER HUMAN RUNNER ⚡</div>
-              <h1 class="glitch-title">RUN &amp; <span class="highlight">RUN</span> <span class="v2-badge">v2</span></h1>
+              <div class="neon-tag-v2">⚡ 3D SUBWAY PERSPECTIVE • ARTICULATED CYBER RUNNER ⚡</div>
+              <h1 class="glitch-title">RUN &amp; <span class="highlight">RUN</span> <span class="v2-badge">3D</span></h1>
             </div>
 
             <!-- Interactive Humanoid Avatar Pedestal Preview -->
@@ -133,7 +134,7 @@
               <div class="pedestal-hologram-ring"></div>
               <canvas id="avatarCanvas" width="130" height="150" class="avatar-canvas"></canvas>
               <div class="avatar-costume-tag">
-                <small>EQUIPPED SUIT</small>
+                <small>ACTIVE SUIT</small>
                 <strong id="equippedCostumeName">NEO RUNNER</strong>
               </div>
             </div>
@@ -144,7 +145,7 @@
             </div>
 
             <button id="playBtn" class="cyber-btn primary-btn">
-              <span class="btn-text">INITIALIZE RUN</span>
+              <span class="btn-text">INITIALIZE RUN ▶</span>
             </button>
             <button id="installAppBtn" class="cyber-btn secondary-btn install-btn">
               <span class="btn-text">📲 INSTALL APP (OFFLINE PLAY)</span>
@@ -152,60 +153,79 @@
           </div>
         </section>
 
-        <!-- Settings Modal (Guidelines, Audio Volume, Environments) -->
+        <!-- Settings & Profile Modal (Profile, Environments, Audio Volume, Guidelines) -->
         <section id="settingsModal" class="overlay modal-overlay hidden">
           <div class="glass-panel modal-panel">
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <span class="modal-tag">TERMINAL CONFIG</span>
-                <h2>SETTINGS</h2>
+                <h2>SETTINGS &amp; PROFILE</h2>
               </div>
               <button type="button" id="closeSettingsBtn" class="close-icon-btn" aria-label="Close Settings">✕</button>
             </div>
 
             <div class="modal-nav-tabs">
-              <button type="button" class="tab-btn active" data-tab="tabDirectives" id="tabBtnDirectives">DIRECTIVES</button>
-              <button type="button" class="tab-btn" data-tab="tabAudio" id="tabBtnAudio">AUDIO</button>
+              <button type="button" class="tab-btn active" data-tab="tabProfile" id="tabBtnProfile">PROFILE</button>
               <button type="button" class="tab-btn" data-tab="tabBackgrounds" id="tabBtnBackgrounds">WORLDS</button>
+              <button type="button" class="tab-btn" data-tab="tabAudio" id="tabBtnAudio">AUDIO</button>
+              <button type="button" class="tab-btn" data-tab="tabDirectives" id="tabBtnDirectives">GUIDE</button>
             </div>
 
-            <!-- Tab 1: Guidelines / Directives -->
-            <div id="tabDirectives" class="tab-content">
-              <div class="instructions-card modal-card">
-                <h3>RUNNER PROTOCOL</h3>
-                <ul>
-                  <li><span class="key-badge">A</span> <span class="key-badge">D</span> or <span class="key-badge">←</span> <span class="key-badge">→</span> / Swipe Horizontal: Switch Lanes</li>
-                  <li><span class="key-badge">W</span> or <span class="key-badge">↑</span> or <span class="key-badge">Space</span> / Swipe Up: Jump over Electric Barriers</li>
-                  <li><span class="key-badge">S</span> or <span class="key-badge">↓</span> / Swipe Down: Slide under Overhead Laser Beams</li>
-                  <li><span class="warn-pill">AVOID</span> Black cyber pillars — change lanes immediately!</li>
-                  <li><span class="bonus-pill">GRAB</span> 🪙 Data Orbs to purchase suits &amp; upgrades in the Armory!</li>
-                  <li><span class="key-badge">P</span> or <span class="key-badge">ESC</span>: Suspend (Pause) Game</li>
-                </ul>
+            <!-- Tab 1: Profile Customization -->
+            <div id="tabProfile" class="tab-content">
+              <div class="profile-card modal-card">
+                <div class="profile-header-row">
+                  <div class="profile-avatar-big" id="profileBigAvatar">🤖</div>
+                  <div class="profile-meta-info">
+                    <div class="profile-rank-badge" id="profileRankBadge">⚡ ROOKIE RUNNER</div>
+                    <span class="profile-sub-label">PILOT PROFILE</span>
+                  </div>
+                </div>
+
+                <div class="profile-name-edit-box">
+                  <label for="profileCallsignInput" class="profile-input-label">CUSTOM CALLSIGN</label>
+                  <div class="profile-input-row">
+                    <input type="text" id="profileCallsignInput" class="profile-text-input" maxlength="14" value="CYBER_RUNNER" placeholder="Enter Call Name...">
+                    <button type="button" id="profileSaveBtn" class="cyber-btn primary-btn profile-save-btn">SAVE</button>
+                  </div>
+                  <div class="profile-preset-chips" id="profilePresetChips">
+                    <button type="button" class="callsign-chip" data-name="NEO_KARTIK">NEO_KARTIK</button>
+                    <button type="button" class="callsign-chip" data-name="PHANTOM_X">PHANTOM_X</button>
+                    <button type="button" class="callsign-chip" data-name="CYBER_TITAN">CYBER_TITAN</button>
+                    <button type="button" class="callsign-chip" data-name="APEX_PRO">APEX_PRO</button>
+                  </div>
+                </div>
+
+                <div class="profile-avatar-picker">
+                  <span class="profile-section-title">SELECT PILOT AVATAR</span>
+                  <div class="avatar-chips-grid" id="avatarChipsGrid">
+                    <button type="button" class="avatar-chip active" data-avatar="🤖"><span>🤖</span></button>
+                    <button type="button" class="avatar-chip" data-avatar="🥷"><span>🥷</span></button>
+                    <button type="button" class="avatar-chip" data-avatar="⚡"><span>⚡</span></button>
+                    <button type="button" class="avatar-chip" data-avatar="👑"><span>👑</span></button>
+                    <button type="button" class="avatar-chip" data-avatar="🛡️"><span>🛡️</span></button>
+                    <button type="button" class="avatar-chip" data-avatar="🚀"><span>🚀</span></button>
+                  </div>
+                </div>
+
+                <div class="profile-stats-summary">
+                  <div class="pstat-item">
+                    <span class="pstat-label">HIGH SCORE</span>
+                    <strong class="pstat-val" id="profileStatBest">0</strong>
+                  </div>
+                  <div class="pstat-item">
+                    <span class="pstat-label">BANKED COINS</span>
+                    <strong class="pstat-val" id="profileStatBank">0</strong>
+                  </div>
+                  <div class="pstat-item">
+                    <span class="pstat-label">RANK TIER</span>
+                    <strong class="pstat-val highlight" id="profileStatTier">TIER 1</strong>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Tab 2: Audio & Volume -->
-            <div id="tabAudio" class="tab-content hidden">
-              <div class="settings-card modal-card">
-                <div class="setting-item">
-                  <div class="setting-label-row">
-                    <span>SYNTHWAVE BGM</span>
-                    <button type="button" id="settingsBgmToggle" class="cyber-toggle active">ON</button>
-                  </div>
-                  <input type="range" id="settingsBgmSlider" min="0" max="100" value="70" class="cyber-slider">
-                </div>
-
-                <div class="setting-item">
-                  <div class="setting-label-row">
-                    <span>SOUND FX</span>
-                    <button type="button" id="settingsSfxToggle" class="cyber-toggle active">ON</button>
-                  </div>
-                  <input type="range" id="settingsSfxSlider" min="0" max="100" value="90" class="cyber-slider">
-                </div>
-              </div>
-            </div>
-
-            <!-- Tab 3: Background World Environments -->
+            <!-- Tab 2: Background World Environments -->
             <div id="tabBackgrounds" class="tab-content hidden">
               <div class="bg-selector-card modal-card">
                 <div class="bg-selector-title">
@@ -226,6 +246,42 @@
                     <span class="bg-btn-title">COSMIC</span>
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- Tab 3: Audio & Volume -->
+            <div id="tabAudio" class="tab-content hidden">
+              <div class="settings-card modal-card">
+                <div class="setting-item">
+                  <div class="setting-label-row">
+                    <span>SYNTHWAVE BGM</span>
+                    <button type="button" id="settingsBgmToggle" class="cyber-toggle active">ON</button>
+                  </div>
+                  <input type="range" id="settingsBgmSlider" min="0" max="100" value="70" class="cyber-slider">
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-label-row">
+                    <span>SOUND FX</span>
+                    <button type="button" id="settingsSfxToggle" class="cyber-toggle active">ON</button>
+                  </div>
+                  <input type="range" id="settingsSfxSlider" min="0" max="100" value="90" class="cyber-slider">
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 4: Guidelines / Directives -->
+            <div id="tabDirectives" class="tab-content hidden">
+              <div class="instructions-card modal-card">
+                <h3>3D SUBWAY RUNNER PROTOCOL</h3>
+                <ul>
+                  <li><span class="key-badge">A</span> <span class="key-badge">D</span> or <span class="key-badge">←</span> <span class="key-badge">→</span> / Swipe Horizontal: Switch 3D Lanes</li>
+                  <li><span class="key-badge">W</span> or <span class="key-badge">↑</span> or <span class="key-badge">Space</span> / Swipe Up: 3D Jump over Electric Barriers</li>
+                  <li><span class="key-badge">S</span> or <span class="key-badge">↓</span> / Swipe Down: 3D Slide under Overhead Laser Gates</li>
+                  <li><span class="warn-pill">AVOID</span> Black cyber pillars — change lanes immediately!</li>
+                  <li><span class="bonus-pill">GRAB</span> 🪙 Golden Coins to unlock suits &amp; upgrades in Armory!</li>
+                  <li><span class="key-badge">P</span> or <span class="key-badge">ESC</span>: Suspend (Pause) Game</li>
+                </ul>
               </div>
             </div>
 
@@ -288,6 +344,13 @@
         <!-- Game Over Screen -->
         <section id="gameOverScreen" class="overlay hidden">
           <div class="glass-panel">
+            <div class="gameover-pilot-row">
+              <span id="gameoverAvatar" class="gameover-avatar">🤖</span>
+              <div class="gameover-pilot-info">
+                <span class="pilot-sub-tag">DEBRIEF FOR PILOT</span>
+                <strong id="gameoverCallsign" class="gameover-callsign">CYBER_RUNNER</strong>
+              </div>
+            </div>
             <div class="critical-tag">MISSION TERMINATED</div>
             <h2 class="section-title danger-glow">NEURAL CRASH</h2>
             
