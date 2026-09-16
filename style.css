@@ -373,40 +373,162 @@ canvas {
 .menu-overlay-fullscreen {
   background: transparent !important;
   backdrop-filter: none !important;
-  padding: 18px 16px 24px 16px;
+  padding: 14px 12px 20px 12px !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
   align-items: center !important;
-  pointer-events: none;
+  pointer-events: none !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .menu-overlay-fullscreen * {
   pointer-events: auto;
 }
 
-.high-score-pill {
+/* Top Navigation Bar */
+.menu-top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  z-index: 30;
+}
+
+.profile-card-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(15, 23, 42, 0.75);
-  border: 1.5px solid #ffd23f;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid #38bdf8;
   border-radius: 999px;
   padding: 6px 12px;
+  color: #ffffff;
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  max-width: 145px;
+  flex-shrink: 1;
+  overflow: hidden;
+}
+
+.profile-card-btn:active {
+  transform: scale(0.96);
+}
+
+.profile-avatar-pill {
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.profile-callsign-pill {
+  font-weight: 800;
+  color: #38bdf8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-gear-icon {
+  font-size: 11px;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.menu-top-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.high-score-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid #ffd23f;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-family: var(--font-display);
+  font-size: 12px;
   font-weight: 800;
   color: #ffd23f;
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 14px rgba(255, 210, 63, 0.25);
+  box-shadow: 0 4px 12px rgba(255, 210, 63, 0.25);
+  white-space: nowrap;
 }
 
+.coin-bank-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid #facc15;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  color: #facc15;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(250, 204, 21, 0.25);
+  white-space: nowrap;
+}
+
+.nav-cyber-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 999px;
+  border: 1.5px solid #c084fc;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #ffffff;
+  padding: 6px 11px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+}
+
+.nav-cyber-btn:active {
+  transform: scale(0.96);
+}
+
+.shop-btn-glow {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  border-color: #fcd34d;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.45);
+}
+
+.settings-btn-glow {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid #64748b;
+  background: rgba(15, 23, 42, 0.85);
+  font-size: 14px;
+}
+
+/* Center Graffiti Brand Banner */
 .subway-title-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-top: 10px;
+  margin-top: 6px;
   pointer-events: none;
 }
 
@@ -414,19 +536,20 @@ canvas {
   background: linear-gradient(90deg, #ec4899, #8b5cf6, #3b82f6);
   color: #ffffff;
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
-  letter-spacing: 1.5px;
-  padding: 4px 12px;
+  letter-spacing: 1.2px;
+  padding: 3px 10px;
   border-radius: 999px;
   box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   animation: pulseTag 2.5s infinite ease-in-out;
+  white-space: nowrap;
 }
 
 .subway-main-title {
   font-family: var(--font-display);
-  font-size: clamp(32px, 8vw, 48px);
+  font-size: clamp(28px, 7vw, 44px);
   font-weight: 900;
   letter-spacing: 2px;
   color: #ffffff;
@@ -442,34 +565,35 @@ canvas {
 
 .v3d-badge {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 900;
   background: linear-gradient(135deg, #f43f5e, #fb923c);
   color: #ffffff;
-  padding: 3px 9px;
-  border-radius: 8px;
+  padding: 2px 7px;
+  border-radius: 7px;
   box-shadow: 0 4px 14px rgba(244, 63, 94, 0.6);
   display: inline-block;
   vertical-align: middle;
-  transform: translateY(-6px) rotate(4deg);
+  transform: translateY(-4px) rotate(4deg);
 }
 
+/* Bottom Action Area */
 .menu-bottom-actions {
   width: 100%;
-  max-width: 380px;
+  max-width: 360px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .active-suit-pill {
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(15, 23, 42, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(12px);
   border-radius: 999px;
-  padding: 4px 14px;
+  padding: 4px 12px;
   font-family: var(--font-display);
   font-size: 11px;
   color: #cbd5e1;
@@ -490,32 +614,35 @@ canvas {
   box-shadow: 0 0 8px #10b981;
 }
 
-/* Pulsing Subway Surfers "TAP TO RUN" button */
+/* Subway Surfers TAP TO RUN Button */
 .subway-run-btn {
   width: 100%;
-  background: linear-gradient(135deg, #10b981 0%, #059669 45%, #047857 100%);
-  border: 2.5px solid #6ee7b7;
-  border-radius: 20px;
-  padding: 16px 20px;
-  color: #ffffff;
+  max-width: 340px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 45%, #047857 100%) !important;
+  border: 2.5px solid #6ee7b7 !important;
+  border-radius: 20px !important;
+  padding: 15px 20px !important;
+  color: #ffffff !important;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5), 0 0 20px rgba(110, 231, 183, 0.3);
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.55), 0 0 20px rgba(110, 231, 183, 0.35) !important;
   transition: transform 0.1s ease, box-shadow 0.1s ease;
   animation: runBounce 2s infinite ease-in-out;
+  text-decoration: none;
+  box-sizing: border-box;
 }
 
 @keyframes runBounce {
-  0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5); }
-  50% { transform: translateY(-4px) scale(1.02); box-shadow: 0 16px 32px rgba(16, 185, 129, 0.7), 0 0 25px rgba(110, 231, 183, 0.5); }
+  0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.55); }
+  50% { transform: translateY(-4px) scale(1.02); box-shadow: 0 16px 32px rgba(16, 185, 129, 0.75), 0 0 25px rgba(110, 231, 183, 0.5); }
 }
 
 .subway-run-btn:active {
-  transform: translateY(2px) scale(0.97);
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+  transform: translateY(2px) scale(0.97) !important;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4) !important;
 }
 
 .subway-run-btn .btn-text {
@@ -524,16 +651,48 @@ canvas {
   font-weight: 900;
   letter-spacing: 1.5px;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
 }
 
 .subway-run-btn .run-hint {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.8px;
   color: #d1fae5;
   margin-top: 3px;
   text-transform: uppercase;
-  opacity: 0.92;
+  opacity: 0.95;
+}
+
+/* Mobile Responsiveness for compact viewports */
+@media (max-width: 420px) {
+  .menu-top-bar {
+    gap: 4px;
+  }
+  .profile-card-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    max-width: 110px;
+  }
+  .high-score-pill, .coin-bank-pill {
+    padding: 4px 7px;
+    font-size: 11px;
+    gap: 3px;
+  }
+  .nav-cyber-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  .subway-tag-pill {
+    font-size: 8px;
+    letter-spacing: 0.8px;
+  }
+  .subway-run-btn {
+    padding: 12px 16px !important;
+  }
+  .subway-run-btn .btn-text {
+    font-size: 19px;
+  }
 }
 
 .glass-panel {

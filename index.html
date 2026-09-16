@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=subway3d_v6">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#4cc9f0">
@@ -100,17 +100,17 @@
         </div>
 
         <!-- Overlays -->
-        <!-- Main Start Screen (Full-cover Subway Surfers Viewport) -->
-        <section id="menuScreen" class="overlay menu-overlay-fullscreen">
+        <!-- Main Start Screen (Subway Surfers Full-Cover Home) -->
+        <section id="menuScreen" class="overlay menu-overlay-fullscreen" style="display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 100%; height: 100%; box-sizing: border-box; pointer-events: none; padding: 12px 12px 24px 12px;">
           <!-- Top Navigation Header: Profile Pill, High Score, Bank & Shop -->
-          <div class="menu-top-bar">
-            <button type="button" id="menuProfileBtn" class="profile-card-btn" aria-label="Open Profile & Settings">
+          <header class="menu-top-bar" style="width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 6px; box-sizing: border-box; z-index: 30; pointer-events: auto;">
+            <button type="button" id="menuProfileBtn" class="profile-card-btn" aria-label="Open Profile & Settings" title="Pilot Profile">
               <span id="profileAvatarPill" class="profile-avatar-pill">🤖</span>
-              <span id="profileCallsignPill" class="profile-callsign-pill">CYBER_RUNNER</span>
+              <span id="profileCallsignPill" class="profile-callsign-pill">NEO_KARTIK</span>
               <span class="profile-gear-icon">⚙️</span>
             </button>
 
-            <div class="menu-top-right">
+            <div class="menu-top-right" style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
               <div class="high-score-pill" title="Personal Record">
                 <span class="record-icon">🏆</span>
                 <span id="menuBestScore" class="bank-count">0</span>
@@ -119,38 +119,38 @@
                 <span class="coin-icon">🪙</span>
                 <span id="menuCoinBank" class="bank-count">0</span>
               </div>
-              <button type="button" id="menuShopBtn" class="nav-cyber-btn shop-btn-glow" aria-label="Open Cyber Armory Shop">
+              <button type="button" id="menuShopBtn" class="nav-cyber-btn shop-btn-glow" aria-label="Open Armory Shop" title="Armory Shop">
                 <span class="btn-icon">🛍️</span>
-                <span class="nav-btn-text">ARMORY</span>
+                <span class="nav-btn-text">SHOP</span>
               </button>
-              <button type="button" id="menuSettingsBtn" class="nav-cyber-btn settings-btn-glow" aria-label="Open Settings">
+              <button type="button" id="menuSettingsBtn" class="nav-cyber-btn settings-btn-glow" aria-label="Open Settings" title="Settings">
                 <span class="btn-icon">⚙️</span>
               </button>
             </div>
-          </div>
+          </header>
 
-          <!-- Top Brand Banner: Vibrant Colorful Subway Graffiti Style -->
-          <div class="subway-title-wrap">
+          <!-- Top Brand Banner: Subway Surfers Graffiti Logo -->
+          <div class="subway-title-wrap" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 4px; pointer-events: none;">
             <div class="subway-tag-pill">🚇 3D SUBWAY SURF • MULTI-COLOR TRAINS &amp; ROOFS 🚇</div>
             <h1 class="subway-main-title">SUBWAY <span class="pop-accent">SURF</span> <span class="v3d-badge">3D</span></h1>
           </div>
 
-          <!-- Bottom Action Area: Big Pulsing Subway "TAP TO RUN" -->
-          <div class="menu-bottom-actions">
+          <!-- Bottom Action Area: Subway Surfers TAP TO RUN -->
+          <footer class="menu-bottom-actions" style="width: 100%; max-width: 360px; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 8px; pointer-events: auto;">
             <div class="active-suit-pill">
               <span class="suit-dot"></span>
-              <span>ACTIVE SUIT: <strong id="equippedCostumeName">NEO RUNNER</strong></span>
+              <span>SUIT: <strong id="equippedCostumeName">NEO RUNNER</strong></span>
             </div>
 
-            <button type="button" id="playBtn" class="subway-run-btn" aria-label="Tap to Run">
-              <span class="btn-text">TAP TO RUN ▶</span>
-              <small class="run-hint">SWIPE ◀ ▶ TO SWITCH • ▲ JUMP ON TRAINS • ▼ SLIDE</small>
+            <button type="button" id="playBtn" class="subway-run-btn" aria-label="Tap to Run" style="width: 100%; max-width: 340px; background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%); border: 2.5px solid #6ee7b7; border-radius: 20px; color: #ffffff; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px 18px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.6); text-decoration: none;">
+              <span class="btn-text" style="font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 900; letter-spacing: 1.5px; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">TAP TO RUN ▶</span>
+              <small class="run-hint" style="font-size: 10px; font-weight: 700; letter-spacing: 0.8px; color: #d1fae5; margin-top: 3px; text-transform: uppercase;">SWIPE ◀ ▶ MOVE • ▲ JUMP ON TRAINS • ▼ SLIDE</small>
             </button>
 
             <button type="button" id="installAppBtn" class="cyber-btn secondary-btn install-btn">
               <span class="btn-text">📲 INSTALL APP (OFFLINE PLAY)</span>
             </button>
-          </div>
+          </footer>
         </section>
 
         <!-- Settings & Profile Modal (Profile, Environments, Audio Volume, Guidelines) -->
@@ -229,21 +229,21 @@
             <div id="tabBackgrounds" class="tab-content hidden">
               <div class="bg-selector-card modal-card">
                 <div class="bg-selector-title">
-                  <span>SELECT CYBER ENVIRONMENT</span>
-                  <small class="bg-selected-name" id="bgSelectedName">CYBER MATRIX</small>
+                  <span>SELECT SUBWAY WORLD</span>
+                  <small class="bg-selected-name" id="bgSelectedName">SUNNY SUBWAY</small>
                 </div>
                 <div class="bg-options" id="bgOptions">
-                  <button type="button" class="bg-option-btn active" data-bg="0" id="bgBtn0" aria-label="Cyber Matrix Background">
+                  <button type="button" class="bg-option-btn active" data-bg="0" id="bgBtn0" aria-label="Sunny Subway World">
                     <div class="bg-thumb swatch-matrix"></div>
-                    <span class="bg-btn-title">MATRIX</span>
+                    <span class="bg-btn-title">SUNNY</span>
                   </button>
-                  <button type="button" class="bg-option-btn" data-bg="1" id="bgBtn1" aria-label="Synth Sunset Background">
+                  <button type="button" class="bg-option-btn" data-bg="1" id="bgBtn1" aria-label="Golden Coast World">
                     <div class="bg-thumb swatch-sunset"></div>
-                    <span class="bg-btn-title">SUNSET</span>
+                    <span class="bg-btn-title">COAST</span>
                   </button>
-                  <button type="button" class="bg-option-btn" data-bg="2" id="bgBtn2" aria-label="Cosmic Void Background">
+                  <button type="button" class="bg-option-btn" data-bg="2" id="bgBtn2" aria-label="Tokyo Toon World">
                     <div class="bg-thumb swatch-nebula"></div>
-                    <span class="bg-btn-title">COSMIC</span>
+                    <span class="bg-btn-title">TOKYO</span>
                   </button>
                 </div>
               </div>
@@ -385,8 +385,8 @@
     </main>
   </div>
 
-  <script src="audio.js"></script>
-  <script src="game.js"></script>
-  <script src="pwa.js"></script>
+  <script src="audio.js?v=subway3d_v6"></script>
+  <script src="game.js?v=subway3d_v6"></script>
+  <script src="pwa.js?v=subway3d_v6"></script>
 </body>
 </html>

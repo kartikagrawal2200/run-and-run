@@ -5,12 +5,26 @@
 (function () {
   'use strict';
 
+  // Automatically purge outdated cache names if present
+  if ('caches' in window) {
+    caches.keys().then((names) => {
+      for (const name of names) {
+        if (name !== 'subway-surf-3d-v6') {
+          console.log('[PWA] Purging stale cache:', name);
+          caches.delete(name);
+        }
+      }
+    });
+  }
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker
-        .register('./sw.js')
+        .register('./sw.js?v=subway3d_v6')
         .then((reg) => {
           console.log('[PWA] Service Worker registered:', reg.scope);
+          // Check for latest worker version immediately
+          reg.update().catch(() => {});
         })
         .catch((err) => {
           console.warn('[PWA] Service Worker registration failed:', err);
@@ -51,15 +65,9 @@
   }
 
   window.addEventListener('appinstalled', () => {
-    console.log('[PWA] App successfully installed locally!');
     if (installBtn) {
       installBtn.classList.add('hidden');
     }
+    console.log('[PWA] App installed successfully');
   });
-
-  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-    if (installBtn) {
-      installBtn.classList.add('hidden');
-    }
-  }
 })();
