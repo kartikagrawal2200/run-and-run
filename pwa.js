@@ -9,7 +9,7 @@
   if ('caches' in window) {
     caches.keys().then((names) => {
       for (const name of names) {
-        if (name !== 'subway-surf-3d-v8') {
+        if (name !== 'subway-surf-3d-v9') {
           console.log('[PWA] Purging stale cache:', name);
           caches.delete(name);
         }
@@ -20,7 +20,7 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker
-        .register('./sw.js?v=subway3d_v8')
+        .register('./sw.js?v=subway3d_v9')
         .then((reg) => {
           console.log('[PWA] Service Worker registered:', reg.scope);
           // Check for latest worker version immediately

@@ -123,6 +123,7 @@
     {
       id: 'subway_sun',
       name: 'SUNNY SUBWAY',
+      flag: '☀️',
       sky: ['#0284c7', '#38bdf8'],
       ground: '#334155',
       rails: '#f8fafc',
@@ -138,6 +139,7 @@
     {
       id: 'sunset_coast',
       name: 'GOLDEN COAST',
+      flag: '🌅',
       sky: ['#c2410c', '#fb923c'],
       ground: '#431407',
       rails: '#ffedd5',
@@ -151,8 +153,73 @@
       isBright: true
     },
     {
+      id: 'paris_metro',
+      name: 'PARIS METRO',
+      flag: '🗼',
+      sky: ['#4a044e', '#c084fc'],
+      ground: '#3b0764',
+      rails: '#fef08a',
+      ties: '#581c87',
+      ballast: '#6b21a8',
+      grid: '#e879f9',
+      building: '#1e1b4b',
+      accent: '#f43f5e',
+      celestial: 'moon',
+      horizonGlow: 'rgba(232, 121, 249, 0.65)',
+      isBright: false
+    },
+    {
+      id: 'beijing_dynasty',
+      name: 'BEIJING DYNASTY',
+      flag: '🏮',
+      sky: ['#7f1d1d', '#f87171'],
+      ground: '#450a0a',
+      rails: '#fef08a',
+      ties: '#7f1d1d',
+      ballast: '#991b1b',
+      grid: '#facc15',
+      building: '#2d0606',
+      accent: '#facc15',
+      celestial: 'sun',
+      horizonGlow: 'rgba(239, 68, 68, 0.7)',
+      isBright: true
+    },
+    {
+      id: 'miami_beach',
+      name: 'MIAMI WAVES',
+      flag: '🌴',
+      sky: ['#0e7490', '#38bdf8'],
+      ground: '#164e63',
+      rails: '#f472b6',
+      ties: '#047857',
+      ballast: '#0891b2',
+      grid: '#ec4899',
+      building: '#155e75',
+      accent: '#f43f5e',
+      celestial: 'sun',
+      horizonGlow: 'rgba(56, 189, 248, 0.7)',
+      isBright: true
+    },
+    {
+      id: 'frost_express',
+      name: 'FROST EXPRESS',
+      flag: '❄️',
+      sky: ['#0f172a', '#06b6d4'],
+      ground: '#082f49',
+      rails: '#e0f2fe',
+      ties: '#0c4a6e',
+      ballast: '#38bdf8',
+      grid: '#a5f3fc',
+      building: '#020617',
+      accent: '#38bdf8',
+      celestial: 'moon',
+      horizonGlow: 'rgba(14, 165, 233, 0.65)',
+      isBright: false
+    },
+    {
       id: 'tokyo_pop',
       name: 'TOKYO TOON',
+      flag: '🕹️',
       sky: ['#6b21a8', '#d946ef'],
       ground: '#1e1b4b',
       rails: '#38bdf8',
@@ -168,6 +235,7 @@
     {
       id: 'neon_carnival',
       name: 'NEON CARNIVAL',
+      flag: '🎪',
       sky: ['#065f46', '#10b981'],
       ground: '#064e3b',
       rails: '#fef08a',
@@ -2673,41 +2741,48 @@
 
     loadProfile() {
       try {
-        const val = localStorage.getItem(PROFILE_STORAGE_KEY);
+        const val = localStorage.getItem('subway_player_profile') || localStorage.getItem(PROFILE_STORAGE_KEY);
         if (val) {
           const parsed = JSON.parse(val);
           if (parsed && typeof parsed === 'object') {
-            return {
-              callsign: (parsed.callsign || 'CYBER_RUNNER').trim().slice(0, 14),
-              avatar: parsed.avatar || '🤖'
-            };
+            const rawName = (parsed.callsign || '').trim();
+            // Discard system-decided defaults from older versions
+            if (rawName && rawName !== 'NEO_KARTIK' && rawName !== 'CYBER_RUNNER') {
+              return {
+                callsign: rawName.slice(0, 14),
+                avatar: parsed.avatar || '🏃'
+              };
+            }
           }
         }
       } catch (e) {}
-      return { callsign: 'NEO_KARTIK', avatar: '🤖' };
+      return { callsign: 'RUNNER 1', avatar: '🏃' };
     }
 
     saveProfile(callsign, avatar) {
-      if (!this.profile) this.profile = { callsign: 'NEO_KARTIK', avatar: '🤖' };
-      if (callsign !== undefined) this.profile.callsign = (callsign || 'CYBER_RUNNER').trim().slice(0, 14);
-      if (avatar !== undefined) this.profile.avatar = avatar || '🤖';
+      if (!this.profile) this.profile = { callsign: 'RUNNER 1', avatar: '🏃' };
+      const clean = (callsign || '').trim().slice(0, 14);
+      if (clean) this.profile.callsign = clean;
+      if (avatar !== undefined) this.profile.avatar = avatar || '🏃';
       try {
         localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(this.profile));
+        localStorage.setItem('subway_player_profile', JSON.stringify(this.profile));
+        localStorage.setItem('subway_player_name', this.profile.callsign);
       } catch (e) {}
       this.updateProfileUI();
     }
 
     getProfileRank(score) {
-      if (score >= 7000) return { title: '👑 GRAND APEX', tier: 'TIER 5' };
-      if (score >= 3500) return { title: '⚡ PHANTOM V', tier: 'TIER 4' };
-      if (score >= 1500) return { title: '🚀 CYBER ACE', tier: 'TIER 3' };
-      if (score >= 500) return { title: '🛡️ RUNNER II', tier: 'TIER 2' };
-      return { title: '🤖 ROOKIE RUNNER', tier: 'TIER 1' };
+      if (score >= 7000) return { title: '👑 DIAMOND SURFER', tier: 'TIER 5' };
+      if (score >= 3500) return { title: '⚡ GOLD RUNNER', tier: 'TIER 4' };
+      if (score >= 1500) return { title: '🚀 SILVER TRACKER', tier: 'TIER 3' };
+      if (score >= 500) return { title: '🛡️ BRONZE ROOKIE', tier: 'TIER 2' };
+      return { title: '🏃 STREET RUNNER', tier: 'TIER 1' };
     }
 
     updateProfileUI() {
-      const callsign = this.profile ? this.profile.callsign : 'CYBER_RUNNER';
-      const avatar = this.profile ? this.profile.avatar : '🤖';
+      const callsign = (this.profile && this.profile.callsign) ? this.profile.callsign : 'RUNNER 1';
+      const avatar = (this.profile && this.profile.avatar) ? this.profile.avatar : '🏃';
       const rankInfo = this.getProfileRank(this.bestScore);
 
       // Top bar profile button
@@ -2731,9 +2806,16 @@
       if (statBank) statBank.textContent = this.bankCoins;
       if (statTier) statTier.textContent = rankInfo.tier;
 
-      // Highlight active avatar chip in picker
-      document.querySelectorAll('.avatar-chip').forEach(chip => {
-        if (chip.getAttribute('data-avatar') === avatar) {
+      // Dedicated Name Modal input
+      const nameModalInput = document.getElementById('playerNameInput');
+      if (nameModalInput && document.activeElement !== nameModalInput) {
+        nameModalInput.value = (callsign === 'RUNNER 1' || callsign === 'SET NAME') ? '' : callsign;
+      }
+
+      // Highlight active avatar in pickers
+      document.querySelectorAll('.avatar-chip, .avatar-choice-btn').forEach(chip => {
+        const val = chip.getAttribute('data-avatar') || chip.getAttribute('data-av');
+        if (val === avatar) {
           chip.classList.add('active');
         } else {
           chip.classList.remove('active');
@@ -2750,8 +2832,8 @@
     loadSelectedBg() {
       try {
         const ver = localStorage.getItem('run_and_run_bg_ver');
-        if (ver !== 'v6') {
-          localStorage.setItem('run_and_run_bg_ver', 'v6');
+        if (ver !== 'v8') {
+          localStorage.setItem('run_and_run_bg_ver', 'v8');
           localStorage.setItem(BG_STORAGE_KEY, '0');
           return 0;
         }
@@ -2792,6 +2874,33 @@
       if (this.zoneDisplay) {
         this.zoneDisplay.textContent = THEMES[index].name;
       }
+    }
+
+    renderWorldTourModal() {
+      const container = document.getElementById('worldTourCards');
+      if (!container) return;
+      container.innerHTML = '';
+      THEMES.forEach((theme, idx) => {
+        const card = document.createElement('div');
+        card.className = `world-city-card ${idx === this.selectedBgIndex ? 'active' : ''}`;
+        card.innerHTML = `
+          <div class="world-city-flag">${theme.flag || '🏙️'}</div>
+          <div class="world-city-info">
+            <span class="world-city-name">${theme.name}</span>
+            <small class="world-city-status">${idx === this.selectedBgIndex ? '● ACTIVE WORLD' : 'TAP TO SELECT'}</small>
+          </div>
+        `;
+        card.onclick = () => {
+          this.selectBackground(idx);
+          try { SoundSystem.equip(); } catch (e) {}
+          this.renderWorldTourModal();
+          const modal = document.getElementById('worldTourModal');
+          if (modal) {
+            setTimeout(() => modal.classList.add('hidden'), 200);
+          }
+        };
+        container.appendChild(card);
+      });
     }
 
     resetRun() {
@@ -3132,18 +3241,72 @@
         if (settingsModal) settingsModal.classList.add('hidden');
       });
 
-      // Pilot Profile Card button on Home Screen -> opens Settings directly to Profile tab
+      // Dedicated Runner Name Modal (Direct Custom Name Input)
+      const nameModal = document.getElementById('nameModal');
       this.attachButtonAction('menuProfileBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
         this.updateProfileUI();
-        if (settingsModal) {
-          settingsModal.classList.remove('hidden');
-          const pTabBtn = document.getElementById('tabBtnProfile');
-          if (pTabBtn) pTabBtn.click();
+        if (nameModal) {
+          nameModal.classList.remove('hidden');
+          const inp = document.getElementById('playerNameInput');
+          if (inp) {
+            setTimeout(() => { inp.focus(); inp.select(); }, 120);
+          }
         }
       });
 
-      // Profile Save button
+      // Name Modal Save Button
+      this.attachButtonAction('saveRunnerNameBtn', () => {
+        const inp = document.getElementById('playerNameInput');
+        const name = (inp && inp.value.trim()) ? inp.value.trim() : 'RUNNER 1';
+        this.saveProfile(name, this.profile.avatar);
+        try { SoundSystem.equip(); } catch (e) {}
+        if (nameModal) nameModal.classList.add('hidden');
+      });
+
+      // Name Modal Close Button
+      this.attachButtonAction('closeNameModalBtn', () => {
+        if (nameModal) nameModal.classList.add('hidden');
+      });
+
+      // Name Modal Avatar Pickers
+      document.querySelectorAll('.avatar-choice-btn').forEach(btn => {
+        this.attachButtonAction(btn, () => {
+          const av = btn.getAttribute('data-av');
+          this.saveProfile(this.profile.callsign, av);
+          try { SoundSystem.equip(); } catch (e) {}
+        });
+      });
+
+      // World Tour Modal Open/Close
+      const worldTourModal = document.getElementById('worldTourModal');
+      this.attachButtonAction('menuWorldBtn', () => {
+        try { SoundSystem.ensure(); } catch (e) {}
+        this.renderWorldTourModal();
+        if (worldTourModal) worldTourModal.classList.remove('hidden');
+      });
+
+      this.attachButtonAction('closeWorldTourBtn', () => {
+        if (worldTourModal) worldTourModal.classList.add('hidden');
+      });
+
+      // Side Rail: Character Suits (ME)
+      this.attachButtonAction('menuSuitsBtn', () => {
+        try { SoundSystem.ensure(); } catch (e) {}
+        openShop();
+        const tabBtn = document.getElementById('tabBtnCostumes');
+        if (tabBtn) tabBtn.click();
+      });
+
+      // Side Rail: Boosters / Upgrades
+      this.attachButtonAction('menuUpgradesBtn', () => {
+        try { SoundSystem.ensure(); } catch (e) {}
+        openShop();
+        const tabBtn = document.getElementById('tabBtnShopUpgrades');
+        if (tabBtn) tabBtn.click();
+      });
+
+      // Profile Save button in Settings
       this.attachButtonAction('profileSaveBtn', () => {
         const input = document.getElementById('profileCallsignInput');
         const name = input ? input.value : this.profile.callsign;
@@ -3157,18 +3320,7 @@
         }
       });
 
-      // Preset Callsign Chips
-      document.querySelectorAll('.callsign-chip').forEach(chip => {
-        this.attachButtonAction(chip, () => {
-          const name = chip.getAttribute('data-name');
-          const input = document.getElementById('profileCallsignInput');
-          if (input) input.value = name;
-          this.saveProfile(name, this.profile.avatar);
-          try { SoundSystem.equip(); } catch (e) {}
-        });
-      });
-
-      // Avatar Chips in Picker
+      // Avatar Chips in Settings Picker
       document.querySelectorAll('.avatar-chip').forEach(chip => {
         this.attachButtonAction(chip, () => {
           const av = chip.getAttribute('data-avatar');
@@ -3448,14 +3600,28 @@
         this.pauseScreen.classList.remove('hidden');
       } else if (next === GameStates.GAMEOVER) {
         const score = this.getScore();
-        if (score > this.bestScore) {
+        const isNewBest = score > this.bestScore;
+        if (isNewBest) {
           this.bestScore = score;
           this.saveBest(score);
         }
-        document.getElementById('finalScore').textContent = score;
-        document.getElementById('finalCoins').textContent = this.collectibles.coinCount;
-        document.getElementById('bestScore').textContent = this.bestScore;
+        const finalScoreEl = document.getElementById('finalScore');
+        if (finalScoreEl) finalScoreEl.textContent = score;
+        const finalCoinsEl = document.getElementById('finalCoins');
+        if (finalCoinsEl) finalCoinsEl.textContent = this.collectibles.coinCount;
+        const bestScoreEl = document.getElementById('bestScore');
+        if (bestScoreEl) bestScoreEl.textContent = this.bestScore;
+        const newBestBadge = document.getElementById('newBestBadge');
+        if (newBestBadge) {
+          if (isNewBest) newBestBadge.classList.remove('hidden');
+          else newBestBadge.classList.add('hidden');
+        }
+        const gameoverTitle = document.getElementById('gameoverTitle');
+        if (gameoverTitle) {
+          gameoverTitle.textContent = isNewBest ? 'NEW RECORD! 🏆' : 'GAME OVER';
+        }
         this.updateBankDisplays();
+        this.updateProfileUI();
         this.gameOverScreen.classList.remove('hidden');
       }
     }

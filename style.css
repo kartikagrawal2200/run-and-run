@@ -2143,49 +2143,547 @@ canvas {
   color: var(--neon-yellow);
 }
 
-/* Game Over Debrief Pilot Banner */
-.gameover-pilot-row {
+/* ============================================================
+   SUBWAY SURFERS PAGE 2 & PAGE 3 AUTHENTIC UI SYSTEM
+   ============================================================ */
+
+/* Page 2 Custom Player Name Pill */
+.subway-player-pill {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(76, 201, 240, 0.3);
+  gap: 7px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 2px solid #38bdf8;
   border-radius: 999px;
-  padding: 5px 14px 5px 8px;
-  margin-bottom: 12px;
+  padding: 6px 14px;
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  max-width: 160px;
 }
 
-.gameover-avatar {
+.subway-player-pill:hover,
+.subway-player-pill:active {
+  transform: scale(1.04);
+  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.65);
+}
+
+.subway-player-pill .edit-pencil-icon {
+  font-size: 11px;
+  color: #facc15;
+  filter: drop-shadow(0 0 4px rgba(250, 204, 21, 0.6));
+}
+
+/* Page 2 Subway Surfers Side Rails (Floating Action Icons) */
+.subway-side-rails {
+  position: relative;
+  z-index: 25;
+}
+
+.subway-side-btn {
+  width: 54px;
+  height: 56px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 2px solid #38bdf8;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-family: var(--font-display);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.15s ease;
+}
+
+.subway-side-btn:hover,
+.subway-side-btn:active {
+  transform: scale(1.08);
+}
+
+.subway-side-btn .side-btn-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.subway-side-btn .side-btn-lbl {
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* Side Rail Color Themes */
+.world-side-btn {
+  border-color: #38bdf8;
+  color: #38bdf8;
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.35);
+}
+.me-side-btn {
+  border-color: #ec4899;
+  color: #ec4899;
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.35);
+}
+.shop-side-btn {
+  border-color: #facc15;
+  color: #facc15;
+  box-shadow: 0 4px 16px rgba(250, 204, 21, 0.35);
+}
+.boost-side-btn {
+  border-color: #22c55e;
+  color: #22c55e;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
+}
+
+/* ============================================================
+   PAGE 3: SUBWAY SURFERS RUN SUMMARY & GAME OVER
+   ============================================================ */
+.subway-gameover-overlay {
+  background: rgba(2, 6, 23, 0.9) !important;
+  backdrop-filter: blur(14px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+  z-index: 55 !important;
+}
+
+.subway-gameover-card {
+  width: 100%;
+  max-width: 380px;
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border: 2px solid rgba(56, 189, 248, 0.4);
+  border-radius: 28px;
+  padding: 24px 20px 22px 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.25);
+  animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Header Ribbon Banner */
+.gameover-ribbon-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+  border: 2.5px solid #facc15;
+  border-radius: 999px;
+  padding: 8px 24px;
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.7), 0 0 16px rgba(250, 204, 21, 0.5);
+  margin-top: -36px;
+}
+
+.gameover-banner-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.ribbon-star {
+  color: #facc15;
+  font-size: 16px;
+  filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.8));
+}
+
+/* Runner Identity Tag */
+.gameover-runner-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1.5px solid #38bdf8;
+  border-radius: 999px;
+  padding: 5px 16px;
+  font-family: var(--font-display);
+  font-size: 11px;
+}
+
+.gameover-avatar-emoji {
+  font-size: 16px;
+}
+
+.gameover-runner-lbl {
+  color: #94a3b8;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.gameover-runner-name {
+  color: #38bdf8;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+/* Score Main Box */
+.subway-score-box {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1.5px solid rgba(250, 204, 21, 0.35);
+  border-radius: 20px;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.score-main-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.score-pill-tag {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #94a3b8;
+}
+
+.score-big-digits {
+  font-family: var(--font-display);
+  font-size: 42px;
+  font-weight: 900;
+  color: #facc15;
+  text-shadow: 0 4px 18px rgba(250, 204, 21, 0.6);
+  line-height: 1;
+}
+
+.new-best-ribbon {
+  background: linear-gradient(90deg, #ec4899, #f43f5e);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 900;
+  padding: 3px 12px;
+  border-radius: 999px;
+  letter-spacing: 1px;
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.6);
+  animation: buttonPulse 1.2s infinite alternate;
+}
+
+.score-stats-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.mini-stat-card {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.mini-stat-icon {
   font-size: 18px;
 }
 
-.gameover-pilot-info {
+.mini-stat-info small {
+  display: block;
+  font-size: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+
+.mini-stat-info strong {
+  display: block;
+  font-size: 14px;
+  font-family: var(--font-display);
+  font-weight: 900;
+  color: #ffffff;
+  margin-top: 1px;
+}
+
+.coin-card strong { color: #facc15; }
+.record-card strong { color: #38bdf8; }
+.bank-card strong { color: #4ade80; }
+
+/* Game Over Action Buttons */
+.gameover-action-buttons {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.subway-play-again-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+  border: 2.5px solid #6ee7b7;
+  border-radius: 20px;
+  color: #ffffff;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.65);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  animation: runBounce 2s infinite ease-in-out;
+}
+
+.subway-play-again-btn:active {
+  transform: scale(0.97);
+}
+
+.gameover-sub-buttons {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+}
+
+.subway-sub-btn {
+  flex: 1;
+  background: rgba(30, 41, 59, 0.9);
+  border: 1.5px solid #64748b;
+  border-radius: 14px;
+  color: #ffffff;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.subway-sub-btn.home-btn {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.subway-sub-btn.shop-btn {
+  border-color: #facc15;
+  color: #facc15;
+}
+
+.subway-sub-btn:hover,
+.subway-sub-btn:active {
+  transform: scale(1.03);
+}
+
+/* ============================================================
+   NAME INPUT MODAL & WORLD TOUR MODAL
+   ============================================================ */
+.name-modal-panel {
+  width: 100%;
+  max-width: 360px;
+}
+
+.name-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 6px 0;
+}
+
+.name-field-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 1px;
+}
+
+.name-field-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 2px solid #38bdf8;
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+
+.name-field-icon {
+  font-size: 16px;
+}
+
+.name-text-box {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.name-avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.avatar-choice-btn {
+  height: 44px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1.5px solid rgba(148, 163, 184, 0.3);
+  border-radius: 12px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.avatar-choice-btn.active {
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.2);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+  transform: scale(1.06);
+}
+
+.subway-save-name-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: 2px solid #6ee7b7;
+  border-radius: 14px;
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  padding: 12px 18px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+  margin-top: 6px;
+}
+
+/* World Tour Grid & Swatches */
+.world-tour-panel {
+  width: 100%;
+  max-width: 420px;
+}
+
+.world-tour-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 8px 0;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.world-city-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 2px solid rgba(148, 163, 184, 0.25);
+  border-radius: 16px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.world-city-card:hover,
+.world-city-card.active {
+  border-color: #facc15;
+  box-shadow: 0 4px 18px rgba(250, 204, 21, 0.4);
+  transform: scale(1.03);
+}
+
+.world-city-flag {
+  font-size: 24px;
+}
+
+.world-city-info {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
 }
 
-.pilot-sub-tag {
-  font-size: 8px;
-  letter-spacing: 1px;
-  color: #94a3b8;
+.world-city-name {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.8px;
 }
 
-.gameover-callsign {
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  color: var(--neon-cyan);
-}
-
-.subway-tag-3d {
-  font-family: var(--font-display);
+.world-city-status {
   font-size: 9px;
-  letter-spacing: 2px;
-  color: #cbd5e1;
-  text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
-  margin-top: 4px;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.bg-grid-8 {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 8px !important;
+}
+
+/* Swatches for all 8 World Tour cities */
+.swatch-sunny { background: linear-gradient(135deg, #0284c7, #38bdf8); }
+.swatch-coast { background: linear-gradient(135deg, #c2410c, #fb923c); }
+.swatch-paris { background: linear-gradient(135deg, #4a044e, #c084fc); }
+.swatch-beijing { background: linear-gradient(135deg, #7f1d1d, #f87171); }
+.swatch-miami { background: linear-gradient(135deg, #0e7490, #f472b6); }
+.swatch-frost { background: linear-gradient(135deg, #0f172a, #06b6d4); }
+.swatch-tokyo { background: linear-gradient(135deg, #6b21a8, #d946ef); }
+.swatch-carnival { background: linear-gradient(135deg, #065f46, #10b981); }
+
+@media (max-width: 420px) {
+  .subway-player-pill {
+    max-width: 125px;
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+  .subway-side-btn {
+    width: 48px;
+    height: 50px;
+  }
+  .subway-side-btn .side-btn-icon {
+    font-size: 18px;
+  }
+  .score-big-digits {
+    font-size: 36px;
+  }
 }
 
