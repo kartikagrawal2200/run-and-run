@@ -76,9 +76,13 @@
     parent.style.width = Math.floor(targetW) + 'px';
     parent.style.height = Math.floor(targetH) + 'px';
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = DESIGN_WIDTH * dpr;
-    canvas.height = DESIGN_HEIGHT * dpr;
+    // Ultra-smooth mobile optimization:
+    // Clamp DPR to 1.35x on mobile (prevents 9x pixel fill-rate lag and WebGL/canvas OOM crashes)
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (winW < 650);
+    const maxDpr = isMobile ? 1.35 : 1.75;
+    const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
+    canvas.width = Math.round(DESIGN_WIDTH * dpr);
+    canvas.height = Math.round(DESIGN_HEIGHT * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
@@ -121,131 +125,37 @@
      ============================================================ */
   const THEMES = [
     {
-      id: 'subway_sun',
-      name: 'SUNNY SUBWAY',
-      flag: '☀️',
-      sky: ['#0284c7', '#38bdf8'],
-      ground: '#334155',
+      id: 'tokyo_food',
+      name: 'TOKYO FOOD STREET',
+      flag: '🐙',
+      type: 'tokyo',
+      sky: ['#1e143b', '#701a75', '#db2777'],
+      ground: '#18112c',
       rails: '#f8fafc',
-      ties: '#9a3412',
+      ties: '#3b0764',
       ballast: '#475569',
-      grid: '#38bdf8',
-      building: '#1e293b',
+      grid: '#db2777',
+      building: '#110b20',
       accent: '#facc15',
-      celestial: 'sun',
-      horizonGlow: 'rgba(250, 204, 21, 0.55)',
+      celestial: 'moon',
+      horizonGlow: 'rgba(219, 39, 119, 0.65)',
       isBright: true
     },
     {
-      id: 'sunset_coast',
-      name: 'GOLDEN COAST',
-      flag: '🌅',
-      sky: ['#c2410c', '#fb923c'],
-      ground: '#431407',
-      rails: '#ffedd5',
-      ties: '#7c2d12',
-      ballast: '#78350f',
+      id: 'wild_west',
+      name: 'WILD WEST CANYON',
+      flag: '🤠',
+      type: 'western',
+      sky: ['#431407', '#9a3412', '#fb923c'],
+      ground: '#3a1708',
+      rails: '#fef08a',
+      ties: '#78350f',
+      ballast: '#7c2d12',
       grid: '#f97316',
-      building: '#292524',
+      building: '#271005',
       accent: '#fde047',
       celestial: 'sun',
-      horizonGlow: 'rgba(251, 146, 60, 0.65)',
-      isBright: true
-    },
-    {
-      id: 'paris_metro',
-      name: 'PARIS METRO',
-      flag: '🗼',
-      sky: ['#4a044e', '#c084fc'],
-      ground: '#3b0764',
-      rails: '#fef08a',
-      ties: '#581c87',
-      ballast: '#6b21a8',
-      grid: '#e879f9',
-      building: '#1e1b4b',
-      accent: '#f43f5e',
-      celestial: 'moon',
-      horizonGlow: 'rgba(232, 121, 249, 0.65)',
-      isBright: false
-    },
-    {
-      id: 'beijing_dynasty',
-      name: 'BEIJING DYNASTY',
-      flag: '🏮',
-      sky: ['#7f1d1d', '#f87171'],
-      ground: '#450a0a',
-      rails: '#fef08a',
-      ties: '#7f1d1d',
-      ballast: '#991b1b',
-      grid: '#facc15',
-      building: '#2d0606',
-      accent: '#facc15',
-      celestial: 'sun',
-      horizonGlow: 'rgba(239, 68, 68, 0.7)',
-      isBright: true
-    },
-    {
-      id: 'miami_beach',
-      name: 'MIAMI WAVES',
-      flag: '🌴',
-      sky: ['#0e7490', '#38bdf8'],
-      ground: '#164e63',
-      rails: '#f472b6',
-      ties: '#047857',
-      ballast: '#0891b2',
-      grid: '#ec4899',
-      building: '#155e75',
-      accent: '#f43f5e',
-      celestial: 'sun',
-      horizonGlow: 'rgba(56, 189, 248, 0.7)',
-      isBright: true
-    },
-    {
-      id: 'frost_express',
-      name: 'FROST EXPRESS',
-      flag: '❄️',
-      sky: ['#0f172a', '#06b6d4'],
-      ground: '#082f49',
-      rails: '#e0f2fe',
-      ties: '#0c4a6e',
-      ballast: '#38bdf8',
-      grid: '#a5f3fc',
-      building: '#020617',
-      accent: '#38bdf8',
-      celestial: 'moon',
-      horizonGlow: 'rgba(14, 165, 233, 0.65)',
-      isBright: false
-    },
-    {
-      id: 'tokyo_pop',
-      name: 'TOKYO TOON',
-      flag: '🕹️',
-      sky: ['#6b21a8', '#d946ef'],
-      ground: '#1e1b4b',
-      rails: '#38bdf8',
-      ties: '#581c87',
-      ballast: '#312e81',
-      grid: '#e879f9',
-      building: '#0f172a',
-      accent: '#f43f5e',
-      celestial: 'moon',
-      horizonGlow: 'rgba(232, 121, 249, 0.6)',
-      isBright: false
-    },
-    {
-      id: 'neon_carnival',
-      name: 'NEON CARNIVAL',
-      flag: '🎪',
-      sky: ['#065f46', '#10b981'],
-      ground: '#064e3b',
-      rails: '#fef08a',
-      ties: '#14532d',
-      ballast: '#047857',
-      grid: '#34d399',
-      building: '#022c22',
-      accent: '#f43f5e',
-      celestial: 'sun',
-      horizonGlow: 'rgba(16, 185, 129, 0.6)',
+      horizonGlow: 'rgba(251, 146, 60, 0.75)',
       isBright: true
     }
   ];
@@ -259,8 +169,11 @@
       this.floatingTexts = [];
     }
 
-    burst(x, y, color, count = 16, speedMin = 80, speedMax = 260) {
-      for (let i = 0; i < count; i++) {
+    burst(x, y, color, count = 12, speedMin = 80, speedMax = 260) {
+      // Mobile performance: cap active particles
+      if (this.particles.length > 32) return;
+      const actualCount = Math.min(count, 14);
+      for (let i = 0; i < actualCount; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = randRange(speedMin, speedMax);
         this.particles.push({
@@ -327,8 +240,6 @@
         ctx.save();
         ctx.globalAlpha = a;
         ctx.fillStyle = p.color;
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius * a, 0, Math.PI * 2);
         ctx.fill();
@@ -343,8 +254,6 @@
         ctx.font = 'bold 16px "Orbitron", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillStyle = ft.color;
-        ctx.shadowColor = ft.color;
-        ctx.shadowBlur = 10;
         ctx.fillText(ft.text, ft.x, ft.y);
         ctx.restore();
       }
@@ -493,8 +402,6 @@
         ctx.save();
         ctx.globalAlpha = a;
         ctx.strokeStyle = ss.color;
-        ctx.shadowColor = ss.color;
-        ctx.shadowBlur = 12;
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.moveTo(ss.x, ss.y);
@@ -539,8 +446,6 @@
       // 7. Track border rails with animated neon LED guide nodes
       ctx.save();
       ctx.strokeStyle = gridColor;
-      ctx.shadowColor = gridColor;
-      ctx.shadowBlur = 10;
       ctx.lineWidth = 3.5;
       ctx.beginPath();
       ctx.moveTo(0, 260); ctx.lineTo(0, DESIGN_HEIGHT);
@@ -550,8 +455,6 @@
       for (let y = 300; y < DESIGN_HEIGHT; y += 70) {
         const offset = (this.time * 60 + y) % (DESIGN_HEIGHT - 300) + 300;
         ctx.fillStyle = '#fff';
-        ctx.shadowColor = gridColor;
-        ctx.shadowBlur = 8;
         ctx.fillRect(2, offset, 4, 10);
         ctx.fillRect(DESIGN_WIDTH - 6, offset, 4, 10);
       }
@@ -561,8 +464,6 @@
       if (speedRatio > 1.05) {
         ctx.save();
         ctx.strokeStyle = gridColor;
-        ctx.shadowColor = gridColor;
-        ctx.shadowBlur = 8;
         ctx.lineWidth = 1.2;
         const streakAlpha = clamp((speedRatio - 1.05) * 0.45, 0, 0.45);
         ctx.globalAlpha = streakAlpha;
@@ -603,14 +504,11 @@
         discGrad.addColorStop(1, '#7209b7');
 
         ctx.fillStyle = discGrad;
-        ctx.shadowColor = '#f72585';
-        ctx.shadowBlur = 24;
         ctx.beginPath();
         ctx.arc(sunX, sunY, radius, 0, Math.PI * 2);
         ctx.fill();
 
         // Iconic horizontal retro blinds
-        ctx.shadowBlur = 0;
         ctx.fillStyle = '#240523';
         const startCutY = sunY - 10;
         for (let i = 0; i < 7; i++) {
@@ -639,8 +537,6 @@
         moonGrad.addColorStop(1, '#09162c');
 
         ctx.fillStyle = moonGrad;
-        ctx.shadowColor = '#00f0ff';
-        ctx.shadowBlur = 18;
         ctx.beginPath();
         ctx.arc(moonX, moonY, radius, 0, Math.PI * 2);
         ctx.fill();
@@ -648,7 +544,6 @@
         // Orbiting cyan data rings
         ctx.strokeStyle = 'rgba(76, 201, 240, 0.7)';
         ctx.lineWidth = 1.5;
-        ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.ellipse(moonX, moonY, radius * 1.5, radius * 0.48, -0.28, 0, Math.PI * 2);
         ctx.stroke();
@@ -658,8 +553,6 @@
         const satX = moonX + Math.cos(satAngle) * radius * 1.5;
         const satY = moonY + Math.sin(satAngle) * radius * 0.48;
         ctx.fillStyle = '#fff';
-        ctx.shadowColor = '#fff';
-        ctx.shadowBlur = 6;
         ctx.beginPath();
         ctx.arc(satX, satY, 2.5, 0, Math.PI * 2);
         ctx.fill();
@@ -683,8 +576,6 @@
         const pY = 160;
         const pSize = 5 + Math.sin(this.time * 5) * 1.5;
         ctx.fillStyle = '#ffd23f';
-        ctx.shadowColor = '#ffd23f';
-        ctx.shadowBlur = 18;
         ctx.beginPath();
         ctx.arc(pX, pY, pSize, 0, Math.PI * 2);
         ctx.fill();
@@ -737,8 +628,6 @@
             if (blink) {
               ctx.save();
               ctx.fillStyle = b.beaconColor;
-              ctx.shadowColor = b.beaconColor;
-              ctx.shadowBlur = 8;
               ctx.globalAlpha = 0.9;
               ctx.fillRect(bx + b.w / 2 - 1, baseY - b.h - 8, 2, 8);
               ctx.beginPath();
@@ -755,8 +644,6 @@
             ctx.font = 'bold 9px "Orbitron", sans-serif';
             ctx.textAlign = 'center';
             ctx.fillStyle = accentColor || '#4cc9f0';
-            ctx.shadowColor = accentColor || '#4cc9f0';
-            ctx.shadowBlur = 8;
             ctx.fillText(b.neonSign, bx + b.w / 2, baseY - b.h + 20);
             ctx.restore();
           }
@@ -936,8 +823,6 @@
         ctx.translate(0, -40);
         ctx.rotate(animTime * 2.2);
         ctx.strokeStyle = '#06d6a0';
-        ctx.shadowColor = '#06d6a0';
-        ctx.shadowBlur = 14;
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         for (let i = 0; i < 6; i++) {
@@ -954,8 +839,6 @@
         ctx.translate(0, -40);
         ctx.rotate(-animTime * 1.8);
         ctx.strokeStyle = '#4cc9f0';
-        ctx.shadowColor = '#4cc9f0';
-        ctx.shadowBlur = 10;
         ctx.lineWidth = 1.8;
         ctx.beginPath();
         for (let i = 0; i < 6; i++) {
@@ -985,10 +868,7 @@
 
         // Rear glowing sneaker
         ctx.fillStyle = c.shoes;
-        ctx.shadowColor = c.accent;
-        ctx.shadowBlur = 8;
         ctx.fillRect(-24, 2, 7, 9);
-        ctx.shadowBlur = 0;
 
         // Front bent knee forward
         ctx.fillStyle = c.suitLight;
@@ -999,15 +879,12 @@
 
         // Knee friction spark armor pad
         ctx.fillStyle = c.visor;
-        ctx.shadowColor = c.visor;
-        ctx.shadowBlur = 12;
         ctx.fillRect(16, -2, 6, 8);
 
         // Friction spark trails
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(20 + Math.sin(animTime * 30) * 4, 3, 3, 3);
         ctx.fillRect(16 + Math.cos(animTime * 25) * 5, 5, 2, 2);
-        ctx.shadowBlur = 0;
 
         // Torso / cyber jacket
         ctx.fillStyle = c.suitDark;
@@ -1022,12 +899,9 @@
 
         // Torso glowing core
         ctx.fillStyle = c.accent;
-        ctx.shadowColor = c.accent;
-        ctx.shadowBlur = 10;
         ctx.beginPath();
         ctx.arc(0, -12, 4, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0;
 
         // Arms in slide bracing position
         ctx.fillStyle = c.suitDark;
@@ -1054,10 +928,7 @@
 
         // Glowing Visor
         ctx.fillStyle = c.visor;
-        ctx.shadowColor = c.visor;
-        ctx.shadowBlur = 12;
         ctx.fillRect(2, -35, 9, 6);
-        ctx.shadowBlur = 0;
 
         ctx.restore();
 
@@ -1096,12 +967,9 @@
 
         // Chest reactor core
         ctx.fillStyle = c.accent;
-        ctx.shadowColor = c.accent;
-        ctx.shadowBlur = 12;
         ctx.beginPath();
         ctx.arc(0, -10, 4.5, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0;
 
         // Outstretched arms for balance
         ctx.fillStyle = c.suitDark;
@@ -1134,21 +1002,15 @@
 
         // Glowing Visor
         ctx.fillStyle = c.visor;
-        ctx.shadowColor = c.visor;
-        ctx.shadowBlur = 14;
         ctx.fillRect(-1, -35, 10, 6);
-        ctx.shadowBlur = 0;
 
         // Thruster flames from jet boots
         const flameH = 12 + Math.sin(animTime * 24) * 4;
         ctx.fillStyle = '#00f0ff';
-        ctx.shadowColor = '#00f0ff';
-        ctx.shadowBlur = 14;
         ctx.beginPath();
         ctx.moveTo(-16, 31); ctx.lineTo(-10, 31 + flameH); ctx.lineTo(-4, 31);
         ctx.moveTo(10, 29); ctx.lineTo(16, 29 + flameH); ctx.lineTo(22, 29);
         ctx.fill();
-        ctx.shadowBlur = 0;
 
         ctx.restore();
 
@@ -1187,10 +1049,7 @@
         ctx.fillRect(-4, 14, 8, 16); // shin guard
         // Back shoe
         ctx.fillStyle = c.shoes;
-        ctx.shadowColor = c.accent;
-        ctx.shadowBlur = 6;
         ctx.fillRect(-4, 28, 13, 7);
-        ctx.shadowBlur = 0;
         ctx.restore();
 
         // 3. HUMAN ATHLETIC TORSO & CYBER JACKET
@@ -1213,12 +1072,9 @@
 
         // Chest glowing cyber reactor core
         ctx.fillStyle = c.accent;
-        ctx.shadowColor = c.accent;
-        ctx.shadowBlur = 12;
         ctx.beginPath();
         ctx.arc(0, -11, 4.5, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0;
 
         // Belt & utility buckle
         ctx.fillStyle = '#070a12';
@@ -1237,12 +1093,9 @@
         ctx.fillRect(-4, 14, 8, 16); // shin guard
         // Front shoe with glowing neon sole
         ctx.fillStyle = c.shoes;
-        ctx.shadowColor = c.accent;
-        ctx.shadowBlur = 8;
         ctx.fillRect(-3, 28, 14, 7);
         ctx.fillStyle = c.accent;
         ctx.fillRect(-3, 33, 14, 2.5); // glowing sole
-        ctx.shadowBlur = 0;
         ctx.restore();
 
         // 5. HUMAN HEAD & CYBER HELMET
@@ -1273,15 +1126,12 @@
 
         // Visor eye-slit
         ctx.fillStyle = c.visor;
-        ctx.shadowColor = c.visorGlow;
-        ctx.shadowBlur = 12;
         ctx.fillRect(0, -35, 10, 6);
 
         // Visor animated laser scanner beam
         const scanX = 0 + ((Math.sin(animTime * 12) + 1) * 0.5) * 7;
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(scanX, -35, 3, 6);
-        ctx.shadowBlur = 0;
 
         // 6. FRONT ARM (Swings opposite to back arm)
         const frontArmAngle = -legSwing * 0.7;
@@ -1299,11 +1149,8 @@
         // Jet thruster flames on heels when running fast
         const flameH = 6 + Math.sin(animTime * 24) * 3;
         ctx.fillStyle = c.visor;
-        ctx.shadowColor = c.visor;
-        ctx.shadowBlur = 8;
         ctx.fillRect(-10, 30, 4, flameH);
         ctx.fillRect(6, 30, 4, flameH);
-        ctx.shadowBlur = 0;
 
         ctx.restore();
       }
@@ -1741,8 +1588,6 @@
 
         // Front Face
         ctx.fillStyle = o.type.color;
-        ctx.shadowColor = o.type.color;
-        ctx.shadowBlur = 8 * s;
         ctx.fillRect(bx, by, bw, bh);
 
         // Warning Top Stripe
@@ -1769,8 +1614,6 @@
 
         // Left & Right Signal Pylons
         ctx.fillStyle = '#1e3a8a';
-        ctx.shadowColor = o.type.accent;
-        ctx.shadowBlur = 6 * s;
         ctx.fillRect(bx, by, pylonW, bh);
         ctx.fillRect(bx + bw - pylonW, by, pylonW, bh);
 
@@ -1788,8 +1631,6 @@
         // Warning lights bar
         const pulse = (Math.sin(Date.now() * 0.012) + 1) * 0.5;
         ctx.fillStyle = o.type.accent;
-        ctx.shadowColor = o.type.accent;
-        ctx.shadowBlur = (10 + pulse * 8) * s;
         ctx.fillRect(bx + pylonW, by + solidH - 6 * s, bw - pylonW * 2, 5 * s);
 
         // Sliding Clearance Opening
@@ -1848,8 +1689,6 @@
 
         // Warning Hazard Frame
         ctx.strokeStyle = o.type.accent;
-        ctx.shadowColor = o.type.accent;
-        ctx.shadowBlur = 10 * s;
         ctx.lineWidth = Math.max(1.5, 2.5 * s);
         ctx.strokeRect(bx + 2 * s, by + 2 * s, bw - 4 * s, bh - 4 * s);
 
@@ -1917,8 +1756,6 @@
           const wx = pW.x - (o.w * sw) / 2;
           const wy = pW.y - (o.h * 0.72) * sw;
           ctx.fillStyle = '#fef08a';
-          ctx.shadowColor = '#facc15';
-          ctx.shadowBlur = 6 * sw;
           ctx.fillRect(wx, wy, winW, winH);
         }
       }
@@ -1946,8 +1783,6 @@
           const wx = pW.x + (o.w * sw) / 2 - winW;
           const wy = pW.y - (o.h * 0.72) * sw;
           ctx.fillStyle = '#fef08a';
-          ctx.shadowColor = '#facc15';
-          ctx.shadowBlur = 6 * sw;
           ctx.fillRect(wx, wy, winW, winH);
         }
       }
@@ -2132,8 +1967,6 @@
 
       // Glowing headlight bulbs
       ctx.fillStyle = '#ffffff';
-      ctx.shadowColor = '#facc15';
-      ctx.shadowBlur = 10 * sFront;
       ctx.beginPath();
       ctx.arc(leftHlX, hlY, hlRadius, 0, Math.PI * 2);
       ctx.arc(rightHlX, hlY, hlRadius, 0, Math.PI * 2);
@@ -2221,8 +2054,6 @@
         // Glowing "▲ CLIMB ROOF ▲" prompt
         if (sFront > 0.35) {
           ctx.fillStyle = '#ffffff';
-          ctx.shadowColor = '#facc15';
-          ctx.shadowBlur = 10;
           ctx.font = `bold ${Math.max(9, 13 * sFront)}px "Orbitron", sans-serif`;
           ctx.textAlign = 'center';
           ctx.fillText('▲ CLIMB ROOF ▲', pRampBase.x, pRampBase.y - (pRampBase.y - byFront) * 0.5);
@@ -2474,8 +2305,6 @@
         coinGrad.addColorStop(1, '#ff9100');
 
         ctx.fillStyle = coinGrad;
-        ctx.shadowColor = '#ffd23f';
-        ctx.shadowBlur = 8 * s;
         ctx.beginPath();
         ctx.ellipse(pos.x, pos.y, w, r, 0, 0, Math.PI * 2);
         ctx.fill();
@@ -2504,8 +2333,6 @@
 
         // Outer rotating halo ring
         ctx.strokeStyle = meta.color;
-        ctx.shadowColor = meta.color;
-        ctx.shadowBlur = 12 * s;
         ctx.lineWidth = Math.max(1, 1.8 * s);
         ctx.beginPath();
         ctx.ellipse(pos.x, pos.y, r * 1.5, r * 0.6, item.spin * 2.2, 0, Math.PI * 2);
@@ -2525,7 +2352,6 @@
         // Icon
         if (s > 0.35) {
           ctx.fillStyle = '#ffffff';
-          ctx.shadowBlur = 3 * s;
           ctx.font = `bold ${Math.max(10, 14 * s)}px sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
@@ -2832,8 +2658,8 @@
     loadSelectedBg() {
       try {
         const ver = localStorage.getItem('run_and_run_bg_ver');
-        if (ver !== 'v8') {
-          localStorage.setItem('run_and_run_bg_ver', 'v8');
+        if (ver !== 'v11') {
+          localStorage.setItem('run_and_run_bg_ver', 'v11');
           localStorage.setItem(BG_STORAGE_KEY, '0');
           return 0;
         }
@@ -3966,71 +3792,419 @@
         ctx.stroke();
       }
 
-      // 7. Trackside Concrete Walls with Colorful Subway Graffiti Murals & Tags
-      const wallNorms = [-1.58, 1.58];
-      const graffitiPalettes = [
-        { text: 'SURF', col: '#ff007f', outline: '#ffffff' },
-        { text: 'DASH', col: '#06b6d4', outline: '#facc15' },
-        { text: 'SUBWAY', col: '#a855f7', outline: '#38bdf8' },
-        { text: 'RUN', col: '#22c55e', outline: '#ffffff' },
-        { text: '★ SPEED ★', col: '#facc15', outline: '#ef4444' },
-        { text: '⚡ 3D ⚡', col: '#38bdf8', outline: '#ff007f' }
-      ];
-      for (const wNorm of wallNorms) {
-        const wallFar = project3D(wNorm, 950, 0);
-        const wallFarTop = project3D(wNorm, 950, 48);
-        const wallNear = project3D(wNorm, -40, 0);
-        const wallNearTop = project3D(wNorm, -40, 48);
+      // 7. AUTHENTIC SUBWAY SURFERS SCENERY & LANDMARKS (TOKYO FOOD & WILD WEST)
+      const currentTheme = to.type || 'tokyo';
 
-        // Concrete barrier wall
-        ctx.fillStyle = '#334155';
-        ctx.beginPath();
-        ctx.moveTo(wallFar.x, wallFar.y);
-        ctx.lineTo(wallFarTop.x, wallFarTop.y);
-        ctx.lineTo(wallNearTop.x, wallNearTop.y);
-        ctx.lineTo(wallNear.x, wallNear.y);
-        ctx.closePath();
-        ctx.fill();
-
-        // Wall top curb lip with bright warning edge
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = Math.max(1.5, 3.0 * wallNear.scale);
-        ctx.beginPath();
-        ctx.moveTo(wallFarTop.x, wallFarTop.y);
-        ctx.lineTo(wallNearTop.x, wallNearTop.y);
-        ctx.stroke();
-
-        // Vivid Graffiti spray-paint murals & tags along wall
-        const grafStep = 150;
-        const grafOffset = (this.distance * 0.9) % grafStep;
-        for (let gz = grafOffset; gz < 860; gz += grafStep) {
-          const pG = project3D(wNorm, gz, 24);
-          const sG = pG.scale;
-          const grafIdx = Math.floor(gz / grafStep) % graffitiPalettes.length;
-          const tag = graffitiPalettes[grafIdx];
-
-          // Spray paint background splatter
-          ctx.fillStyle = tag.col;
+      if (currentTheme === 'western') {
+        // --- WILD WEST CANYON THEME (SCREENSHOT 2) ---
+        // A. Red-Rock Sandstone Canyon Mesa Cliffs in Skyline
+        ctx.save();
+        const mesaStep = 320;
+        const mesaOffset = (this.distance * 0.12) % mesaStep;
+        ctx.fillStyle = '#7c2d12';
+        for (let mx = -120; mx < DESIGN_WIDTH + 180; mx += 160) {
           ctx.beginPath();
-          ctx.arc(pG.x, pG.y, Math.max(3, 10 * sG), 0, Math.PI * 2);
+          ctx.moveTo(mx, VP_Y);
+          ctx.lineTo(mx + 40, VP_Y - 55);
+          ctx.lineTo(mx + 110, VP_Y - 55);
+          ctx.lineTo(mx + 150, VP_Y);
+          ctx.closePath();
           ctx.fill();
-          // Satellite spray dots
-          ctx.fillStyle = tag.outline;
-          ctx.fillRect(pG.x - 6 * sG, pG.y - 5 * sG, 3 * sG, 3 * sG);
-          ctx.fillRect(pG.x + 5 * sG, pG.y + 4 * sG, 4 * sG, 3 * sG);
+        }
+        // Warm canyon sandstone ridge
+        ctx.fillStyle = '#9a3412';
+        for (let mx = -60; mx < DESIGN_WIDTH + 180; mx += 140) {
+          ctx.beginPath();
+          ctx.moveTo(mx, VP_Y);
+          ctx.lineTo(mx + 30, VP_Y - 35);
+          ctx.lineTo(mx + 85, VP_Y - 35);
+          ctx.lineTo(mx + 120, VP_Y);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
 
-          // Render graffiti typography when close enough to read
-          if (sG > 0.28) {
+        // B. High Roller-Coaster Minecart Trestle Bridge on Horizon
+        ctx.save();
+        ctx.strokeStyle = '#78350f';
+        ctx.lineWidth = 2.5;
+        const bridgeY = VP_Y - 65;
+        ctx.beginPath();
+        ctx.moveTo(0, bridgeY);
+        ctx.lineTo(DESIGN_WIDTH, bridgeY);
+        ctx.stroke();
+        // Trestle legs
+        for (let tx = 30; tx < DESIGN_WIDTH; tx += 45) {
+          ctx.beginPath();
+          ctx.moveTo(tx, bridgeY);
+          ctx.lineTo(tx - 12, VP_Y);
+          ctx.moveTo(tx, bridgeY);
+          ctx.lineTo(tx + 12, VP_Y);
+          ctx.stroke();
+        }
+        // Rolling minecart
+        const cartX = (this.distance * 0.4) % (DESIGN_WIDTH + 80) - 40;
+        ctx.fillStyle = '#451a03';
+        ctx.fillRect(cartX, bridgeY - 14, 22, 12);
+        ctx.fillStyle = '#facc15'; // Gold ore in minecart
+        ctx.fillRect(cartX + 2, bridgeY - 18, 18, 5);
+        ctx.restore();
+
+        // C. Trackside Saguaro Cacti along the railroad
+        const cactusStep = 220;
+        const cactusOffset = (this.distance * 0.95) % cactusStep;
+        for (let cz = cactusOffset; cz < 850; cz += cactusStep) {
+          for (const side of [-1.8, 1.8]) {
+            const pC = project3D(side, cz, 0);
+            const sc = pC.scale;
+            if (sc < 0.08) continue;
             ctx.save();
-            ctx.fillStyle = tag.col;
-            ctx.strokeStyle = tag.outline;
-            ctx.lineWidth = Math.max(1, 1.8 * sG);
-            ctx.font = `900 ${Math.max(8, 15 * sG)}px "Orbitron", Impact, sans-serif`;
+            ctx.fillStyle = '#15803d'; // Saguaro green
+            const cH = 60 * sc;
+            const cW = 10 * sc;
+            // Trunk
+            ctx.fillRect(pC.x - cW / 2, pC.y - cH, cW, cH);
+            // Left arm
+            ctx.fillRect(pC.x - cW * 1.8, pC.y - cH * 0.7, cW * 1.8, 5 * sc);
+            ctx.fillRect(pC.x - cW * 1.8, pC.y - cH * 0.95, cW * 0.8, cH * 0.3);
+            // Right arm
+            ctx.fillRect(pC.x, pC.y - cH * 0.55, cW * 1.8, 5 * sc);
+            ctx.fillRect(pC.x + cW * 1.2, pC.y - cH * 0.8, cW * 0.8, cH * 0.3);
+            ctx.restore();
+          }
+        }
+
+        // D. Wooden "TRADE" Outpost General Store (Right side)
+        const tradeStep = 480;
+        const tradeOffset = (this.distance * 0.95) % tradeStep;
+        for (let tz = tradeOffset; tz < 850; tz += tradeStep) {
+          const pT = project3D(2.35, tz, 0);
+          const st = pT.scale;
+          if (st > 0.12) {
+            ctx.save();
+            const bW = 100 * st;
+            const bH = 110 * st;
+            // Wooden building body
+            ctx.fillStyle = '#854d0e';
+            ctx.fillRect(pT.x - bW / 2, pT.y - bH, bW, bH);
+            // Green corrugated awning roof
+            ctx.fillStyle = '#15803d';
+            ctx.beginPath();
+            ctx.moveTo(pT.x - bW * 0.6, pT.y - bH);
+            ctx.lineTo(pT.x, pT.y - bH - 24 * st);
+            ctx.lineTo(pT.x + bW * 0.6, pT.y - bH);
+            ctx.closePath();
+            ctx.fill();
+            // Steer skull on facade
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(pT.x - 8 * st, pT.y - bH - 12 * st, 16 * st, 10 * st);
+            // Signboard "TRADE"
+            ctx.fillStyle = '#166534';
+            ctx.fillRect(pT.x - 38 * st, pT.y - bH * 0.85, 76 * st, 18 * st);
+            ctx.fillStyle = '#fde047';
+            ctx.font = `900 ${Math.max(7, 13 * st)}px "Rajdhani", sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText('TRADE POST', pT.x, pT.y - bH * 0.85 + 13 * st);
+            // Windows
+            ctx.fillStyle = '#93c5fd';
+            ctx.fillRect(pT.x - 30 * st, pT.y - bH * 0.5, 20 * st, 20 * st);
+            ctx.fillRect(pT.x + 10 * st, pT.y - bH * 0.5, 20 * st, 20 * st);
+            ctx.restore();
+          }
+        }
+
+        // E. Overhead Wooden "★ SALOON ★" Gateway Arch across the tracks
+        const saloonStep = 560;
+        const saloonOffset = (this.distance * 1.0) % saloonStep;
+        for (let sz = saloonOffset; sz < 880; sz += saloonStep) {
+          const pL = project3D(-1.7, sz, 0);
+          const pR = project3D(1.7, sz, 0);
+          const pM = project3D(0, sz, 85);
+          const ss = pL.scale;
+          if (ss > 0.1) {
+            ctx.save();
+            const postW = 14 * ss;
+            const beamH = 26 * ss;
+            // Heavy timber vertical posts
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(pL.x, pL.y - 85 * ss, postW, 85 * ss);
+            ctx.fillRect(pR.x - postW, pR.y - 85 * ss, postW, 85 * ss);
+            // Diagonal wooden cross-braces
+            ctx.strokeStyle = '#451a03';
+            ctx.lineWidth = 3 * ss;
+            ctx.beginPath();
+            ctx.moveTo(pL.x, pL.y - 30 * ss);
+            ctx.lineTo(pL.x + 20 * ss, pL.y - 85 * ss);
+            ctx.moveTo(pR.x, pR.y - 30 * ss);
+            ctx.lineTo(pR.x - 20 * ss, pR.y - 85 * ss);
+            ctx.stroke();
+            // Overhead Saloon timber signboard
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(pL.x, pM.y - beamH / 2, pR.x - pL.x, beamH);
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 2 * ss;
+            ctx.strokeRect(pL.x + 4 * ss, pM.y - beamH / 2 + 3 * ss, (pR.x - pL.x) - 8 * ss, beamH - 6 * ss);
+            // Saloon text
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `900 ${Math.max(8, 18 * ss)}px "Orbitron", Impact, sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.strokeText(tag.text, pG.x, pG.y);
-            ctx.fillText(tag.text, pG.x, pG.y);
+            ctx.fillText('★ SALOON ★', pM.x, pM.y);
+            // Steer Skull on center top
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(pM.x - 12 * ss, pM.y - beamH / 2 - 14 * ss, 24 * ss, 12 * ss);
+            // Railroad crossing flags / TNT boxes
+            ctx.fillStyle = '#dc2626';
+            ctx.fillRect(pL.x - 8 * ss, pL.y - 18 * ss, 16 * ss, 16 * ss);
+            ctx.fillRect(pR.x - 8 * ss, pR.y - 18 * ss, 16 * ss, 16 * ss);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${Math.max(6, 9 * ss)}px sans-serif`;
+            ctx.fillText('TNT', pL.x, pL.y - 6 * ss);
+            ctx.fillText('TNT', pR.x, pR.y - 6 * ss);
             ctx.restore();
+          }
+        }
+      } else {
+        // --- TOKYO FOOD STREET THEME (SCREENSHOT 1) ---
+        // A. Giant 3D Takoyaki / Cartoon Octopus Chef (Left side at laneNorm = -2.3)
+        const octoStep = 450;
+        const octoOffset = (this.distance * 0.95) % octoStep;
+        for (let oz = octoOffset; oz < 850; oz += octoStep) {
+          const pO = project3D(-2.3, oz, 0);
+          const so = pO.scale;
+          if (so > 0.12) {
+            ctx.save();
+            const oW = 95 * so;
+            const oH = 120 * so;
+            // Giant Red-Pink Octopus Head
+            ctx.fillStyle = '#f43f5e';
+            ctx.beginPath();
+            ctx.arc(pO.x, pO.y - oH * 0.7, oW * 0.48, 0, Math.PI * 2);
+            ctx.fill();
+            // Cute Anime Eyes (Black and white glint)
+            ctx.fillStyle = '#1e1b4b';
+            ctx.beginPath();
+            ctx.arc(pO.x - 14 * so, pO.y - oH * 0.72, 8 * so, 0, Math.PI * 2);
+            ctx.arc(pO.x + 14 * so, pO.y - oH * 0.72, 8 * so, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(pO.x - 16 * so, pO.y - oH * 0.74, 3 * so, 0, Math.PI * 2);
+            ctx.arc(pO.x + 12 * so, pO.y - oH * 0.74, 3 * so, 0, Math.PI * 2);
+            ctx.fill();
+            // Pink Blush Cheeks
+            ctx.fillStyle = 'rgba(251, 113, 133, 0.65)';
+            ctx.beginPath();
+            ctx.arc(pO.x - 24 * so, pO.y - oH * 0.64, 7 * so, 0, Math.PI * 2);
+            ctx.arc(pO.x + 24 * so, pO.y - oH * 0.64, 7 * so, 0, Math.PI * 2);
+            ctx.fill();
+            // Curling Tentacles
+            ctx.strokeStyle = '#e11d48';
+            ctx.lineWidth = 9 * so;
+            ctx.beginPath();
+            ctx.arc(pO.x - 30 * so, pO.y - oH * 0.35, 20 * so, 0.4, 2.5);
+            ctx.arc(pO.x + 30 * so, pO.y - oH * 0.35, 20 * so, 0.8, 2.8);
+            ctx.stroke();
+            // 3 Takoyaki Balls on skewers
+            const takoY = [0.45, 0.3, 0.15];
+            for (let i = 0; i < takoY.length; i++) {
+              ctx.fillStyle = '#b45309'; // Golden brown baked takoyaki ball
+              ctx.beginPath();
+              ctx.arc(pO.x + (i % 2 === 0 ? 32 : 44) * so, pO.y - oH * takoY[i], 13 * so, 0, Math.PI * 2);
+              ctx.fill();
+              // Savory mayo & seaweed flakes
+              ctx.fillStyle = '#fef08a';
+              ctx.fillRect(pO.x + (i % 2 === 0 ? 24 : 36) * so, pO.y - oH * takoY[i] - 3 * so, 16 * so, 3 * so);
+              ctx.fillStyle = '#15803d';
+              ctx.fillRect(pO.x + (i % 2 === 0 ? 28 : 40) * so, pO.y - oH * takoY[i] + 2 * so, 4 * so, 3 * so);
+            }
+            // Japanese Neon Sign "たこ焼き"
+            ctx.fillStyle = '#facc15';
+            ctx.font = `900 ${Math.max(8, 14 * so)}px "Rajdhani", sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText('TAKOYAKI 🐙', pO.x, pO.y - oH * 1.05);
+            ctx.restore();
+          }
+        }
+
+        // B. Giant Walrus-Mustache Sushi Chef Statue (Right side at laneNorm = +2.4)
+        const chefStep = 520;
+        const chefOffset = (this.distance * 0.95 + 260) % chefStep;
+        for (let cz = chefOffset; cz < 850; cz += chefStep) {
+          const pC = project3D(2.35, cz, 0);
+          const sc = pC.scale;
+          if (sc > 0.12) {
+            ctx.save();
+            const cW = 100 * sc;
+            const cH = 135 * sc;
+            // Chef Body / Uniform
+            ctx.fillStyle = '#f1f5f9';
+            ctx.fillRect(pC.x - cW * 0.42, pC.y - cH * 0.5, cW * 0.84, cH * 0.5);
+            // Blue Japanese Chef Vest
+            ctx.fillStyle = '#1d4ed8';
+            ctx.fillRect(pC.x - cW * 0.45, pC.y - cH * 0.5, cW * 0.2, cH * 0.5);
+            ctx.fillRect(pC.x + cW * 0.25, pC.y - cH * 0.5, cW * 0.2, cH * 0.5);
+            // Chef Face (Peach skin)
+            ctx.fillStyle = '#fed7aa';
+            ctx.beginPath();
+            ctx.arc(pC.x, pC.y - cH * 0.68, cW * 0.34, 0, Math.PI * 2);
+            ctx.fill();
+            // Tall White Chef Hat
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(pC.x - cW * 0.28, pC.y - cH * 1.15, cW * 0.56, cH * 0.38);
+            ctx.beginPath();
+            ctx.arc(pC.x, pC.y - cH * 1.15, cW * 0.28, Math.PI, 0);
+            ctx.fill();
+            // Giant Black Walrus Mustache (Subway Surfers signature!)
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.ellipse(pC.x - 14 * sc, pC.y - cH * 0.62, 18 * sc, 10 * sc, 0.2, 0, Math.PI * 2);
+            ctx.ellipse(pC.x + 14 * sc, pC.y - cH * 0.62, 18 * sc, 10 * sc, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+            // Chef Eyes & Nose
+            ctx.fillStyle = '#ea580c';
+            ctx.beginPath();
+            ctx.arc(pC.x, pC.y - cH * 0.68, 5 * sc, 0, Math.PI * 2);
+            ctx.fill();
+            // Giant Chopsticks holding a Sushi Roll!
+            ctx.strokeStyle = '#d97706';
+            ctx.lineWidth = 4 * sc;
+            ctx.beginPath();
+            ctx.moveTo(pC.x - 25 * sc, pC.y - cH * 0.4);
+            ctx.lineTo(pC.x - 55 * sc, pC.y - cH * 0.7);
+            ctx.moveTo(pC.x - 20 * sc, pC.y - cH * 0.35);
+            ctx.lineTo(pC.x - 50 * sc, pC.y - cH * 0.75);
+            ctx.stroke();
+            // Sushi roll held by chopsticks: Nori outer, white rice, salmon center
+            ctx.fillStyle = '#0f172a'; // Nori seaweed
+            ctx.beginPath();
+            ctx.arc(pC.x - 52 * sc, pC.y - cH * 0.72, 14 * sc, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff'; // White sushi rice
+            ctx.beginPath();
+            ctx.arc(pC.x - 52 * sc, pC.y - cH * 0.72, 11 * sc, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#f97316'; // Fresh salmon center
+            ctx.beginPath();
+            ctx.arc(pC.x - 52 * sc, pC.y - cH * 0.72, 5 * sc, 0, Math.PI * 2);
+            ctx.fill();
+            // Red Lanterns flanking storefront
+            ctx.fillStyle = '#dc2626';
+            ctx.fillRect(pC.x - cW * 0.5, pC.y - cH * 0.85, 14 * sc, 20 * sc);
+            ctx.fillRect(pC.x + cW * 0.38, pC.y - cH * 0.85, 14 * sc, 20 * sc);
+            // Signboard "SUSHI BAR"
+            ctx.fillStyle = '#facc15';
+            ctx.font = `900 ${Math.max(8, 14 * sc)}px "Rajdhani", sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText('すし CHEF 🍣', pC.x, pC.y - cH * 1.25);
+            ctx.restore();
+          }
+        }
+
+        // C. Giant Burger Tower in the background skyline
+        const burgerX = ((DESIGN_WIDTH * 0.7) + (this.distance * 0.08)) % (DESIGN_WIDTH + 240) - 120;
+        const burgerY = VP_Y - 50;
+        ctx.save();
+        // Top Bun with Sesame Seeds
+        ctx.fillStyle = '#d97706';
+        ctx.beginPath();
+        ctx.arc(burgerX, burgerY - 32, 28, Math.PI, 0);
+        ctx.fill();
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(burgerX - 12, burgerY - 45, 3, 2);
+        ctx.fillRect(burgerX + 8, burgerY - 48, 3, 2);
+        ctx.fillRect(burgerX - 4, burgerY - 52, 3, 2);
+        // Lettuce
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(burgerX - 30, burgerY - 30, 60, 5);
+        // Cheese slice corner
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(burgerX - 28, burgerY - 25, 56, 4);
+        // Beef Patty
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(burgerX - 29, burgerY - 21, 58, 8);
+        // Bottom Bun
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(burgerX - 27, burgerY - 13, 54, 7);
+        ctx.restore();
+
+        // D. Cute Kawaii Dumpling / Ghost Lantern floating above tracks
+        const ghostTime = Date.now() * 0.003;
+        const ghostY = VP_Y - 95 + Math.sin(ghostTime) * 12;
+        const ghostX = (DESIGN_WIDTH * 0.48) + Math.cos(ghostTime * 0.7) * 20;
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(ghostX, ghostY, 14, 0, Math.PI * 2);
+        ctx.fill();
+        // Ghost tail
+        ctx.beginPath();
+        ctx.moveTo(ghostX - 14, ghostY);
+        ctx.lineTo(ghostX - 10, ghostY + 16);
+        ctx.lineTo(ghostX, ghostY + 12);
+        ctx.lineTo(ghostX + 10, ghostY + 16);
+        ctx.lineTo(ghostX + 14, ghostY);
+        ctx.fill();
+        // Ghost anime face
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(ghostX - 9, ghostY + 2, 4, 3);
+        ctx.fillRect(ghostX + 5, ghostY + 2, 4, 3);
+        ctx.fillStyle = '#1e1b4b';
+        ctx.beginPath();
+        ctx.arc(ghostX - 6, ghostY - 2, 2.5, 0, Math.PI * 2);
+        ctx.arc(ghostX + 6, ghostY - 2, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // E. Colorful Trackside Walls with Japanese Neon Graffiti
+        const wallNorms = [-1.58, 1.58];
+        const tokyoTags = [
+          { text: 'TOKYO', col: '#ff007f', outline: '#ffffff' },
+          { text: 'ラーメン', col: '#f59e0b', outline: '#1e1b4b' },
+          { text: 'SUBWAY', col: '#06b6d4', outline: '#facc15' },
+          { text: 'すし ★', col: '#10b981', outline: '#ffffff' },
+          { text: 'SURF', col: '#ec4899', outline: '#ffffff' }
+        ];
+        for (const wNorm of wallNorms) {
+          const wallFar = project3D(wNorm, 950, 0);
+          const wallFarTop = project3D(wNorm, 950, 48);
+          const wallNear = project3D(wNorm, -40, 0);
+          const wallNearTop = project3D(wNorm, -40, 48);
+
+          ctx.fillStyle = '#1e1b4b';
+          ctx.beginPath();
+          ctx.moveTo(wallFar.x, wallFar.y);
+          ctx.lineTo(wallFarTop.x, wallFarTop.y);
+          ctx.lineTo(wallNearTop.x, wallNearTop.y);
+          ctx.lineTo(wallNear.x, wallNear.y);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.strokeStyle = '#f43f5e';
+          ctx.lineWidth = Math.max(1.5, 3.0 * wallNear.scale);
+          ctx.beginPath();
+          ctx.moveTo(wallFarTop.x, wallFarTop.y);
+          ctx.lineTo(wallNearTop.x, wallNearTop.y);
+          ctx.stroke();
+
+          const grafStep = 150;
+          const grafOffset = (this.distance * 0.9) % grafStep;
+          for (let gz = grafOffset; gz < 860; gz += grafStep) {
+            const pG = project3D(wNorm, gz, 24);
+            const sG = pG.scale;
+            const tag = tokyoTags[Math.floor(gz / grafStep) % tokyoTags.length];
+            if (sG > 0.28) {
+              ctx.save();
+              ctx.fillStyle = tag.col;
+              ctx.strokeStyle = tag.outline;
+              ctx.lineWidth = Math.max(1, 1.8 * sG);
+              ctx.font = `900 ${Math.max(8, 15 * sG)}px "Orbitron", Impact, sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.strokeText(tag.text, pG.x, pG.y);
+              ctx.fillText(tag.text, pG.x, pG.y);
+              ctx.restore();
+            }
           }
         }
       }
@@ -4084,8 +4258,6 @@
 
           // Glowing signal bulb
           ctx.fillStyle = sigCol;
-          ctx.shadowColor = sigCol;
-          ctx.shadowBlur = 8 * sGantry;
           ctx.beginPath();
           ctx.arc(pSig.x, pSig.y, sigR, 0, Math.PI * 2);
           ctx.fill();
