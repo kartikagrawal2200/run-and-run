@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Run and Run v2 | Cyber Endless Arcade</title>
-  <meta name="description" content="Play Run and Run Version 2 online! An adrenaline-fueled endless arcade runner with 3 selectable cyber backgrounds, enhanced graphics, synthwave music, and offline mobile app support.">
+  <title>Subway Surf 3D | Multi-Color Trains, Roof Running & 3D Railroad</title>
+  <meta name="description" content="Play Subway Surf 3D online! Run along sunny railroad tracks, climb on multi-colored trains, collect gold coins, and dodge barriers in full 3D.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
@@ -50,7 +50,7 @@
             </div>
             <div id="zoneBadge" class="zone-badge">
               <span class="dot"></span>
-              <span id="zoneDisplay">CYBER MATRIX</span>
+              <span id="zoneDisplay">SUNNY SUBWAY</span>
             </div>
           </div>
 
@@ -100,54 +100,54 @@
         </div>
 
         <!-- Overlays -->
-        <!-- Main Start Screen -->
-        <section id="menuScreen" class="overlay">
-          <div class="glass-panel menu-panel">
-            <!-- Top Navigation Bar: Pilot Profile (Left) & Shop / Bank (Right) -->
-            <div class="menu-top-bar">
-              <button type="button" id="menuProfileBtn" class="profile-card-btn" aria-label="Open Profile & Settings">
-                <span id="profileAvatarPill" class="profile-avatar-pill">🤖</span>
-                <span id="profileCallsignPill" class="profile-callsign-pill">CYBER_RUNNER</span>
-                <span class="profile-gear-icon">⚙️</span>
-              </button>
-
-              <div class="menu-top-right">
-                <div class="coin-bank-pill" title="Total Banked Coins">
-                  <span class="coin-icon">🪙</span>
-                  <span id="menuCoinBank" class="bank-count">0</span>
-                </div>
-                <button type="button" id="menuShopBtn" class="nav-cyber-btn shop-btn-glow" aria-label="Open Cyber Armory Shop">
-                  <span class="btn-icon">🛍️</span>
-                  <span class="nav-btn-text">ARMORY</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Title & Branding (Subway Surfers 3D Cyber Theme) -->
-            <div class="logo-wrap">
-              <div class="neon-tag-v2">⚡ 3D SUBWAY PERSPECTIVE • ARTICULATED CYBER RUNNER ⚡</div>
-              <h1 class="glitch-title">RUN &amp; <span class="highlight">RUN</span> <span class="v2-badge">3D</span></h1>
-            </div>
-
-            <!-- Interactive Humanoid Avatar Pedestal Preview -->
-            <div class="avatar-pedestal-wrap">
-              <div class="pedestal-hologram-ring"></div>
-              <canvas id="avatarCanvas" width="130" height="150" class="avatar-canvas"></canvas>
-              <div class="avatar-costume-tag">
-                <small>ACTIVE SUIT</small>
-                <strong id="equippedCostumeName">NEO RUNNER</strong>
-              </div>
-            </div>
-
-            <div class="high-score-preview">
-              <span>PERSONAL RECORD</span>
-              <strong id="menuBestScore">0</strong>
-            </div>
-
-            <button id="playBtn" class="cyber-btn primary-btn">
-              <span class="btn-text">INITIALIZE RUN ▶</span>
+        <!-- Main Start Screen (Full-cover Subway Surfers Viewport) -->
+        <section id="menuScreen" class="overlay menu-overlay-fullscreen">
+          <!-- Top Navigation Header: Profile Pill, High Score, Bank & Shop -->
+          <div class="menu-top-bar">
+            <button type="button" id="menuProfileBtn" class="profile-card-btn" aria-label="Open Profile & Settings">
+              <span id="profileAvatarPill" class="profile-avatar-pill">🤖</span>
+              <span id="profileCallsignPill" class="profile-callsign-pill">CYBER_RUNNER</span>
+              <span class="profile-gear-icon">⚙️</span>
             </button>
-            <button id="installAppBtn" class="cyber-btn secondary-btn install-btn">
+
+            <div class="menu-top-right">
+              <div class="high-score-pill" title="Personal Record">
+                <span class="record-icon">🏆</span>
+                <span id="menuBestScore" class="bank-count">0</span>
+              </div>
+              <div class="coin-bank-pill" title="Total Banked Coins">
+                <span class="coin-icon">🪙</span>
+                <span id="menuCoinBank" class="bank-count">0</span>
+              </div>
+              <button type="button" id="menuShopBtn" class="nav-cyber-btn shop-btn-glow" aria-label="Open Cyber Armory Shop">
+                <span class="btn-icon">🛍️</span>
+                <span class="nav-btn-text">ARMORY</span>
+              </button>
+              <button type="button" id="menuSettingsBtn" class="nav-cyber-btn settings-btn-glow" aria-label="Open Settings">
+                <span class="btn-icon">⚙️</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Top Brand Banner: Vibrant Colorful Subway Graffiti Style -->
+          <div class="subway-title-wrap">
+            <div class="subway-tag-pill">🚇 3D SUBWAY SURF • MULTI-COLOR TRAINS &amp; ROOFS 🚇</div>
+            <h1 class="subway-main-title">SUBWAY <span class="pop-accent">SURF</span> <span class="v3d-badge">3D</span></h1>
+          </div>
+
+          <!-- Bottom Action Area: Big Pulsing Subway "TAP TO RUN" -->
+          <div class="menu-bottom-actions">
+            <div class="active-suit-pill">
+              <span class="suit-dot"></span>
+              <span>ACTIVE SUIT: <strong id="equippedCostumeName">NEO RUNNER</strong></span>
+            </div>
+
+            <button type="button" id="playBtn" class="subway-run-btn" aria-label="Tap to Run">
+              <span class="btn-text">TAP TO RUN ▶</span>
+              <small class="run-hint">SWIPE ◀ ▶ TO SWITCH • ▲ JUMP ON TRAINS • ▼ SLIDE</small>
+            </button>
+
+            <button type="button" id="installAppBtn" class="cyber-btn secondary-btn install-btn">
               <span class="btn-text">📲 INSTALL APP (OFFLINE PLAY)</span>
             </button>
           </div>

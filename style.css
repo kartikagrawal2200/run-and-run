@@ -369,6 +369,173 @@ canvas {
   box-sizing: border-box;
 }
 
+/* Full-Screen Subway Surfers Viewport Overlay */
+.menu-overlay-fullscreen {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  padding: 18px 16px 24px 16px;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  pointer-events: none;
+}
+
+.menu-overlay-fullscreen * {
+  pointer-events: auto;
+}
+
+.high-score-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1.5px solid #ffd23f;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffd23f;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 14px rgba(255, 210, 63, 0.25);
+}
+
+.subway-title-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 10px;
+  pointer-events: none;
+}
+
+.subway-tag-pill {
+  background: linear-gradient(90deg, #ec4899, #8b5cf6, #3b82f6);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+  margin-bottom: 6px;
+  animation: pulseTag 2.5s infinite ease-in-out;
+}
+
+.subway-main-title {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 8vw, 48px);
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #ffffff;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.8), 0 0 24px rgba(56, 189, 248, 0.7);
+  line-height: 1;
+  margin: 0;
+}
+
+.pop-accent {
+  color: #facc15;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.7), 0 0 24px rgba(250, 204, 21, 0.9);
+}
+
+.v3d-badge {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #f43f5e, #fb923c);
+  color: #ffffff;
+  padding: 3px 9px;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.6);
+  display: inline-block;
+  vertical-align: middle;
+  transform: translateY(-6px) rotate(4deg);
+}
+
+.menu-bottom-actions {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.active-suit-pill {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.active-suit-pill strong {
+  color: #38bdf8;
+}
+
+.suit-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+/* Pulsing Subway Surfers "TAP TO RUN" button */
+.subway-run-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 45%, #047857 100%);
+  border: 2.5px solid #6ee7b7;
+  border-radius: 20px;
+  padding: 16px 20px;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5), 0 0 20px rgba(110, 231, 183, 0.3);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  animation: runBounce 2s infinite ease-in-out;
+}
+
+@keyframes runBounce {
+  0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5); }
+  50% { transform: translateY(-4px) scale(1.02); box-shadow: 0 16px 32px rgba(16, 185, 129, 0.7), 0 0 25px rgba(110, 231, 183, 0.5); }
+}
+
+.subway-run-btn:active {
+  transform: translateY(2px) scale(0.97);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.subway-run-btn .btn-text {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.subway-run-btn .run-hint {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #d1fae5;
+  margin-top: 3px;
+  text-transform: uppercase;
+  opacity: 0.92;
+}
+
 .glass-panel {
   max-width: 420px;
   width: 100%;

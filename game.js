@@ -117,41 +117,53 @@
   }
 
   /* ============================================================
-     ZONES / CYBER THEMES (3 SELECTABLE BACKGROUNDS)
+     ZONES / SUBWAY WORLDS (3 VIBRANT MULTI-COLOR THEMES)
      ============================================================ */
   const THEMES = [
     {
-      id: 'matrix',
-      name: 'CYBER MATRIX',
-      sky: ['#02050f', '#09162c'],
-      ground: '#0c1424',
-      grid: '#4cc9f0',
-      building: '#101d36',
-      accent: '#00f0ff',
-      celestial: 'moon',
-      horizonGlow: 'rgba(76, 201, 240, 0.22)'
-    },
-    {
-      id: 'sunset',
-      name: 'SYNTH SUNSET',
-      sky: ['#240523', '#5a123b'],
-      ground: '#260d21',
-      grid: '#f72585',
-      building: '#3b122f',
-      accent: '#ff007f',
+      id: 'subway_sun',
+      name: 'SUNNY SUBWAY',
+      sky: ['#0284c7', '#38bdf8'],
+      ground: '#334155',
+      rails: '#e2e8f0',
+      ties: '#854d0e',
+      ballast: '#64748b',
+      grid: '#38bdf8',
+      building: '#1e293b',
+      accent: '#facc15',
       celestial: 'sun',
-      horizonGlow: 'rgba(247, 37, 133, 0.28)'
+      horizonGlow: 'rgba(250, 204, 21, 0.45)',
+      isBright: true
     },
     {
-      id: 'cosmic',
-      name: 'COSMIC VOID',
-      sky: ['#070214', '#1f0b3d'],
-      ground: '#130726',
-      grid: '#9d4edd',
-      building: '#261145',
-      accent: '#ffd23f',
-      celestial: 'nebula',
-      horizonGlow: 'rgba(157, 78, 221, 0.25)'
+      id: 'sunset_coast',
+      name: 'GOLDEN COAST',
+      sky: ['#ea580c', '#fb923c'],
+      ground: '#431407',
+      rails: '#fed7aa',
+      ties: '#7c2d12',
+      ballast: '#78350f',
+      grid: '#f97316',
+      building: '#292524',
+      accent: '#fde047',
+      celestial: 'sun',
+      horizonGlow: 'rgba(251, 146, 60, 0.5)',
+      isBright: false
+    },
+    {
+      id: 'tokyo_pop',
+      name: 'TOKYO TOON',
+      sky: ['#7c3aed', '#c084fc'],
+      ground: '#1e1b4b',
+      rails: '#f472b6',
+      ties: '#581c87',
+      ballast: '#312e81',
+      grid: '#e879f9',
+      building: '#0f172a',
+      accent: '#38bdf8',
+      celestial: 'moon',
+      horizonGlow: 'rgba(232, 121, 249, 0.45)',
+      isBright: false
     }
   ];
 
@@ -1216,7 +1228,7 @@
   }
 
   /* ============================================================
-     PLAYER (HUMANOID CYBER RUNNER v2)
+     PLAYER (HUMANOID CYBER & SUBWAY RUNNER)
      ============================================================ */
   class Player {
     constructor(costume) {
@@ -1229,7 +1241,7 @@
       this.jumpVel = 0;
       this.jumping = false;
       this.gravity = 2500;
-      this.jumpImpulse = 920;
+      this.jumpImpulse = 940;
 
       this.sliding = false;
       this.slideTimer = 0;
@@ -1238,6 +1250,11 @@
       this.width = 46;
       this.height = 80;
       this.slideHeight = 38;
+
+      // Subway train roof running mechanics
+      this.baseHeight = 0;
+      this.targetBaseHeight = 0;
+      this.onTrain = false;
 
       this.hasShield = false;
       this.animTime = 0;
@@ -1280,7 +1297,7 @@
       }
     }
 
-    update(dt, particles) {
+    update(dt, particles, obstacles = []) {
       this.animTime += dt;
 
       // 3D smooth exponential lane shifting
@@ -1292,6 +1309,44 @@
       const targetTilt = clamp(dNorm * 0.45, -0.22, 0.22);
       this.tilt = lerp(this.tilt, targetTilt, 1 - Math.exp(-18 * dt));
 
+      // Check if runner is over a subway train roof
+      let underTrain = null;
+      if (obstacles && obstacles.length) {
+        for (const o of obstacles) {
+          if (o.isTrain) {
+            const inLane = Math.abs(this.laneNorm - o.laneNorm) < 0.62;
+            const onZ = (o.z - 35 <= PLAYER_Z) && (PLAYER_Z <= o.z + o.length + 20);
+            if (inLane && onZ) {
+              underTrain = o;
+              break;
+            }
+          }
+        }
+      }
+
+      if (underTrain) {
+        // If runner was already on the train OR jumped onto it OR boarded ramp
+        if (this.onTrain || (this.jumpHeight + this.baseHeight >= underTrain.h - 18) || underTrain.hasRamp) {
+          this.onTrain = true;
+          this.targetBaseHeight = underTrain.h;
+        }
+      } else {
+        if (this.onTrain) {
+          // Ran off the back of the train or jumped off into an open track
+          this.onTrain = false;
+          this.jumpHeight = Math.max(this.jumpHeight, this.baseHeight);
+          this.baseHeight = 0;
+          this.targetBaseHeight = 0;
+          this.jumping = true;
+          this.jumpVel = Math.min(this.jumpVel, -50);
+        } else {
+          this.targetBaseHeight = 0;
+        }
+      }
+
+      // Smooth altitude transitions when boarding or leaving trains
+      this.baseHeight = lerp(this.baseHeight, this.targetBaseHeight, 1 - Math.exp(-22 * dt));
+
       // Calculate current 3D screen position
       const pPos = project3D(this.laneNorm, PLAYER_Z);
       this.x = pPos.x;
@@ -1300,7 +1355,8 @@
 
       // Lateral trail sparks when shifting lanes
       if (Math.abs(dNorm) > 0.08 && particles) {
-        particles.trail(this.x, this.groundY - 14 * this.scale, this.costume.accent);
+        const footY = this.groundY - (this.baseHeight + this.jumpHeight) * this.scale;
+        particles.trail(this.x, footY - 8 * this.scale, this.costume.accent);
       }
 
       // 3D Jump physics with apex smoothing
@@ -1313,7 +1369,8 @@
           this.jumping = false;
           this.jumpVel = 0;
           this.squash = 1; // Landing squash
-          if (particles) particles.burst(this.x, this.groundY, this.costume.accent, 10, 50, 130);
+          const footY = this.groundY - this.baseHeight * this.scale;
+          if (particles) particles.burst(this.x, footY, this.costume.accent, 10, 50, 130);
         }
       }
 
@@ -1325,21 +1382,24 @@
       if (this.sliding) {
         this.slideTimer -= dt;
         if (particles && Math.random() < 0.6) {
-          particles.trail(this.x, this.groundY - 4 * this.scale, this.costume.visor);
+          const footY = this.groundY - this.baseHeight * this.scale;
+          particles.trail(this.x, footY - 4 * this.scale, this.costume.visor);
         }
         if (this.slideTimer <= 0) {
           this.sliding = false;
         }
       }
 
-      // Continuous dual cyber thruster particles
-      if (!this.jumping && particles && Math.random() < 0.5) {
-        particles.trail(this.x - 6 * this.scale, this.groundY - 2, this.costume.accent);
-        particles.trail(this.x + 6 * this.scale, this.groundY - 2, this.costume.visor);
+      // Continuous running particles
+      if (!this.jumping && particles && Math.random() < 0.4) {
+        const footY = this.groundY - this.baseHeight * this.scale;
+        particles.trail(this.x - 5 * this.scale, footY - 2, this.costume.accent);
+        particles.trail(this.x + 5 * this.scale, footY - 2, this.costume.visor);
       }
     }
 
     render(ctx) {
+      const totalElevation = (this.baseHeight + this.jumpHeight);
       const pPos = project3D(this.laneNorm, PLAYER_Z);
       drawHumanoidRunner(
         ctx,
@@ -1348,7 +1408,7 @@
         this.animTime,
         this.jumping,
         this.sliding,
-        this.jumpHeight * pPos.scale,
+        totalElevation * pPos.scale,
         this.tilt,
         this.costume,
         this.squash,
@@ -1359,39 +1419,66 @@
   }
 
   /* ============================================================
-     OBSTACLES: LOW (Jump), HIGH (Slide), BLOCK (Switch Lane) - 3D PERSPECTIVE
+     OBSTACLES: SUBWAY TRAINS & TRACK HURDLES (3D PERSPECTIVE)
      ============================================================ */
+  const TRAIN_LIVERIES = [
+    { name: 'Red Express', body: '#dc2626', roof: '#f87171', stripe: '#ffffff', front: '#b91c1c', trim: '#facc15' },
+    { name: 'Blue Metro', body: '#2563eb', roof: '#60a5fa', stripe: '#fde047', front: '#1d4ed8', trim: '#38bdf8' },
+    { name: 'Teal Commuter', body: '#0d9488', roof: '#2dd4bf', stripe: '#fb923c', front: '#0f766e', trim: '#fef08a' },
+    { name: 'Yellow Cityline', body: '#eab308', roof: '#fef08a', stripe: '#1e293b', front: '#ca8a04', trim: '#ef4444' }
+  ];
+
   const OBSTACLE_DEFS = {
+    TRAIN_RAMP: {
+      id: 'TRAIN_RAMP',
+      name: 'Subway Train (Ramped)',
+      w: 104,
+      h: 62,
+      length: 420,
+      isTrain: true,
+      hasRamp: true,
+      action: 'climb'
+    },
+    TRAIN_CLOSED: {
+      id: 'TRAIN_CLOSED',
+      name: 'Subway Train (Closed)',
+      w: 104,
+      h: 62,
+      length: 420,
+      isTrain: true,
+      hasRamp: false,
+      action: 'dodge'
+    },
     LOW: {
       id: 'LOW',
-      name: 'Electric Barrier',
+      name: 'Track Hurdle',
       w: 106,
       h: 44,
       depth: 32,
       action: 'jump',
-      color: '#ff3366',
-      accent: '#ffe066'
+      color: '#f59e0b',
+      accent: '#ef4444'
     },
     HIGH: {
       id: 'HIGH',
-      name: 'Laser Gate',
+      name: 'Signal Arch',
       w: 110,
       h: 112,
       gap: 48,
       depth: 26,
       action: 'slide',
-      color: '#7209b7',
-      accent: '#4cc9f0'
+      color: '#3b82f6',
+      accent: '#facc15'
     },
     BLOCK: {
       id: 'BLOCK',
-      name: 'Cyber Monolith',
+      name: 'Buffer Stop',
       w: 115,
       h: 135,
       depth: 55,
       action: 'switch',
-      color: '#161c2d',
-      accent: '#ff0055'
+      color: '#334155',
+      accent: '#ef4444'
     }
   };
 
@@ -1399,18 +1486,18 @@
     constructor() {
       this.obstacles = [];
       this.laneCooldowns = [0, 0, 0];
-      this.globalCooldown = 2.0;
-      this.minGapTime = 2.2;
-      this.maxGapTime = 4.5;
-      this.globalMinInterval = 1.9;
-      this.minZGap = 420; // Minimum depth separation in same lane
+      this.globalCooldown = 1.8;
+      this.minGapTime = 2.0;
+      this.maxGapTime = 4.2;
+      this.globalMinInterval = 1.8;
+      this.minZGap = 440; // Minimum depth separation in same lane
       this.onObstacleSpawned = null;
     }
 
     reset() {
       this.obstacles = [];
       this.laneCooldowns = [0, 0, 0];
-      this.globalCooldown = 2.4;
+      this.globalCooldown = 2.0;
     }
 
     update(dt, speed, elapsed) {
@@ -1419,7 +1506,7 @@
         o.z -= speed * dt;
       }
       // Clean up obstacles once they pass behind camera
-      this.obstacles = this.obstacles.filter(o => o.z > -90);
+      this.obstacles = this.obstacles.filter(o => (o.z + (o.length || 0)) > -90);
 
       this.globalCooldown = Math.max(0, this.globalCooldown - dt);
       for (let i = 0; i < LANE_COUNT; i++) {
@@ -1433,7 +1520,10 @@
       const inLane = this.obstacles.filter(o => o.lane === lane);
       if (!inLane.length) return true;
       let maxZ = -Infinity;
-      for (const o of inLane) maxZ = Math.max(maxZ, o.z);
+      for (const o of inLane) {
+        const tailZ = o.z + (o.length || 0);
+        maxZ = Math.max(maxZ, tailZ);
+      }
       return maxZ <= (Z_SPAWN - this.minZGap);
     }
 
@@ -1451,16 +1541,30 @@
       // Keep lanes navigable: at least one lane is always open
       const maxSpawns = Math.min(candidates.length, LANE_COUNT - 1);
       let count = 1;
-      if (maxSpawns >= 2 && elapsed > 80 && Math.random() < 0.14) {
+      if (maxSpawns >= 2 && elapsed > 60 && Math.random() < 0.20) {
         count = 2;
       }
 
       const selected = shuffle([...candidates]).slice(0, count);
-      const typeKeys = Object.keys(OBSTACLE_DEFS);
 
       for (const lane of selected) {
-        const typeId = typeKeys[Math.floor(Math.random() * typeKeys.length)];
+        // Weighted selection for true Subway Surfers rhythm (Trains + Hurdles)
+        const rand = Math.random();
+        let typeId = 'LOW';
+        if (rand < 0.36) {
+          typeId = 'TRAIN_RAMP';
+        } else if (rand < 0.62) {
+          typeId = 'TRAIN_CLOSED';
+        } else if (rand < 0.80) {
+          typeId = 'LOW';
+        } else if (rand < 0.92) {
+          typeId = 'HIGH';
+        } else {
+          typeId = 'BLOCK';
+        }
+
         const def = OBSTACLE_DEFS[typeId];
+        const isTrain = !!def.isTrain;
         const obstacle = {
           type: def,
           lane: lane,
@@ -1468,6 +1572,10 @@
           z: Z_SPAWN,
           w: def.w,
           h: def.h,
+          length: def.length || 36,
+          isTrain: isTrain,
+          hasRamp: !!def.hasRamp,
+          colorScheme: isTrain ? TRAIN_LIVERIES[Math.floor(Math.random() * TRAIN_LIVERIES.length)] : null,
           hit: false
         };
         this.obstacles.push(obstacle);
@@ -1485,8 +1593,15 @@
     }
 
     renderObstacle(ctx, o) {
-      if (o.z < -60 || o.z > Z_SPAWN + 80) return;
+      if ((o.z + (o.length || 0)) < -80 || o.z > Z_SPAWN + 120) return;
       ctx.save();
+
+      // Dispatch 3D Subway Trains
+      if (o.isTrain) {
+        this.renderTrain(ctx, o);
+        ctx.restore();
+        return;
+      }
 
       const base = project3D(o.laneNorm, o.z, 0);
       const s = base.scale;
@@ -1502,12 +1617,12 @@
       ctx.fill();
 
       if (o.type.id === 'LOW') {
-        // 3D Electric Barrier (Low jump hurdle with depth extrusion)
+        // 3D Subway Track Hurdle (Wooden/Metal Caution Barrier)
         const topBack = project3D(o.laneNorm, o.z + o.type.depth, o.type.h);
         const topBackW = o.type.w * topBack.scale;
 
         // Top depth face
-        ctx.fillStyle = '#b81440';
+        ctx.fillStyle = '#b45309';
         ctx.beginPath();
         ctx.moveTo(bx, by);
         ctx.lineTo(bx + bw, by);
@@ -1519,31 +1634,16 @@
         // Front Face
         ctx.fillStyle = o.type.color;
         ctx.shadowColor = o.type.color;
-        ctx.shadowBlur = 10 * s;
+        ctx.shadowBlur = 8 * s;
         ctx.fillRect(bx, by, bw, bh);
 
-        // Glowing top caution line
+        // Warning Top Stripe
         ctx.fillStyle = o.type.accent;
         ctx.fillRect(bx + 2 * s, by + 2 * s, bw - 4 * s, 5 * s);
 
-        // Electric lightning sparks across top edge
-        ctx.strokeStyle = '#00f0ff';
-        ctx.shadowColor = '#00f0ff';
-        ctx.shadowBlur = 8 * s;
-        ctx.lineWidth = Math.max(1, 2 * s);
-        ctx.beginPath();
-        let arcX = bx + 4 * s;
-        ctx.moveTo(arcX, by + 4 * s);
-        while (arcX < bx + bw - 6 * s) {
-          arcX += randRange(8 * s, 16 * s);
-          const arcY = by + 4 * s + (Math.random() * 6 * s - 3 * s);
-          ctx.lineTo(Math.min(arcX, bx + bw - 4 * s), arcY);
-        }
-        ctx.stroke();
-
-        // Caution diagonal hazard stripes
-        ctx.fillStyle = '#000000';
-        ctx.globalAlpha = 0.32;
+        // Caution diagonal stripes
+        ctx.fillStyle = '#1e293b';
+        ctx.globalAlpha = 0.35;
         const stripeW = 14 * s;
         for (let sx = bx; sx < bx + bw; sx += stripeW) {
           ctx.beginPath();
@@ -1554,62 +1654,57 @@
           ctx.fill();
         }
       } else if (o.type.id === 'HIGH') {
-        // 3D Laser Gate (Slide Archway with dual cyber pylons and laser curtain)
+        // 3D Subway Signal Arch (Overhead Gantry with slide clearance)
         const pylonW = 12 * s;
         const solidH = (o.type.h - o.type.gap) * s;
         const gapH = o.type.gap * s;
 
-        // Left Pylon
-        ctx.fillStyle = '#241040';
+        // Left & Right Signal Pylons
+        ctx.fillStyle = '#1e3a8a';
         ctx.shadowColor = o.type.accent;
         ctx.shadowBlur = 6 * s;
         ctx.fillRect(bx, by, pylonW, bh);
-
-        // Right Pylon
         ctx.fillRect(bx + bw - pylonW, by, pylonW, bh);
 
-        // Pylon Neon Accents
-        ctx.fillStyle = o.type.accent;
-        ctx.fillRect(bx + 2 * s, by, 2.5 * s, bh);
-        ctx.fillRect(bx + bw - 4.5 * s, by, 2.5 * s, bh);
+        // Signal lights on pylons
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(bx + pylonW / 2, by + bh * 0.4, 3.5 * s, 0, Math.PI * 2);
+        ctx.arc(bx + bw - pylonW / 2, by + bh * 0.4, 3.5 * s, 0, Math.PI * 2);
+        ctx.fill();
 
         // Top Arch Crossbar
         ctx.fillStyle = o.type.color;
         ctx.fillRect(bx, by, bw, solidH);
 
-        // Top Arch Glow Beam
-        const laserPulse = (Math.sin(Date.now() * 0.012) + 1) * 0.5;
+        // Warning lights bar
+        const pulse = (Math.sin(Date.now() * 0.012) + 1) * 0.5;
         ctx.fillStyle = o.type.accent;
         ctx.shadowColor = o.type.accent;
-        ctx.shadowBlur = (10 + laserPulse * 8) * s;
+        ctx.shadowBlur = (10 + pulse * 8) * s;
         ctx.fillRect(bx + pylonW, by + solidH - 6 * s, bw - pylonW * 2, 5 * s);
 
-        // Lethal Laser Curtain
-        ctx.fillStyle = 'rgba(76, 201, 240, 0.22)';
-        ctx.fillRect(bx + pylonW, by + solidH, bw - pylonW * 2, bh - solidH - gapH);
-
-        // Sliding Clearance Opening at bottom
-        ctx.fillStyle = 'rgba(76, 201, 240, 0.08)';
+        // Sliding Clearance Opening
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.08)';
         ctx.fillRect(bx + pylonW, base.y - gapH, bw - pylonW * 2, gapH);
 
-        // "SLIDE" Holo Badge
+        // "SLIDE" Badge
         if (s > 0.42) {
-          ctx.globalAlpha = 0.88;
-          ctx.fillStyle = '#4cc9f0';
+          ctx.globalAlpha = 0.95;
+          ctx.fillStyle = '#fde047';
           ctx.font = `bold ${Math.max(9, 11 * s)}px "Orbitron", sans-serif`;
           ctx.textAlign = 'center';
           ctx.fillText('▼ SLIDE ▼', base.x, base.y - gapH * 0.45);
         }
       } else {
-        // 3D Cyber Monolith (Massive volumetric 3D column)
+        // 3D Terminal Buffer Stop
         const topBack = project3D(o.laneNorm, o.z + o.type.depth, o.type.h);
         const topBackW = o.type.w * topBack.scale;
 
-        // Side Depth Face (visible if off-center)
+        // Side Depth Face
         if (base.x < VP_X - 10) {
-          // Right side is visible
           const baseBack = project3D(o.laneNorm, o.z + o.type.depth, 0);
-          ctx.fillStyle = '#0f1422';
+          ctx.fillStyle = '#0f172a';
           ctx.beginPath();
           ctx.moveTo(bx + bw, by);
           ctx.lineTo(topBack.x + topBackW / 2, topBack.y);
@@ -1618,9 +1713,8 @@
           ctx.closePath();
           ctx.fill();
         } else if (base.x > VP_X + 10) {
-          // Left side is visible
           const baseBack = project3D(o.laneNorm, o.z + o.type.depth, 0);
-          ctx.fillStyle = '#0f1422';
+          ctx.fillStyle = '#0f172a';
           ctx.beginPath();
           ctx.moveTo(bx, by);
           ctx.lineTo(topBack.x - topBackW / 2, topBack.y);
@@ -1631,7 +1725,7 @@
         }
 
         // Top Depth Face
-        ctx.fillStyle = '#1c2438';
+        ctx.fillStyle = '#1e293b';
         ctx.beginPath();
         ctx.moveTo(bx, by);
         ctx.lineTo(bx + bw, by);
@@ -1644,33 +1738,238 @@
         ctx.fillStyle = o.type.color;
         ctx.fillRect(bx, by, bw, bh);
 
-        // Glowing frame
+        // Warning Hazard Frame
         ctx.strokeStyle = o.type.accent;
         ctx.shadowColor = o.type.accent;
-        ctx.shadowBlur = 12 * s;
+        ctx.shadowBlur = 10 * s;
         ctx.lineWidth = Math.max(1.5, 2.5 * s);
         ctx.strokeRect(bx + 2 * s, by + 2 * s, bw - 4 * s, bh - 4 * s);
 
-        // Circuitry lines
-        ctx.strokeStyle = 'rgba(255, 0, 85, 0.5)';
-        ctx.lineWidth = Math.max(1, 1.5 * s);
-        ctx.beginPath();
-        ctx.moveTo(bx + 8 * s, by + 16 * s); ctx.lineTo(bx + bw - 8 * s, by + 16 * s);
-        ctx.moveTo(bx + 8 * s, by + bh - 16 * s); ctx.lineTo(bx + bw - 8 * s, by + bh - 16 * s);
-        ctx.moveTo(base.x, by + 16 * s); ctx.lineTo(base.x, by + bh - 16 * s);
-        ctx.stroke();
-
-        // Hazard symbol
         if (s > 0.38) {
-          const hazardPulse = Math.sin(Date.now() * 0.008) * (2 * s);
           ctx.fillStyle = o.type.accent;
-          ctx.font = `bold ${Math.max(11, (18 + hazardPulse) * s)}px "Orbitron", sans-serif`;
+          ctx.font = `bold ${Math.max(12, 20 * s)}px "Orbitron", sans-serif`;
           ctx.textAlign = 'center';
-          ctx.fillText('⚠', base.x, by + bh * 0.52);
+          ctx.fillText('⛔', base.x, by + bh * 0.55);
         }
       }
 
       ctx.restore();
+    }
+
+    /* ---------------- 3D SUBWAY TRAIN VOLUMETRIC RENDERER ---------------- */
+    renderTrain(ctx, o) {
+      // Train Front & Back 3D points
+      const pFront = project3D(o.laneNorm, o.z, 0);
+      const sFront = pFront.scale;
+      const wFront = o.w * sFront;
+      const hFront = o.h * sFront;
+      const bxFront = pFront.x - wFront / 2;
+      const byFront = pFront.y - hFront;
+
+      const pBack = project3D(o.laneNorm, o.z + o.length, 0);
+      const sBack = pBack.scale;
+      const wBack = o.w * sBack;
+      const hBack = o.h * sBack;
+      const bxBack = pBack.x - wBack / 2;
+      const byBack = pBack.y - hBack;
+
+      const livery = o.colorScheme || TRAIN_LIVERIES[0];
+
+      // Ground Drop Shadow
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.beginPath();
+      ctx.moveTo(bxFront - 4 * sFront, pFront.y + 2);
+      ctx.lineTo(bxFront + wFront + 4 * sFront, pFront.y + 2);
+      ctx.lineTo(bxBack + wBack + 2, pBack.y + 2);
+      ctx.lineTo(bxBack - 2, pBack.y + 2);
+      ctx.closePath();
+      ctx.fill();
+
+      // 1. Visible Carriage Side Wall (depending on lane relative to vanishing point)
+      if (pFront.x < VP_X - 6) {
+        // Right side of train is visible to player
+        ctx.fillStyle = livery.body;
+        ctx.beginPath();
+        ctx.moveTo(bxFront + wFront, byFront);
+        ctx.lineTo(bxBack + wBack, byBack);
+        ctx.lineTo(bxBack + wBack, pBack.y);
+        ctx.lineTo(bxFront + wFront, pFront.y);
+        ctx.closePath();
+        ctx.fill();
+
+        // Passenger Windows with warm interior light
+        const winCount = 6;
+        for (let i = 1; i <= winCount; i++) {
+          const t = i / (winCount + 1);
+          const wz = o.z + t * o.length;
+          const pW = project3D(o.laneNorm, wz, 0);
+          const sw = pW.scale;
+          const winW = 16 * sw;
+          const winH = 14 * sw;
+          const wx = pW.x + (o.w * sw) / 2 - 2;
+          const wy = pW.y - (o.h * 0.70) * sw;
+          ctx.fillStyle = '#fef08a';
+          ctx.shadowColor = '#facc15';
+          ctx.shadowBlur = 6 * sw;
+          ctx.fillRect(wx - winW, wy, winW, winH);
+        }
+      } else if (pFront.x > VP_X + 6) {
+        // Left side of train is visible to player
+        ctx.fillStyle = livery.body;
+        ctx.beginPath();
+        ctx.moveTo(bxFront, byFront);
+        ctx.lineTo(bxBack, byBack);
+        ctx.lineTo(bxBack, pBack.y);
+        ctx.lineTo(bxFront, pFront.y);
+        ctx.closePath();
+        ctx.fill();
+
+        // Passenger Windows
+        const winCount = 6;
+        for (let i = 1; i <= winCount; i++) {
+          const t = i / (winCount + 1);
+          const wz = o.z + t * o.length;
+          const pW = project3D(o.laneNorm, wz, 0);
+          const sw = pW.scale;
+          const winW = 16 * sw;
+          const winH = 14 * sw;
+          const wx = pW.x - (o.w * sw) / 2 + 2;
+          const wy = pW.y - (o.h * 0.70) * sw;
+          ctx.fillStyle = '#fef08a';
+          ctx.shadowColor = '#facc15';
+          ctx.shadowBlur = 6 * sw;
+          ctx.fillRect(wx, wy, winW, winH);
+        }
+      }
+
+      // 2. Corrugated Roof Walkway
+      ctx.fillStyle = livery.roof;
+      ctx.beginPath();
+      ctx.moveTo(bxFront, byFront);
+      ctx.lineTo(bxFront + wFront, byFront);
+      ctx.lineTo(bxBack + wBack, byBack);
+      ctx.lineTo(bxBack, byBack);
+      ctx.closePath();
+      ctx.fill();
+
+      // Roof ridges / walkway texture
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.22)';
+      ctx.lineWidth = Math.max(1, 1.4 * sFront);
+      for (let rz = o.z + 35; rz < o.z + o.length; rz += 45) {
+        const pr = project3D(o.laneNorm, rz, o.h);
+        const prW = o.w * pr.scale;
+        ctx.beginPath();
+        ctx.moveTo(pr.x - prW / 2, pr.y);
+        ctx.lineTo(pr.x + prW / 2, pr.y);
+        ctx.stroke();
+      }
+
+      // 3. Train Front Cab Face
+      ctx.fillStyle = livery.front;
+      ctx.fillRect(bxFront, byFront, wFront, hFront);
+
+      // Livery center stripe
+      ctx.fillStyle = livery.stripe;
+      ctx.fillRect(bxFront, byFront + hFront * 0.48, wFront, 6 * sFront);
+
+      // Front Windshield
+      const windW = wFront * 0.82;
+      const windH = hFront * 0.36;
+      const windX = bxFront + (wFront - windW) / 2;
+      const windY = byFront + 5 * sFront;
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(windX, windY, windW, windH);
+
+      // Windshield reflection
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.beginPath();
+      ctx.moveTo(windX + 3, windY + windH);
+      ctx.lineTo(windX + windW * 0.4, windY);
+      ctx.lineTo(windX + windW * 0.55, windY);
+      ctx.lineTo(windX + 10, windY + windH);
+      ctx.closePath();
+      ctx.fill();
+
+      // Twin Headlights with Volumetric Forward Beams
+      const hlRadius = Math.max(2.5, 4.5 * sFront);
+      const hlY = byFront + hFront * 0.72;
+      const leftHlX = bxFront + 14 * sFront;
+      const rightHlX = bxFront + wFront - 14 * sFront;
+
+      // Volumetric forward light beams onto rails
+      const pBeamEnd = project3D(o.laneNorm, Math.max(0, o.z - 110), 0);
+      const beamEndW = o.w * pBeamEnd.scale * 1.35;
+      ctx.fillStyle = 'rgba(254, 240, 138, 0.16)';
+      ctx.beginPath();
+      ctx.moveTo(leftHlX, hlY);
+      ctx.lineTo(pBeamEnd.x - beamEndW / 2, pBeamEnd.y);
+      ctx.lineTo(pBeamEnd.x + beamEndW / 2, pBeamEnd.y);
+      ctx.lineTo(rightHlX, hlY);
+      ctx.closePath();
+      ctx.fill();
+
+      // Glowing headlight bulbs
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = '#facc15';
+      ctx.shadowBlur = 10 * sFront;
+      ctx.beginPath();
+      ctx.arc(leftHlX, hlY, hlRadius, 0, Math.PI * 2);
+      ctx.arc(rightHlX, hlY, hlRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Bottom Steel Cow-catcher Grill
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(bxFront, pFront.y - 10 * sFront, wFront, 10 * sFront);
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = Math.max(1, 1.5 * sFront);
+      for (let gx = bxFront + 6 * sFront; gx < bxFront + wFront; gx += 8 * sFront) {
+        ctx.beginPath();
+        ctx.moveTo(gx, pFront.y - 10 * sFront);
+        ctx.lineTo(gx, pFront.y);
+        ctx.stroke();
+      }
+
+      // 4. Front Boarding Ramp (If Ramped Train)
+      if (o.hasRamp) {
+        const rampDepth = 55;
+        const pRampBase = project3D(o.laneNorm, Math.max(0, o.z - rampDepth), 0);
+        const wRampBase = o.w * pRampBase.scale;
+        const bxRamp = pRampBase.x - wRampBase / 2;
+
+        // Yellow Metal Ramp surface
+        ctx.fillStyle = '#eab308';
+        ctx.beginPath();
+        ctx.moveTo(bxRamp, pRampBase.y);
+        ctx.lineTo(bxRamp + wRampBase, pRampBase.y);
+        ctx.lineTo(bxFront + wFront, byFront);
+        ctx.lineTo(bxFront, byFront);
+        ctx.closePath();
+        ctx.fill();
+
+        // Black caution hazard stripes on ramp
+        ctx.fillStyle = '#000000';
+        ctx.globalAlpha = 0.35;
+        const stripeStep = 16 * sFront;
+        for (let sx = bxRamp; sx < bxRamp + wRampBase + wFront; sx += stripeStep) {
+          ctx.beginPath();
+          ctx.moveTo(sx, pRampBase.y);
+          ctx.lineTo(sx + 10 * sFront, byFront);
+          ctx.lineTo(sx + 18 * sFront, byFront);
+          ctx.lineTo(sx + 8 * sFront, pRampBase.y);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1.0;
+
+        // Glowing "▲ CLIMB ROOF ▲" prompt
+        if (sFront > 0.42) {
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#facc15';
+          ctx.shadowBlur = 8;
+          ctx.font = `bold ${Math.max(9, 12 * sFront)}px "Orbitron", sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.fillText('▲ CLIMB ROOF ▲', pRampBase.x, pRampBase.y - (pRampBase.y - byFront) * 0.45);
+        }
+      }
     }
   }
 
@@ -1725,7 +2024,17 @@
     }
 
     onObstacleSpawned(obstacle) {
-      if (obstacle.type.id === 'LOW') {
+      if (obstacle.isTrain) {
+        if (obstacle.hasRamp) {
+          // Continuous gold coin trail across train roof!
+          this._spawnCoinLine(obstacle.lane, obstacle.z + 40, 7, 50, { heightOffset: obstacle.h + 8 });
+        } else {
+          // Coins in an open alternate lane
+          const others = [0, 1, 2].filter(l => l !== obstacle.lane);
+          const freeLane = others[Math.floor(Math.random() * others.length)];
+          this._spawnCoinLine(freeLane, obstacle.z, 4, 45, {});
+        }
+      } else if (obstacle.type.id === 'LOW') {
         this._spawnArcTrail(obstacle.lane, obstacle.z, true);
       } else if (obstacle.type.id === 'HIGH') {
         this._spawnCoinLine(obstacle.lane, obstacle.z + 50, 3, 40, { requiresSlide: true, heightOffset: 0 });
@@ -1795,6 +2104,9 @@
             // Smoothly magnetize towards player's lane and position
             item.laneNorm -= dLane * 7.5 * dt;
             item.z -= Math.sign(dz) * 140 * dt;
+            // Also magnetize height towards player's elevation
+            const pElev = player.baseHeight + player.jumpHeight;
+            item.heightOffset = lerp(item.heightOffset, pElev, 1 - Math.exp(-12 * dt));
           }
         }
       }
@@ -1808,7 +2120,16 @@
         const laneDiff = Math.abs(player.laneNorm - item.laneNorm);
 
         // Collectible pickup tolerance
-        if (depthDiff < 42 && (laneDiff < 0.58 || isMagnetized)) {
+        if (depthDiff < 44 && (laneDiff < 0.60 || isMagnetized)) {
+          // Height matching: roof coins require being on roof or jumping
+          const playerElev = player.baseHeight + player.jumpHeight;
+          if (item.heightOffset > 35) {
+            if (Math.abs(playerElev - item.heightOffset) > 42 && !isMagnetized) continue;
+          } else {
+            // Ground coin: not picked up if player is high on roof without magnet
+            if (player.baseHeight > 40 && !player.sliding && !isMagnetized) continue;
+          }
+
           if (item.requiresJump && !player.jumping && !isMagnetized) continue;
           if (item.requiresSlide && !player.sliding && !isMagnetized) continue;
 
@@ -2910,32 +3231,85 @@
       for (const o of this.track.obstacles) {
         if (o.hit) continue;
 
-        // 3D Depth collision window around player position (PLAYER_Z = 110)
-        const depthDiff = Math.abs(o.z - PLAYER_Z);
-        if (depthDiff > 36) continue;
+        // --- 1. IF PLAYER IS RUNNING HIGH ON A TRAIN ROOF ---
+        if (this.player.onTrain || this.player.baseHeight >= 25) {
+          if (!o.isTrain) {
+            // Ground hurdles (LOW electric hurdle, HIGH laser gate, BLOCK wall) pass harmlessly underneath!
+            continue;
+          }
 
-        // Lateral lane overlap between smooth player position and obstacle lane
-        const laneDiff = Math.abs(this.player.laneNorm - o.laneNorm);
-        if (laneDiff > 0.58) continue;
+          // If obstacle is another train in the runner's lane:
+          const laneDiff = Math.abs(this.player.laneNorm - o.laneNorm);
+          if (laneDiff <= 0.6) {
+            // Check if jumping over or boarding another train
+            const distToFront = Math.abs(o.z - PLAYER_Z);
+            if (distToFront < 32 && this.player.jumpHeight < 10) {
+              // Runner stays mounted on the current or adjacent train roof
+              this.player.targetBaseHeight = o.h;
+            }
+          }
+          continue;
+        }
 
-        // Obstacle-specific 3D mechanics: Jump over LOW, Slide under HIGH, Dodge BLOCK
+        // --- 2. IF PLAYER IS ON THE GROUND TRACK ---
         let collided = false;
 
-        if (o.type.id === 'LOW') {
-          // Electric Barrier: Player must jump over it
-          const clearedJump = this.player.jumping && (this.player.jumpHeight >= 28);
-          if (!clearedJump) {
-            collided = true;
-          }
-        } else if (o.type.id === 'HIGH') {
-          // Laser Gate: Player must slide underneath clearance gap
-          const safelySliding = this.player.sliding && (this.player.jumpHeight <= 8);
-          if (!safelySliding) {
-            collided = true;
+        if (o.isTrain) {
+          const laneDiff = Math.abs(this.player.laneNorm - o.laneNorm);
+          if (laneDiff <= 0.62) {
+            // Check front cab approach
+            const distToFront = Math.abs(o.z - PLAYER_Z);
+            if (distToFront <= 38) {
+              if (o.hasRamp) {
+                // RAMPED SUBWAY TRAIN: Automatically board and climb onto train roof!
+                this.player.onTrain = true;
+                this.player.targetBaseHeight = o.h;
+                this.player.baseHeight = Math.max(this.player.baseHeight, 18);
+                this.player.jumpHeight = 0;
+                try { SoundSystem.jump(); } catch (e) {}
+                this.particles.burst(this.player.x, this.player.groundY - 24, '#facc15', 18);
+                this.particles.spawnText(this.player.x, this.player.groundY - 110, 'ROOF CLIMBED! 🚂', '#facc15');
+                continue;
+              } else {
+                // CLOSED FLAT CAB TRAIN: Solid metal bumper!
+                if (this.player.jumping && (this.player.jumpHeight >= o.h - 18)) {
+                  // Super jump vaulted cleanly onto the closed train roof!
+                  this.player.onTrain = true;
+                  this.player.targetBaseHeight = o.h;
+                  this.player.baseHeight = o.h;
+                  this.player.jumpHeight = 0;
+                  try { SoundSystem.jump(); } catch (e) {}
+                  this.particles.spawnText(this.player.x, this.player.groundY - 110, 'ROOF VAULT! 🚂', '#38bdf8');
+                  continue;
+                }
+                // Frontal collision with closed train cab
+                collided = true;
+              }
+            } else if (PLAYER_Z > o.z && PLAYER_Z < (o.z + o.length)) {
+              // Side impact into moving train carriage
+              collided = true;
+            }
           }
         } else {
-          // BLOCK Monolith: Impassable barrier; requires lane switch to dodge
-          collided = true;
+          // Standard ground hurdle collisions
+          const depthDiff = Math.abs(o.z - PLAYER_Z);
+          if (depthDiff > 36) continue;
+
+          const laneDiff = Math.abs(this.player.laneNorm - o.laneNorm);
+          if (laneDiff > 0.58) continue;
+
+          if (o.type.id === 'LOW') {
+            // Barrier hurdle: Player must jump over it
+            const clearedJump = this.player.jumping && (this.player.jumpHeight >= 28);
+            if (!clearedJump) collided = true;
+          } else if (o.type.id === 'HIGH') {
+            // Overhead gate: Player must slide underneath clearance
+            const safelySliding = this.player.sliding && (this.player.jumpHeight <= 8);
+            if (!safelySliding) collided = true;
+          } else {
+            // Monolith Block: Impassable barrier
+            collided = true;
+          }
         }
 
         if (collided) {
@@ -2946,12 +3320,12 @@
             this.collectibles.shieldCharges--;
             try { SoundSystem.shieldBreak(); } catch (e) {}
             ScreenShake.trigger(12, 0.35);
-            const pos = project3D(o.laneNorm, o.z, o.type.h / 2);
+            const pos = project3D(o.laneNorm, o.z, (o.h || o.type.h) / 2);
             this.particles.burst(pos.x, pos.y, '#06d6a0', 24);
             this.particles.spawnText(this.player.x, this.player.groundY - 100, 'SHIELD BROKEN', '#ff3366');
             this.track.obstacles = this.track.obstacles.filter(item => item !== o);
           } else {
-            // Fatal Crash -> Runner dies immediately
+            // Fatal Crash -> Runner wiped out immediately
             this.gameOver();
             return;
           }
@@ -2992,7 +3366,7 @@
       this.distance += this.speed * dt;
 
       this.player.hasShield = this.collectibles.shieldCharges > 0;
-      this.player.update(dt, this.particles);
+      this.player.update(dt, this.particles, this.track.obstacles);
 
       this.track.update(dt, this.speed, this.elapsed);
       this.collectibles.update(dt, this.player, this.speed, this.particles);
@@ -3046,131 +3420,212 @@
       const groundCol = t < 1 ? lerpColor(from.ground, to.ground, t) : to.ground;
       const bldgCol = t < 1 ? lerpColor(from.building, to.building, t) : to.building;
       const gridCol = t < 1 ? lerpColor(from.grid, to.grid, t) : to.grid;
+      const railsCol = to.rails || '#e2e8f0';
+      const tiesCol = to.ties || '#854d0e';
+      const ballastCol = to.ballast || '#64748b';
       const speedRatio = this.state === GameStates.PLAYING ? (this.speed / this.baseSpeed) : 0.6;
 
-      // 1. Dynamic Sky Gradient
+      // 1. Dynamic Vibrant Subway Sky Gradient
       const grad = ctx.createLinearGradient(0, 0, 0, VP_Y + 40);
       grad.addColorStop(0, skyTop);
       grad.addColorStop(1, skyBot);
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT);
 
-      // 2. Parallax Cityscape with Celestial Objects & Horizon Skyline
+      // Fluffy Cartoon Clouds scrolling in sky
+      ctx.save();
+      const cloudTime = (this.distance * 0.05) % (DESIGN_WIDTH + 200);
+      const clouds = [
+        { x: (80 - cloudTime + DESIGN_WIDTH + 200) % (DESIGN_WIDTH + 200) - 100, y: 55, r: 24, w: 90 },
+        { x: (260 - cloudTime * 0.8 + DESIGN_WIDTH + 200) % (DESIGN_WIDTH + 200) - 100, y: 95, r: 18, w: 75 },
+        { x: (420 - cloudTime * 1.2 + DESIGN_WIDTH + 200) % (DESIGN_WIDTH + 200) - 100, y: 70, r: 28, w: 110 }
+      ];
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
+      for (const c of clouds) {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+        ctx.arc(c.x + c.r * 0.8, c.y - c.r * 0.3, c.r * 0.9, 0, Math.PI * 2);
+        ctx.arc(c.x + c.r * 1.7, c.y, c.r * 0.75, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 2. Parallax Cityscape with Sun & Horizon Skyline
       this.parallax.render(ctx, this.distance, to, bldgCol, gridCol, speedRatio);
 
-      // 3. Ground / Sub-road baseline fill
-      ctx.fillStyle = '#060913';
+      // 3. Ground Terrain Outside Railroad Track
+      ctx.fillStyle = groundCol;
       ctx.fillRect(0, VP_Y, DESIGN_WIDTH, DESIGN_HEIGHT - VP_Y);
 
-      // 4. 3D Subway / Cyber Road Surface (Trapezoid converging into horizon at VP_Y = 270)
-      const roadGrad = ctx.createLinearGradient(0, VP_Y, 0, GROUND_Y);
-      roadGrad.addColorStop(0, '#0c1020');
-      roadGrad.addColorStop(0.3, '#10172e');
-      roadGrad.addColorStop(1, '#182038');
-
+      // 4. 3D Railroad Ballast Bed (Gravel trapezoid converging into vanishing point)
       ctx.save();
-      ctx.fillStyle = roadGrad;
+      const ballastGrad = ctx.createLinearGradient(0, VP_Y, 0, DESIGN_HEIGHT);
+      ballastGrad.addColorStop(0, '#334155');
+      ballastGrad.addColorStop(0.3, ballastCol);
+      ballastGrad.addColorStop(1, '#1e293b');
+
+      ctx.fillStyle = ballastGrad;
       ctx.beginPath();
-      // Horizon road top
-      ctx.moveTo(VP_X - ROAD_WIDTH_BG / 2, VP_Y);
-      ctx.lineTo(VP_X + ROAD_WIDTH_BG / 2, VP_Y);
-      // Foreground road bottom (flaring out to screen edge)
-      ctx.lineTo(VP_X + ROAD_WIDTH_FG / 2 + 20, DESIGN_HEIGHT);
-      ctx.lineTo(VP_X - ROAD_WIDTH_FG / 2 - 20, DESIGN_HEIGHT);
+      ctx.moveTo(VP_X - ROAD_WIDTH_BG / 2 - 14, VP_Y);
+      ctx.lineTo(VP_X + ROAD_WIDTH_BG / 2 + 14, VP_Y);
+      ctx.lineTo(VP_X + ROAD_WIDTH_FG / 2 + 30, DESIGN_HEIGHT);
+      ctx.lineTo(VP_X - ROAD_WIDTH_FG / 2 - 30, DESIGN_HEIGHT);
       ctx.closePath();
       ctx.fill();
 
-      // 5. 3D Road Speed Cross-ties / Sleepers (Scrolling with distance)
-      const sleeperStep = 55;
-      const sleeperOffset = (this.distance * 0.8) % sleeperStep;
-      ctx.lineWidth = 2;
-      for (let sz = sleeperOffset; sz < 850; sz += sleeperStep) {
-        const pLeft = project3D(-1.5, sz, 0);
-        const pRight = project3D(1.5, sz, 0);
-        const alpha = clamp(pLeft.scale * 1.1, 0.05, 0.45);
-
-        ctx.strokeStyle = gridCol;
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.moveTo(pLeft.x, pLeft.y);
-        ctx.lineTo(pRight.x, pRight.y);
-        ctx.stroke();
+      // Gravel texture speckles
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+      for (let g = 0; g < 40; g++) {
+        const gz = ((g * 24 + this.distance * 0.9) % 850);
+        const gNorm = ((g * 7) % 200 - 100) / 70;
+        const pG = project3D(gNorm, gz, 0);
+        ctx.fillRect(pG.x, pG.y, Math.max(1.5, 3 * pG.scale), Math.max(1, 2 * pG.scale));
       }
-      ctx.globalAlpha = 1.0;
 
-      // 6. 3D Converging Lane Dividers (Dashed lines between lanes 0-1 and 1-2)
-      ctx.strokeStyle = gridCol;
-      ctx.shadowColor = gridCol;
-      ctx.shadowBlur = 8;
-      ctx.lineWidth = 2.5;
+      // 5. 3D Wooden Railroad Ties / Sleepers (Scrolling smoothly with distance)
+      const tieStep = 44;
+      const tieOffset = (this.distance * 0.85) % tieStep;
+      for (let tz = tieOffset; tz < 880; tz += tieStep) {
+        const pL = project3D(-1.42, tz, 0);
+        const pR = project3D(1.42, tz, 0);
+        const tieH = Math.max(2, 6 * pL.scale);
+        const tieTopY = pL.y - tieH;
 
-      const dividerNorms = [-0.5, 0.5];
-      for (const norm of dividerNorms) {
-        for (let dz = (this.distance * 1.2) % 60; dz < 900; dz += 60) {
-          const p1 = project3D(norm, dz + 25, 0);
-          const p2 = project3D(norm, dz, 0);
-          ctx.beginPath();
-          ctx.moveTo(p1.x, p1.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.stroke();
+        // Wooden tie body
+        ctx.fillStyle = tiesCol;
+        ctx.beginPath();
+        ctx.moveTo(pL.x, tieTopY);
+        ctx.lineTo(pR.x, tieTopY);
+        ctx.lineTo(pR.x, pR.y);
+        ctx.lineTo(pL.x, pL.y);
+        ctx.closePath();
+        ctx.fill();
+
+        // Dark front wood bevel
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
+        ctx.fillRect(pL.x, tieTopY + tieH * 0.6, pR.x - pL.x, tieH * 0.4);
+
+        // Steel tie-plates holding rails
+        ctx.fillStyle = '#1e293b';
+        const plateW = 8 * pL.scale;
+        for (const norm of [-1.32, -0.68, -0.32, 0.32, 0.68, 1.32]) {
+          const pt = project3D(norm, tz, 0);
+          ctx.fillRect(pt.x - plateW / 2, tieTopY, plateW, tieH);
         }
       }
 
-      // 7. Glowing Outer Guardrail Curbs
-      ctx.shadowBlur = 12;
-      ctx.lineWidth = 4;
-      // Left Curb
-      ctx.strokeStyle = gridCol;
-      ctx.beginPath();
-      const leftTop = project3D(-1.55, 950, 0);
-      const leftBot = project3D(-1.55, -40, 0);
-      ctx.moveTo(leftTop.x, leftTop.y);
-      ctx.lineTo(leftBot.x, leftBot.y);
-      ctx.stroke();
+      // 6. 6 Continuous Steel Train Rails (2 per lane: laneNorm ± 0.32)
+      // Lanes: 0 (norm -1), 1 (norm 0), 2 (norm +1)
+      const railOffsets = [
+        -1 - 0.32, -1 + 0.32, // Lane 0 rails
+         0 - 0.32,  0 + 0.32, // Lane 1 rails
+         1 - 0.32,  1 + 0.32  // Lane 2 rails
+      ];
 
-      // Right Curb
-      ctx.beginPath();
-      const rightTop = project3D(1.55, 950, 0);
-      const rightBot = project3D(1.55, -40, 0);
-      ctx.moveTo(rightTop.x, rightTop.y);
-      ctx.lineTo(rightBot.x, rightBot.y);
-      ctx.stroke();
+      for (const rNorm of railOffsets) {
+        const pFar = project3D(rNorm, 950, 0);
+        const pNear = project3D(rNorm, -40, 0);
 
-      // 8. Roadside 3D Cyber Light Pillars rushing backward
-      const poleStep = 220;
-      const poleOffset = (this.distance * 1.0) % poleStep;
-      for (let pz = poleOffset; pz < 920; pz += poleStep) {
-        // Left lightpost
-        const pL = project3D(-1.75, pz, 0);
-        const pLTop = project3D(-1.75, pz, 48);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-        ctx.lineWidth = Math.max(1, 2 * pL.scale);
+        // Rail bottom flange
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = Math.max(2, 5 * pNear.scale);
+        ctx.beginPath();
+        ctx.moveTo(pFar.x, pFar.y);
+        ctx.lineTo(pNear.x, pNear.y);
+        ctx.stroke();
+
+        // Steel rail crown
+        ctx.strokeStyle = railsCol;
+        ctx.lineWidth = Math.max(1.5, 3.2 * pNear.scale);
+        ctx.beginPath();
+        ctx.moveTo(pFar.x, pFar.y - 2 * pFar.scale);
+        ctx.lineTo(pNear.x, pNear.y - 2 * pNear.scale);
+        ctx.stroke();
+
+        // Specular chrome glint on top of rail in the sunlight
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = Math.max(1, 1.4 * pNear.scale);
+        ctx.beginPath();
+        ctx.moveTo(pFar.x, pFar.y - 3 * pFar.scale);
+        ctx.lineTo(pNear.x, pNear.y - 3 * pNear.scale);
+        ctx.stroke();
+      }
+
+      // 7. Trackside Concrete Walls with Colorful Subway Graffiti Tags
+      const wallNorms = [-1.58, 1.58];
+      const graffitiColors = ['#f43f5e', '#06b6d4', '#eab308', '#a855f7', '#22c55e'];
+      for (const wNorm of wallNorms) {
+        const wallFar = project3D(wNorm, 950, 0);
+        const wallFarTop = project3D(wNorm, 950, 42);
+        const wallNear = project3D(wNorm, -40, 0);
+        const wallNearTop = project3D(wNorm, -40, 42);
+
+        ctx.fillStyle = '#475569';
+        ctx.beginPath();
+        ctx.moveTo(wallFar.x, wallFar.y);
+        ctx.lineTo(wallFarTop.x, wallFarTop.y);
+        ctx.lineTo(wallNearTop.x, wallNearTop.y);
+        ctx.lineTo(wallNear.x, wallNear.y);
+        ctx.closePath();
+        ctx.fill();
+
+        // Wall top curb lip
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(wallFarTop.x, wallFarTop.y);
+        ctx.lineTo(wallNearTop.x, wallNearTop.y);
+        ctx.stroke();
+
+        // Graffiti spray-paint splatters
+        const grafStep = 180;
+        const grafOffset = (this.distance * 0.9) % grafStep;
+        for (let gz = grafOffset; gz < 860; gz += grafStep) {
+          const pG = project3D(wNorm, gz, 18);
+          const col = graffitiColors[Math.floor(gz / grafStep) % graffitiColors.length];
+          ctx.fillStyle = col;
+          ctx.beginPath();
+          ctx.arc(pG.x, pG.y, Math.max(2, 6 * pG.scale), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // 8. Overhead Electric Catenary Gantry Arches
+      const gantryStep = 280;
+      const gantryOffset = (this.distance * 1.0) % gantryStep;
+      for (let pz = gantryOffset; pz < 900; pz += gantryStep) {
+        const pL = project3D(-1.62, pz, 0);
+        const pLTop = project3D(-1.62, pz, 68);
+        const pR = project3D(1.62, pz, 0);
+        const pRTop = project3D(1.62, pz, 68);
+
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = Math.max(1.5, 3.5 * pL.scale);
+
+        // Left post
         ctx.beginPath();
         ctx.moveTo(pL.x, pL.y);
         ctx.lineTo(pLTop.x, pLTop.y);
         ctx.stroke();
 
-        // Neon beacon orb on top
-        ctx.fillStyle = gridCol;
-        ctx.shadowColor = gridCol;
-        ctx.shadowBlur = 8 * pL.scale;
-        ctx.beginPath();
-        ctx.arc(pLTop.x, pLTop.y, Math.max(2, 4 * pL.scale), 0, Math.PI * 2);
-        ctx.fill();
-
-        // Right lightpost
-        const pR = project3D(1.75, pz, 0);
-        const pRTop = project3D(1.75, pz, 48);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+        // Right post
         ctx.beginPath();
         ctx.moveTo(pR.x, pR.y);
         ctx.lineTo(pRTop.x, pRTop.y);
         ctx.stroke();
 
-        ctx.fillStyle = gridCol;
+        // Crossbeam
         ctx.beginPath();
-        ctx.arc(pRTop.x, pRTop.y, Math.max(2, 4 * pR.scale), 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(pLTop.x, pLTop.y);
+        ctx.lineTo(pRTop.x, pRTop.y);
+        ctx.stroke();
+
+        // Insulator cups & wire drop
+        ctx.fillStyle = '#facc15';
+        for (const lNorm of [-1, 0, 1]) {
+          const pWire = project3D(lNorm, pz, 58);
+          ctx.fillRect(pWire.x - 2 * pWire.scale, pWire.y, 4 * pWire.scale, 5 * pWire.scale);
+        }
       }
 
       ctx.restore();
@@ -3185,11 +3640,14 @@
 
       this.drawBackground();
 
-      if (this.state !== GameStates.MENU) {
-        // 3D Back-to-front Depth Ordering (Subway Surfers Painter's Algorithm)
-        const renderList = [];
+      // 3D Back-to-front Depth Ordering (Subway Surfers Painter's Algorithm)
+      const renderList = [];
 
-        // Obstacles
+      if (this.state === GameStates.MENU) {
+        // Full Subway Surfers 3D menu: runner is standing on the tracks ready to run!
+        renderList.push({ z: PLAYER_Z, type: 'player', item: this.player });
+      } else {
+        // Obstacles (trains, hurdles, barriers)
         for (const o of this.track.obstacles) {
           renderList.push({ z: o.z, type: 'obstacle', item: o });
         }
@@ -3199,25 +3657,25 @@
           renderList.push({ z: c.z, type: 'collectible', item: c });
         }
 
-        // Player (at PLAYER_Z = 110)
+        // Player runner (at PLAYER_Z = 110)
         renderList.push({ z: PLAYER_Z, type: 'player', item: this.player });
-
-        // Sort descending: highest z (furthest from camera) rendered first
-        renderList.sort((a, b) => b.z - a.z);
-
-        for (const entity of renderList) {
-          if (entity.type === 'obstacle') {
-            this.track.renderObstacle(ctx, entity.item);
-          } else if (entity.type === 'collectible') {
-            this.collectibles.renderItem(ctx, entity.item);
-          } else if (entity.type === 'player') {
-            this.player.render(ctx);
-          }
-        }
-
-        // Foreground 2D HUD text and particle effects
-        this.particles.render(ctx);
       }
+
+      // Sort descending: highest z (furthest from camera) rendered first
+      renderList.sort((a, b) => b.z - a.z);
+
+      for (const entity of renderList) {
+        if (entity.type === 'obstacle') {
+          this.track.renderObstacle(ctx, entity.item);
+        } else if (entity.type === 'collectible') {
+          this.collectibles.renderItem(ctx, entity.item);
+        } else if (entity.type === 'player') {
+          this.player.render(ctx);
+        }
+      }
+
+      // Foreground 2D HUD text and particle effects
+      this.particles.render(ctx);
 
       ctx.restore();
     }
@@ -3232,12 +3690,28 @@
       try {
         // Gentle ambient updates when on menu
         if (this.state !== GameStates.PLAYING) {
-          this.distance += 40 * dt;
-          this.parallax.update(dt, 0.4);
+          this.distance += 45 * dt;
+          this.parallax.update(dt, 0.35);
           this.updateTheme(dt);
           this.particles.update(dt);
           ScreenShake.update(dt);
           this.renderAvatarPreview(dt);
+
+          // Keep player standing centered on track in 3D idle state
+          if (this.player) {
+            this.player.lane = 1;
+            this.player.laneNorm = 0;
+            this.player.baseHeight = 0;
+            this.player.targetBaseHeight = 0;
+            this.player.onTrain = false;
+            this.player.jumping = false;
+            this.player.sliding = false;
+            this.player.animTime += dt * 0.8;
+            const pPos = project3D(0, PLAYER_Z);
+            this.player.x = pPos.x;
+            this.player.groundY = pPos.y;
+            this.player.scale = pPos.scale;
+          }
         }
 
         this.update(dt);
