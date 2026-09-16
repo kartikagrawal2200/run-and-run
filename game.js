@@ -4542,8 +4542,8 @@
 
       if (this.state === GameStates.MENU) {
         // Full Subway Surfers 3D menu: Jake stands proudly in the foreground on center track facing the camera!
-        // Render in foreground at y = 485px with scale = 1.22 (height ~115px) with skateboard & spray can
-        renderList.push({ z: 160, type: 'player', item: this.player, customZ: 160, customScale: 1.22, isFrontView: true });
+        // Positioned cleanly above bottom CTAs with customZ = 185 and customScale = 1.16
+        renderList.push({ z: 185, type: 'player', item: this.player, customZ: 185, customScale: 1.16, isFrontView: true });
       } else {
         // Obstacles (trains, hurdles, barriers)
         for (const o of this.track.obstacles) {
