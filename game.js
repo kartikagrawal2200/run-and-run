@@ -1333,8 +1333,10 @@
       }
     }
 
-    render(ctx) {
-      const pPos = project3D(this.laneNorm, PLAYER_Z);
+    render(ctx, customZ, customScale) {
+      const z = (customZ !== undefined) ? customZ : PLAYER_Z;
+      const pPos = project3D(this.laneNorm, z);
+      const s = (customScale !== undefined) ? customScale : pPos.scale;
       drawHumanoidRunner(
         ctx,
         pPos.x,
@@ -1347,7 +1349,7 @@
         this.costume,
         this.squash,
         this.hasShield,
-        pPos.scale,
+        s,
         this.baseHeight  // Base surface elevation (train roof or ground)
       );
     }
@@ -2653,13 +2655,26 @@
       const goCallsign = document.getElementById('gameoverCallsign');
       if (goAvatar) goAvatar.textContent = avatar;
       if (goCallsign) goCallsign.textContent = callsign;
+
+      // Sync active world button in Settings > Worlds tab
+      for (let i = 0; i < THEMES.length; i++) {
+        const btn = document.getElementById(`bgBtn${i}`);
+        if (btn) {
+          if (i === this.selectedBgIndex) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      }
+      const bgNameEl = document.getElementById('bgSelectedName');
+      if (bgNameEl && THEMES[this.selectedBgIndex]) {
+        bgNameEl.textContent = THEMES[this.selectedBgIndex].name;
+      }
     }
 
     loadSelectedBg() {
       try {
         const ver = localStorage.getItem('run_and_run_bg_ver');
-        if (ver !== 'v11') {
-          localStorage.setItem('run_and_run_bg_ver', 'v11');
+        if (ver !== 'v13') {
+          localStorage.setItem('run_and_run_bg_ver', 'v13');
           localStorage.setItem(BG_STORAGE_KEY, '0');
           return 0;
         }
@@ -4280,8 +4295,10 @@
       const renderList = [];
 
       if (this.state === GameStates.MENU) {
-        // Full Subway Surfers 3D menu: runner is standing on the tracks ready to run!
-        renderList.push({ z: PLAYER_Z, type: 'player', item: this.player });
+        // Full Subway Surfers 3D menu: runner stands proudly on center track
+        // Render at z = 270 (y ≈ 499px, scale ≈ 0.68) so runner is prominently visible
+        // right in the center between the side buttons and above the TAP TO PLAY button!
+        renderList.push({ z: 270, type: 'player', item: this.player, customZ: 270, customScale: 0.68 });
       } else {
         // Obstacles (trains, hurdles, barriers)
         for (const o of this.track.obstacles) {
@@ -4318,7 +4335,7 @@
         } else if (entity.type === 'collectible') {
           this.collectibles.renderItem(ctx, entity.item);
         } else if (entity.type === 'player') {
-          this.player.render(ctx);
+          this.player.render(ctx, entity.customZ, entity.customScale);
         }
       }
 
@@ -4361,10 +4378,10 @@
             this.player.jumping = false;
             this.player.sliding = false;
             this.player.animTime += dt * 0.8;
-            const pPos = project3D(0, PLAYER_Z);
+            const pPos = project3D(0, 270);
             this.player.x = pPos.x;
             this.player.groundY = pPos.y;
-            this.player.scale = pPos.scale;
+            this.player.scale = 0.68;
           }
         }
 
