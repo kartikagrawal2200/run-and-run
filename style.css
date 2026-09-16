@@ -523,6 +523,14 @@ canvas {
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
+  touch-action: manipulation;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.bg-option-btn * {
+  pointer-events: none;
 }
 
 .bg-option-btn:hover {
@@ -532,10 +540,25 @@ canvas {
 }
 
 .bg-option-btn.active {
-  background: rgba(76, 201, 240, 0.15);
+  background: rgba(76, 201, 240, 0.2);
   border-color: var(--neon-cyan);
-  box-shadow: 0 0 15px rgba(76, 201, 240, 0.4), inset 0 0 10px rgba(76, 201, 240, 0.2);
-  transform: translateY(-1px);
+  box-shadow: 0 0 16px rgba(76, 201, 240, 0.5), inset 0 0 10px rgba(76, 201, 240, 0.25);
+  transform: translateY(-2px);
+}
+
+.bg-option-btn[data-bg="0"].active {
+  border-color: #00f0ff;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.5), inset 0 0 10px rgba(0, 240, 255, 0.25);
+}
+
+.bg-option-btn[data-bg="1"].active {
+  border-color: #ff007f;
+  box-shadow: 0 0 16px rgba(255, 0, 127, 0.5), inset 0 0 10px rgba(255, 0, 127, 0.25);
+}
+
+.bg-option-btn[data-bg="2"].active {
+  border-color: #ffd23f;
+  box-shadow: 0 0 16px rgba(255, 210, 63, 0.5), inset 0 0 10px rgba(255, 210, 63, 0.25);
 }
 
 .bg-thumb {

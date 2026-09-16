@@ -1618,7 +1618,7 @@
       if (obstacle.type.id === 'LOW') {
         this._spawnArcTrail(obstacle.lane, obstacle.y, true);
       } else if (obstacle.type.id === 'HIGH') {
-        this._spawnCoinLine(obstacle.lane, obstacle.y, 4, 30, { requiresSlide: true });
+        this._spawnCoinLine(obstacle.lane, obstacle.y + 60, 3, 28, { requiresSlide: true });
       } else {
         const others = [0, 1, 2].filter(l => l !== obstacle.lane);
         const freeLane = others[Math.floor(Math.random() * others.length)];
@@ -2012,9 +2012,9 @@
     selectBackground(index) {
       if (index < 0 || index >= THEMES.length) return;
       this.selectedBgIndex = index;
-      this.prevThemeIndex = this.themeIndex;
+      this.prevThemeIndex = index;
       this.themeIndex = index;
-      this.themeBlend = 0;
+      this.themeBlend = 1;
       this.saveSelectedBg(index);
 
       // Update UI buttons active state
@@ -2568,17 +2568,37 @@
         }
       }, { passive: true });
 
-      // 3-Choice Background Selector buttons
-      for (let i = 0; i < 3; i++) {
+      // 3-Choice Background Selector buttons (Direct + Delegated with touch debounce)
+      for (let i = 0; i < THEMES.length; i++) {
         const btn = document.getElementById(`bgBtn${i}`);
         if (btn) {
-          btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            SoundSystem.ensure();
+          this.attachButtonAction(btn, () => {
+            try {
+              SoundSystem.ensure();
+              SoundSystem.equip();
+            } catch (e) {}
             this.selectBackground(i);
           });
         }
       }
+
+      const bgOptionsContainer = document.getElementById('bgOptions');
+      if (bgOptionsContainer) {
+        this.attachButtonAction(bgOptionsContainer, (e) => {
+          const btn = e.target.closest('.bg-option-btn');
+          if (btn && btn.hasAttribute('data-bg')) {
+            const idx = parseInt(btn.getAttribute('data-bg'), 10);
+            if (!isNaN(idx)) {
+              try {
+                SoundSystem.ensure();
+                SoundSystem.equip();
+              } catch (err) {}
+              this.selectBackground(idx);
+            }
+          }
+        });
+      }
+
       this.selectBackground(this.selectedBgIndex);
     }
 
@@ -2617,48 +2637,93 @@
     }
 
     checkCollisions() {
-      const pBounds = this.player.getBounds();
+      if (this.state !== GameStates.PLAYING) return;
+      if (!this.player || !this.track) return;
+
+      const playerFeet = GROUND_Y - this.player.jumpHeight;
+      const playerHead = playerFeet - (this.player.sliding ? this.player.slideHeight : this.player.height);
+      const playerLeft = this.player.x - 20;
+      const playerRight = this.player.x + 20;
 
       for (const o of this.track.obstacles) {
         if (o.hit) continue;
-        if (o.lane !== this.player.lane) continue;
-        if (Math.abs(o.y - GROUND_Y) > 46) continue;
 
-        let evaded = false;
-        if (o.type.action === 'jump') {
-          evaded = this.player.jumping && this.player.jumpHeight > o.h * 0.52;
-        } else if (o.type.action === 'slide') {
-          evaded = this.player.sliding;
+        // Broad vertical culling: ignore obstacles far above or far below the player
+        if (o.y < GROUND_Y - 140 || o.y - o.h > GROUND_Y + 60) continue;
+
+        // Horizontal body collision check (accurate whether in lane or during lateral dash)
+        const obsLeft = o.x - o.w / 2 + 10;
+        const obsRight = o.x + o.w / 2 - 10;
+        const overlapX = playerRight > obsLeft && playerLeft < obsRight;
+        if (!overlapX) continue;
+
+        // Obstacle-specific vertical intersection & evasion mechanics
+        let collided = false;
+
+        if (o.type.id === 'LOW') {
+          // Electric Barrier (h: 44, requires JUMP)
+          const barrierTop = o.y - o.h;
+          const barrierBottom = o.y;
+
+          // Contact with low ground barrier
+          const overlapY = (playerFeet > barrierTop + 4) && (playerHead < barrierBottom);
+          const clearedJump = this.player.jumping && (this.player.jumpHeight >= o.h * 0.72);
+
+          if (overlapY && !clearedJump) {
+            collided = true;
+          }
+        } else if (o.type.id === 'HIGH') {
+          // Laser Gate (h: 110, gap: 48, requires SLIDE)
+          const solidBeamTop = o.y - o.h;
+          const solidBeamBottom = o.y - o.type.gap; // o.y - 48
+
+          // Contact with overhead lethal beam
+          const overlapBeam = (playerFeet > solidBeamTop) && (playerHead < solidBeamBottom);
+          const safelySliding = this.player.sliding && (this.player.jumpHeight <= 5);
+
+          if (overlapBeam && !safelySliding) {
+            collided = true;
+          }
+        } else {
+          // BLOCK Monolith (Full solid pillar, cannot be jumped or slid under)
+          const blockTop = o.y - o.h;
+          const blockBottom = o.y;
+          const overlapBlock = (playerFeet > blockTop + 4) && (playerHead < blockBottom);
+
+          if (overlapBlock) {
+            collided = true;
+          }
         }
 
-        if (evaded) continue;
+        if (collided) {
+          o.hit = true;
 
-        const oBounds = { x: o.x - o.w / 2, y: o.y - o.h, w: o.w, h: o.h };
-        if (!rectsOverlap(pBounds, oBounds)) continue;
-
-        o.hit = true;
-
-        // Has Shield protection?
-        if (this.collectibles.shieldCharges > 0) {
-          this.collectibles.shieldCharges--;
-          SoundSystem.shieldBreak();
-          ScreenShake.trigger(8, 0.25);
-          this.particles.burst(o.x, o.y - o.h / 2, '#06d6a0', 20);
-          this.particles.spawnText(this.player.x, GROUND_Y - 100, 'SHIELD BROKEN', '#ff3366');
-          this.track.obstacles = this.track.obstacles.filter(item => item !== o);
-        } else {
-          // Fatal Crash
-          this.gameOver();
-          return;
+          // Shield absorption
+          if (this.collectibles.shieldCharges > 0) {
+            this.collectibles.shieldCharges--;
+            try { SoundSystem.shieldBreak(); } catch (e) {}
+            ScreenShake.trigger(10, 0.3);
+            this.particles.burst(o.x, o.y - o.h / 2, '#06d6a0', 24);
+            this.particles.spawnText(this.player.x, GROUND_Y - 100, 'SHIELD BROKEN', '#ff3366');
+            this.track.obstacles = this.track.obstacles.filter(item => item !== o);
+          } else {
+            // Fatal Crash -> Runner dies immediately
+            this.gameOver();
+            return;
+          }
         }
       }
     }
 
     gameOver() {
-      SoundSystem.stopBgm();
-      SoundSystem.crash();
-      ScreenShake.trigger(18, 0.45);
-      this.particles.burst(this.player.x, GROUND_Y - this.player.height / 2, '#ff3366', 32, 100, 320);
+      try {
+        SoundSystem.stopBgm();
+        SoundSystem.crash();
+      } catch (e) {
+        console.warn('[Audio] Crash SFX error:', e);
+      }
+      ScreenShake.trigger(20, 0.5);
+      this.particles.burst(this.player.x, GROUND_Y - this.player.height / 2, '#ff3366', 36, 120, 360);
 
       // Deposit collected coins into bank
       const earned = this.collectibles.coinCount;
