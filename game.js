@@ -125,45 +125,60 @@
       name: 'SUNNY SUBWAY',
       sky: ['#0284c7', '#38bdf8'],
       ground: '#334155',
-      rails: '#e2e8f0',
-      ties: '#854d0e',
-      ballast: '#64748b',
+      rails: '#f8fafc',
+      ties: '#9a3412',
+      ballast: '#475569',
       grid: '#38bdf8',
       building: '#1e293b',
       accent: '#facc15',
       celestial: 'sun',
-      horizonGlow: 'rgba(250, 204, 21, 0.45)',
+      horizonGlow: 'rgba(250, 204, 21, 0.55)',
       isBright: true
     },
     {
       id: 'sunset_coast',
       name: 'GOLDEN COAST',
-      sky: ['#ea580c', '#fb923c'],
+      sky: ['#c2410c', '#fb923c'],
       ground: '#431407',
-      rails: '#fed7aa',
+      rails: '#ffedd5',
       ties: '#7c2d12',
       ballast: '#78350f',
       grid: '#f97316',
       building: '#292524',
       accent: '#fde047',
       celestial: 'sun',
-      horizonGlow: 'rgba(251, 146, 60, 0.5)',
-      isBright: false
+      horizonGlow: 'rgba(251, 146, 60, 0.65)',
+      isBright: true
     },
     {
       id: 'tokyo_pop',
       name: 'TOKYO TOON',
-      sky: ['#7c3aed', '#c084fc'],
+      sky: ['#6b21a8', '#d946ef'],
       ground: '#1e1b4b',
-      rails: '#f472b6',
+      rails: '#38bdf8',
       ties: '#581c87',
       ballast: '#312e81',
       grid: '#e879f9',
       building: '#0f172a',
-      accent: '#38bdf8',
+      accent: '#f43f5e',
       celestial: 'moon',
-      horizonGlow: 'rgba(232, 121, 249, 0.45)',
+      horizonGlow: 'rgba(232, 121, 249, 0.6)',
       isBright: false
+    },
+    {
+      id: 'neon_carnival',
+      name: 'NEON CARNIVAL',
+      sky: ['#065f46', '#10b981'],
+      ground: '#064e3b',
+      rails: '#fef08a',
+      ties: '#14532d',
+      ballast: '#047857',
+      grid: '#34d399',
+      building: '#022c22',
+      accent: '#f43f5e',
+      celestial: 'sun',
+      horizonGlow: 'rgba(16, 185, 129, 0.6)',
+      isBright: true
     }
   ];
 
@@ -811,7 +826,7 @@
   /* ============================================================
      HUMANOID RUNNER RENDER PIPELINE (CRASH-PROOF & HIGH-DEFINITION)
      ============================================================ */
-  function drawHumanoidRunner(ctx, cx, groundY, animTime, isJumping, isSliding, jumpHeight, tilt, costume, squash, hasShield, scaleFactor = 1.0) {
+  function drawHumanoidRunner(ctx, cx, groundY, animTime, isJumping, isSliding, jumpHeight, tilt, costume, squash, hasShield, scaleFactor = 1.0, baseHeight = 0) {
     try {
       const c = costume || COSTUMES.neo;
       ctx.save();
@@ -821,7 +836,12 @@
       }
       if (tilt) ctx.rotate(tilt);
 
-      // 1. Dynamic ground shadow that scales with jump height
+      // Surface elevation: if running on train roof or ramp, translate to surface elevation first
+      if (baseHeight > 0) {
+        ctx.translate(0, -baseHeight);
+      }
+
+      // 1. Dynamic ground/roof shadow that scales with jump height
       if (jumpHeight !== undefined) {
         ctx.save();
         const shadowScale = clamp(1 - (jumpHeight || 0) / 280, 0.25, 1);
@@ -835,7 +855,7 @@
         ctx.restore();
       }
 
-      // Lift body by jumpHeight
+      // Lift body by jumpHeight above the current surface
       ctx.translate(0, -(jumpHeight || 0));
 
       // 2. Dual Hex Shield if active
@@ -1399,7 +1419,6 @@
     }
 
     render(ctx) {
-      const totalElevation = (this.baseHeight + this.jumpHeight);
       const pPos = project3D(this.laneNorm, PLAYER_Z);
       drawHumanoidRunner(
         ctx,
@@ -1408,12 +1427,13 @@
         this.animTime,
         this.jumping,
         this.sliding,
-        totalElevation * pPos.scale,
+        this.jumpHeight, // Vertical jump height above surface
         this.tilt,
         this.costume,
         this.squash,
         this.hasShield,
-        pPos.scale
+        pPos.scale,
+        this.baseHeight  // Base surface elevation (train roof or ground)
       );
     }
   }
@@ -1422,10 +1442,14 @@
      OBSTACLES: SUBWAY TRAINS & TRACK HURDLES (3D PERSPECTIVE)
      ============================================================ */
   const TRAIN_LIVERIES = [
-    { name: 'Red Express', body: '#dc2626', roof: '#f87171', stripe: '#ffffff', front: '#b91c1c', trim: '#facc15' },
-    { name: 'Blue Metro', body: '#2563eb', roof: '#60a5fa', stripe: '#fde047', front: '#1d4ed8', trim: '#38bdf8' },
-    { name: 'Teal Commuter', body: '#0d9488', roof: '#2dd4bf', stripe: '#fb923c', front: '#0f766e', trim: '#fef08a' },
-    { name: 'Yellow Cityline', body: '#eab308', roof: '#fef08a', stripe: '#1e293b', front: '#ca8a04', trim: '#ef4444' }
+    { name: 'Red Express', body: '#ef4444', roof: '#fca5a5', stripe: '#fde047', front: '#dc2626', trim: '#facc15' },
+    { name: 'Blue Metro', body: '#0284c7', roof: '#7dd3fc', stripe: '#a3e635', front: '#0369a1', trim: '#fef08a' },
+    { name: 'Graffiti Purple', body: '#9333ea', roof: '#d8b4fe', stripe: '#f43f5e', front: '#7e22ce', trim: '#38bdf8' },
+    { name: 'Golden Express', body: '#eab308', roof: '#fef08a', stripe: '#ef4444', front: '#ca8a04', trim: '#22c55e' },
+    { name: 'Emerald Runner', body: '#16a34a', roof: '#86efac', stripe: '#fde047', front: '#15803d', trim: '#ffffff' },
+    { name: 'Citrus Orange', body: '#ea580c', roof: '#fdba74', stripe: '#38bdf8', front: '#c2410c', trim: '#facc15' },
+    { name: 'Tokyo Turquoise', body: '#06b6d4', roof: '#a5f3fc', stripe: '#ec4899', front: '#0891b2', trim: '#fef08a' },
+    { name: 'Royal Indigo', body: '#4f46e5', roof: '#a5b4fc', stripe: '#fbbf24', front: '#4338ca', trim: '#f43f5e' }
   ];
 
   const OBSTACLE_DEFS = {
@@ -3763,16 +3787,24 @@
         ctx.stroke();
       }
 
-      // 7. Trackside Concrete Walls with Colorful Subway Graffiti Tags
+      // 7. Trackside Concrete Walls with Colorful Subway Graffiti Murals & Tags
       const wallNorms = [-1.58, 1.58];
-      const graffitiColors = ['#f43f5e', '#06b6d4', '#eab308', '#a855f7', '#22c55e'];
+      const graffitiPalettes = [
+        { text: 'SURF', col: '#ff007f', outline: '#ffffff' },
+        { text: 'DASH', col: '#06b6d4', outline: '#facc15' },
+        { text: 'SUBWAY', col: '#a855f7', outline: '#38bdf8' },
+        { text: 'RUN', col: '#22c55e', outline: '#ffffff' },
+        { text: '★ SPEED ★', col: '#facc15', outline: '#ef4444' },
+        { text: '⚡ 3D ⚡', col: '#38bdf8', outline: '#ff007f' }
+      ];
       for (const wNorm of wallNorms) {
         const wallFar = project3D(wNorm, 950, 0);
-        const wallFarTop = project3D(wNorm, 950, 42);
+        const wallFarTop = project3D(wNorm, 950, 48);
         const wallNear = project3D(wNorm, -40, 0);
-        const wallNearTop = project3D(wNorm, -40, 42);
+        const wallNearTop = project3D(wNorm, -40, 48);
 
-        ctx.fillStyle = '#475569';
+        // Concrete barrier wall
+        ctx.fillStyle = '#334155';
         ctx.beginPath();
         ctx.moveTo(wallFar.x, wallFar.y);
         ctx.lineTo(wallFarTop.x, wallFarTop.y);
@@ -3781,38 +3813,63 @@
         ctx.closePath();
         ctx.fill();
 
-        // Wall top curb lip
-        ctx.strokeStyle = '#94a3b8';
-        ctx.lineWidth = 2.5;
+        // Wall top curb lip with bright warning edge
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = Math.max(1.5, 3.0 * wallNear.scale);
         ctx.beginPath();
         ctx.moveTo(wallFarTop.x, wallFarTop.y);
         ctx.lineTo(wallNearTop.x, wallNearTop.y);
         ctx.stroke();
 
-        // Graffiti spray-paint splatters
-        const grafStep = 180;
+        // Vivid Graffiti spray-paint murals & tags along wall
+        const grafStep = 150;
         const grafOffset = (this.distance * 0.9) % grafStep;
         for (let gz = grafOffset; gz < 860; gz += grafStep) {
-          const pG = project3D(wNorm, gz, 18);
-          const col = graffitiColors[Math.floor(gz / grafStep) % graffitiColors.length];
-          ctx.fillStyle = col;
+          const pG = project3D(wNorm, gz, 24);
+          const sG = pG.scale;
+          const grafIdx = Math.floor(gz / grafStep) % graffitiPalettes.length;
+          const tag = graffitiPalettes[grafIdx];
+
+          // Spray paint background splatter
+          ctx.fillStyle = tag.col;
           ctx.beginPath();
-          ctx.arc(pG.x, pG.y, Math.max(2, 6 * pG.scale), 0, Math.PI * 2);
+          ctx.arc(pG.x, pG.y, Math.max(3, 10 * sG), 0, Math.PI * 2);
           ctx.fill();
+          // Satellite spray dots
+          ctx.fillStyle = tag.outline;
+          ctx.fillRect(pG.x - 6 * sG, pG.y - 5 * sG, 3 * sG, 3 * sG);
+          ctx.fillRect(pG.x + 5 * sG, pG.y + 4 * sG, 4 * sG, 3 * sG);
+
+          // Render graffiti typography when close enough to read
+          if (sG > 0.28) {
+            ctx.save();
+            ctx.fillStyle = tag.col;
+            ctx.strokeStyle = tag.outline;
+            ctx.lineWidth = Math.max(1, 1.8 * sG);
+            ctx.font = `900 ${Math.max(8, 15 * sG)}px "Orbitron", Impact, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.strokeText(tag.text, pG.x, pG.y);
+            ctx.fillText(tag.text, pG.x, pG.y);
+            ctx.restore();
+          }
         }
       }
 
-      // 8. Overhead Electric Catenary Gantry Arches
-      const gantryStep = 280;
+      // 8. Overhead Electric Catenary Gantry Arches with Multi-Color Railway Signals
+      const gantryStep = 260;
       const gantryOffset = (this.distance * 1.0) % gantryStep;
+      const signalColors = ['#22c55e', '#f59e0b', '#ef4444']; // Green, Amber, Red signals
       for (let pz = gantryOffset; pz < 900; pz += gantryStep) {
         const pL = project3D(-1.62, pz, 0);
-        const pLTop = project3D(-1.62, pz, 68);
+        const pLTop = project3D(-1.62, pz, 72);
         const pR = project3D(1.62, pz, 0);
-        const pRTop = project3D(1.62, pz, 68);
+        const pRTop = project3D(1.62, pz, 72);
+        const sGantry = pL.scale;
 
-        ctx.strokeStyle = '#64748b';
-        ctx.lineWidth = Math.max(1.5, 3.5 * pL.scale);
+        // Steel truss framework
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = Math.max(1.5, 3.8 * sGantry);
 
         // Left post
         ctx.beginPath();
@@ -3826,17 +3883,33 @@
         ctx.lineTo(pRTop.x, pRTop.y);
         ctx.stroke();
 
-        // Crossbeam
+        // Double Crossbeam
         ctx.beginPath();
         ctx.moveTo(pLTop.x, pLTop.y);
         ctx.lineTo(pRTop.x, pRTop.y);
+        ctx.moveTo(pLTop.x, pLTop.y + 6 * sGantry);
+        ctx.lineTo(pRTop.x, pRTop.y + 6 * sGantry);
         ctx.stroke();
 
-        // Insulator cups & wire drop
-        ctx.fillStyle = '#facc15';
-        for (const lNorm of [-1, 0, 1]) {
-          const pWire = project3D(lNorm, pz, 58);
-          ctx.fillRect(pWire.x - 2 * pWire.scale, pWire.y, 4 * pWire.scale, 5 * pWire.scale);
+        // 3 Glowing Multi-Color Signal Lanterns (one per track lane)
+        const laneNorms = [-1, 0, 1];
+        for (let l = 0; l < laneNorms.length; l++) {
+          const lNorm = laneNorms[l];
+          const pSig = project3D(lNorm, pz, 64);
+          const sigCol = signalColors[l];
+          const sigR = Math.max(2, 4.5 * sGantry);
+
+          // Signal housing box
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(pSig.x - 4 * sGantry, pSig.y - 4 * sGantry, 8 * sGantry, 8 * sGantry);
+
+          // Glowing signal bulb
+          ctx.fillStyle = sigCol;
+          ctx.shadowColor = sigCol;
+          ctx.shadowBlur = 8 * sGantry;
+          ctx.beginPath();
+          ctx.arc(pSig.x, pSig.y, sigR, 0, Math.PI * 2);
+          ctx.fill();
         }
       }
 
@@ -3861,7 +3934,18 @@
       } else {
         // Obstacles (trains, hurdles, barriers)
         for (const o of this.track.obstacles) {
-          renderList.push({ z: o.z, type: 'obstacle', item: o });
+          let sortZ = o.z;
+          if (o.isTrain) {
+            // A train body spans from o.z to o.z + o.length.
+            // If the player is riding this train, climbing its ramp, or in same lane over it:
+            const inSameLane = Math.abs(this.player.laneNorm - o.laneNorm) < 0.85;
+            const trainOverlapsPlayer = (o.z - 45 <= PLAYER_Z) && (PLAYER_Z <= o.z + o.length + 40);
+            if (this.player.onTrain || (inSameLane && trainOverlapsPlayer) || this.player.baseHeight > 10) {
+              // Place train behind the player in draw order (larger Z renders first)
+              sortZ = Math.max(o.z + o.length, PLAYER_Z + 180);
+            }
+          }
+          renderList.push({ z: sortZ, type: 'obstacle', item: o });
         }
 
         // Collectibles (Coins & Powerups)
@@ -3869,8 +3953,9 @@
           renderList.push({ z: c.z, type: 'collectible', item: c });
         }
 
-        // Player runner (at PLAYER_Z = 110)
-        renderList.push({ z: PLAYER_Z, type: 'player', item: this.player });
+        // Player runner: ensure player is drawn AFTER the train they are mounted on
+        const playerSortZ = (this.player.onTrain || this.player.baseHeight > 10) ? (PLAYER_Z - 60) : PLAYER_Z;
+        renderList.push({ z: playerSortZ, type: 'player', item: this.player });
       }
 
       // Sort descending: highest z (furthest from camera) rendered first
