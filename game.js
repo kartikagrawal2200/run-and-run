@@ -3409,18 +3409,31 @@
       });
 
       // Game Over buttons
-      this.attachButtonAction('restartBtn', () => {
-        try {
-          SoundSystem.ensure();
-          SoundSystem.startBgm();
-        } catch (e) {}
-        this.resetRun();
-        this.setState(GameStates.PLAYING);
-      });
-      this.attachButtonAction('menuBtn', () => {
-        try { SoundSystem.stopBgm(); } catch (e) {}
-        this.setState(GameStates.MENU);
-      });
+      const restartBtn = document.getElementById('restartBtn');
+      if (restartBtn) {
+        this.attachButtonAction(restartBtn, (e) => {
+          if (e) {
+            try { e.stopPropagation(); } catch (err) {}
+          }
+          try {
+            SoundSystem.ensure();
+            SoundSystem.startBgm();
+          } catch (err) {}
+          this.resetRun();
+          this.setState(GameStates.PLAYING);
+        });
+      }
+
+      const menuBtn = document.getElementById('menuBtn');
+      if (menuBtn) {
+        this.attachButtonAction(menuBtn, (e) => {
+          if (e) {
+            try { e.stopPropagation(); } catch (err) {}
+          }
+          try { SoundSystem.stopBgm(); } catch (err) {}
+          this.setState(GameStates.MENU);
+        });
+      }
 
       // Audio toggles in HUD
       const muteBtn = document.getElementById('muteBtn');
