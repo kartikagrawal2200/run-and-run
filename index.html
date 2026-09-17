@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800;900&family=Titan+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=subway3d_v16">
+  <link rel="stylesheet" href="style.css?v=subway3d_v17">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#4cc9f0">
@@ -43,6 +43,15 @@
               <span class="badge-icon">🛡️</span>
               <span id="shieldCount">0</span>
             </div>
+            <div id="hudKeyDisplay" class="stat-badge key-badge">
+              <span class="badge-icon">🔑</span>
+              <span id="hudKeyCount">3</span>
+            </div>
+          </div>
+
+          <!-- Centered Coin Combo Streak Callout -->
+          <div id="hudCoinCombo" class="hud-coin-combo hidden">
+            <span id="hudComboText" class="hud-combo-text">5X COMBO! 🔥</span>
           </div>
 
           <div class="hud-right">
@@ -161,6 +170,10 @@
                 <span class="coin-icon">🪙</span>
                 <span id="menuCoinBank" class="bank-count">0</span>
               </div>
+              <div class="key-bank-pill" title="Total Keys">
+                <span class="key-icon">🔑</span>
+                <span id="menuKeyBank" class="bank-count">3</span>
+              </div>
             </div>
           </header>
 
@@ -172,7 +185,7 @@
 
           <!-- Subway Surfers Floating Side Rails (Left & Right Quick Actions) -->
           <div class="subway-side-rails" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 4px; box-sizing: border-box; pointer-events: auto; z-index: 25;">
-            <!-- Left Rail: World Tour, Characters (Crew), and Daily Missions -->
+            <!-- Left Rail: World Tour, Characters (Crew), Daily Missions, and Season Hunt -->
             <div class="side-rail-col side-rail-left" style="display: flex; flex-direction: column; gap: 8px;">
               <button type="button" id="menuWorldBtn" class="subway-side-btn world-side-btn" title="Choose City World">
                 <span class="side-btn-icon">🌍</span>
@@ -187,9 +200,13 @@
                 <span class="side-btn-lbl">QUESTS</span>
                 <span id="missionsBadge" class="side-notify-dot hidden">!</span>
               </button>
+              <button type="button" id="menuSeasonBtn" class="subway-side-btn season-side-btn" title="Tokyo Season Hunt">
+                <span class="side-btn-icon">🌸</span>
+                <span class="side-btn-lbl">SEASON</span>
+              </button>
             </div>
 
-            <!-- Right Rail: Top Run Leaderboard, Skate Shop & Boosters -->
+            <!-- Right Rail: Top Run Leaderboard, Skate Shop, Boosters, and Achievements -->
             <div class="side-rail-col side-rail-right" style="display: flex; flex-direction: column; gap: 8px;">
               <button type="button" id="menuLeaderboardBtn" class="subway-side-btn rank-side-btn" title="Top Run Leaderboard">
                 <span class="side-btn-icon">🏆</span>
@@ -202,6 +219,10 @@
               <button type="button" id="menuUpgradesBtn" class="subway-side-btn boost-side-btn" title="Boost Upgrades">
                 <span class="side-btn-icon">⚡</span>
                 <span class="side-btn-lbl">BOOST</span>
+              </button>
+              <button type="button" id="menuAchievementsBtn" class="subway-side-btn badges-side-btn" title="Achievements">
+                <span class="side-btn-icon">🎖️</span>
+                <span class="side-btn-lbl">AWARDS</span>
               </button>
             </div>
           </div>
@@ -351,12 +372,17 @@
                   <span class="coin-icon">🪙</span>
                   <span id="shopCoinBank" class="bank-count">0</span>
                 </div>
+                <div class="key-bank-pill">
+                  <span class="key-icon">🔑</span>
+                  <span id="shopKeyBank" class="bank-count">3</span>
+                </div>
                 <button type="button" id="closeShopBtn" class="close-icon-btn" aria-label="Close Shop">✕</button>
               </div>
             </div>
 
             <div class="modal-nav-tabs">
               <button type="button" class="tab-btn active" data-tab="tabCostumes" id="tabBtnCostumes">🏃 CHARACTERS</button>
+              <button type="button" class="tab-btn" data-tab="tabBoards" id="tabBtnBoards">🛹 BOARDS</button>
               <button type="button" class="tab-btn" data-tab="tabUpgrades" id="tabBtnUpgrades">⚡ BOOST UPGRADES</button>
             </div>
 
@@ -364,6 +390,13 @@
             <div id="tabCostumes" class="tab-content">
               <div class="costumes-scroll" id="costumesList">
                 <!-- Dynamically populated or rendered -->
+              </div>
+            </div>
+
+            <!-- Boards Tab (Subway Surfers Custom Hoverboards) -->
+            <div id="tabBoards" class="tab-content hidden">
+              <div class="boards-scroll" id="boardsList">
+                <!-- Dynamically populated boards -->
               </div>
             </div>
 
@@ -572,12 +605,113 @@
             <button type="button" id="closeLeaderboardDoneBtn" class="cyber-btn primary-btn modal-done-btn">BACK TO MENU</button>
           </div>
         </section>
+
+        <!-- Crash Revival Modal (5-second countdown with Keys 🔑) -->
+        <section id="reviveModal" class="overlay modal-overlay hidden">
+          <div class="glass-panel modal-panel revive-panel">
+            <div class="revive-header">
+              <span class="revive-tag">CRASHED!</span>
+              <h2>SAVE YOUR RUN?</h2>
+            </div>
+            <div class="revive-countdown-wrap">
+              <svg class="revive-timer-svg" viewBox="0 0 100 100">
+                <circle class="revive-timer-bg" cx="50" cy="50" r="42"></circle>
+                <circle id="reviveTimerCircle" class="revive-timer-bar" cx="50" cy="50" r="42"></circle>
+              </svg>
+              <div id="reviveCountdownText" class="revive-countdown-num">5</div>
+            </div>
+            <div class="revive-score-preview">
+              <div class="revive-stat-col">
+                <small>SCORE</small>
+                <strong id="reviveScoreVal">0</strong>
+              </div>
+              <div class="revive-stat-col">
+                <small>COINS</small>
+                <strong id="reviveCoinsVal">0</strong>
+              </div>
+            </div>
+            <button type="button" id="reviveActionBtn" class="subway-revive-btn">
+              <span class="revive-btn-icon">🔑</span>
+              <span id="reviveBtnLabel">REVIVE (x1 KEY)</span>
+            </button>
+            <button type="button" id="reviveGiveUpBtn" class="revive-skip-btn">GIVE UP &gt;</button>
+          </div>
+        </section>
+
+        <!-- Mystery Box Opening Modal -->
+        <section id="mysteryBoxModal" class="overlay modal-overlay hidden">
+          <div class="glass-panel modal-panel mystery-box-panel">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <span class="modal-tag">SPECIAL LOOT</span>
+                <h2>MYSTERY BOX</h2>
+              </div>
+            </div>
+            <div class="mystery-box-stage">
+              <div class="mystery-crate-wrap" id="mysteryCrateEl">
+                <div class="crate-box">
+                  <span class="crate-mark">?</span>
+                </div>
+              </div>
+              <div id="mysteryRewardReveal" class="mystery-reward-reveal hidden">
+                <div id="mysteryRewardIcon" class="reward-icon-big">🪙</div>
+                <div id="mysteryRewardTitle" class="reward-title-big">+250 COINS</div>
+              </div>
+            </div>
+            <button type="button" id="mysteryBoxOpenBtn" class="cyber-btn primary-btn unbox-btn">TAP TO OPEN 🎁</button>
+            <button type="button" id="mysteryBoxDoneBtn" class="cyber-btn primary-btn modal-done-btn hidden">COLLECT &amp; CONTINUE ▶</button>
+          </div>
+        </section>
+
+        <!-- World Tour Season Hunt Modal -->
+        <section id="seasonModal" class="overlay modal-overlay hidden">
+          <div class="glass-panel modal-panel season-panel">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <span class="modal-tag">SEASON HUNT</span>
+                <h2>WORLD TOUR SEASON 🌸</h2>
+              </div>
+              <button type="button" id="closeSeasonBtn" class="close-icon-btn" aria-label="Close Season">✕</button>
+            </div>
+            <div class="season-banner">
+              <div class="season-token-summary">
+                <span class="season-token-icon">🌸</span>
+                <div class="season-token-text">
+                  <span class="season-token-lbl">COLLECTED TOKENS</span>
+                  <strong id="seasonTokensCount">0</strong>
+                </div>
+              </div>
+              <div class="season-hint">Collect Sakura Blossom tokens on tracks to claim exclusive tier prizes!</div>
+            </div>
+            <div class="season-tiers-list" id="seasonTiersList">
+              <!-- Tier items populated dynamically -->
+            </div>
+            <button type="button" id="closeSeasonDoneBtn" class="cyber-btn primary-btn modal-done-btn">BACK TO MENU</button>
+          </div>
+        </section>
+
+        <!-- Achievements Modal -->
+        <section id="achievementsModal" class="overlay modal-overlay hidden">
+          <div class="glass-panel modal-panel achievements-panel">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <span class="modal-tag">SURFER TROPHIES</span>
+                <h2>ACHIEVEMENTS</h2>
+              </div>
+              <button type="button" id="closeAchievementsBtn" class="close-icon-btn" aria-label="Close Achievements">✕</button>
+            </div>
+            <div class="achievements-scroll-list" id="achievementsList">
+              <!-- Achievements items populated dynamically -->
+            </div>
+            <button type="button" id="closeAchievementsDoneBtn" class="cyber-btn primary-btn modal-done-btn">BACK TO MENU</button>
+          </div>
+        </section>
       </div>
     </main>
   </div>
 
-  <script src="audio.js?v=subway3d_v16"></script>
-  <script src="game.js?v=subway3d_v16"></script>
-  <script src="pwa.js?v=subway3d_v16"></script>
+  <script src="audio.js?v=subway3d_v17"></script>
+  <script src="game.js?v=subway3d_v17"></script>
+  <script src="pwa.js?v=subway3d_v17"></script>
 </body>
 </html>

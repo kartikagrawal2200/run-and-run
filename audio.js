@@ -252,6 +252,56 @@ const SoundSystem = (function () {
     } catch (e) {}
   }
 
+  function playCoinCombo(streak = 1) {
+    try {
+      // Ascending musical pitch based on streak (pentatonic scale steps)
+      const baseFreq = 523.25; // C5
+      const semitone = Math.min(18, streak);
+      const freq = baseFreq * Math.pow(1.05946, semitone * 1.5);
+      playTone(freq, 0.12, 'sine', 0.22, 0, freq * 1.15);
+      if (streak >= 5) {
+        playTone(freq * 1.5, 0.14, 'triangle', 0.18, 0.03);
+      }
+    } catch (e) {}
+  }
+
+  function playRevive() {
+    try {
+      playTone(261.63, 0.2, 'sine', 0.3, 0, 523.25);   // C4 -> C5
+      playTone(523.25, 0.2, 'triangle', 0.28, 0.1, 783.99); // C5 -> G5
+      playTone(1046.50, 0.4, 'sine', 0.32, 0.24, 1318.51);  // C6 -> E6
+    } catch (e) {}
+  }
+
+  function playMysteryBox() {
+    try {
+      // Mystery crate opening fanfare
+      playTone(440, 0.08, 'square', 0.2, 0);
+      playTone(554.37, 0.08, 'square', 0.22, 0.08);
+      playTone(659.25, 0.12, 'square', 0.24, 0.16);
+      playTone(880, 0.32, 'triangle', 0.26, 0.24);
+    } catch (e) {}
+  }
+
+  function playKeyPickup() {
+    try {
+      // Shimmering crystal chime
+      playTone(1318.51, 0.15, 'sine', 0.22, 0);     // E6
+      playTone(1760.00, 0.18, 'triangle', 0.24, 0.06); // A6
+      playTone(2093.00, 0.25, 'sine', 0.2, 0.12);   // C7
+    } catch (e) {}
+  }
+
+  function playAchievement() {
+    try {
+      // Grand celebratory brass fanfare
+      playTone(523.25, 0.12, 'triangle', 0.25, 0);
+      playTone(659.25, 0.12, 'triangle', 0.25, 0.1);
+      playTone(783.99, 0.15, 'triangle', 0.28, 0.2);
+      playTone(1046.50, 0.45, 'square', 0.3, 0.32);
+    } catch (e) {}
+  }
+
   /* ---------------- Procedural Synthwave BGM ---------------- */
   function scheduleBgmNote(time) {
     if (bgmMuted || !isPlayingBgm || !ctx) return;
@@ -433,6 +483,11 @@ const SoundSystem = (function () {
     nearMiss: playNearMiss,
     taunt: playTaunt,
     missionComplete: playMissionComplete,
+    coinCombo: playCoinCombo,
+    revive: playRevive,
+    mysteryBox: playMysteryBox,
+    keyPickup: playKeyPickup,
+    achievement: playAchievement,
     shieldBreak: playShieldBreak,
     crash: playCrash,
     buy: playBuy,

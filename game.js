@@ -786,6 +786,40 @@
   ];
 
   /* ============================================================
+     SKATE SHOP HOVERBOARDS CATALOG (CURRENCY SINKS)
+     ============================================================ */
+  const BOARDS = {
+    classic: { id: 'classic', name: 'Classic Red', desc: 'Agile street cruiser with clean lateral glide', price: 0, speedBonus: 1.0, swatch: '#ef4444', trail: '#38bdf8', icon: '🛹' },
+    star: { id: 'star', name: 'Star Surfer', desc: 'Cosmic gold board with boosted jump apex', price: 300, speedBonus: 1.1, swatch: '#facc15', trail: '#fde047', icon: '⭐' },
+    cyber: { id: 'cyber', name: 'Cyber Neon', desc: 'Hyper-glide magnetic deck with cyan plasma glow', price: 600, speedBonus: 1.2, swatch: '#06b6d4', trail: '#06b6d4', icon: '⚡' },
+    golden: { id: 'golden', name: 'Golden Monarch', desc: 'Pure 24K gold runner board with coin sparks', price: 1200, speedBonus: 1.3, swatch: '#eab308', trail: '#facc15', icon: '👑' },
+    monster: { id: 'monster', name: 'Monster Claw', desc: 'Beast edition with super bouncy landing springs', price: 2000, speedBonus: 1.4, swatch: '#84cc16', trail: '#a855f7', icon: '🦖' }
+  };
+
+  /* ============================================================
+     SEASON HUNT TOKYO SAKURA REWARD TIERS
+     ============================================================ */
+  const SEASON_TIERS = [
+    { tier: 1, tokens: 5, rewardText: '500 Coins', type: 'coins', amount: 500, icon: '🪙' },
+    { tier: 2, tokens: 15, rewardText: '3 Revive Keys', type: 'keys', amount: 3, icon: '🗝️' },
+    { tier: 3, tokens: 30, rewardText: 'Cyber Neon Board', type: 'board', boardId: 'cyber', icon: '🛹' },
+    { tier: 4, tokens: 50, rewardText: '2,500 Coins + 5 Keys', type: 'both', coins: 2500, keys: 5, icon: '🏆' }
+  ];
+
+  /* ============================================================
+     ACHIEVEMENTS SYSTEM (MILESTONES & REWARDS)
+     ============================================================ */
+  const ACHIEVEMENTS_DATA = [
+    { id: 'ach_coins_1k', title: 'Coin Tycoon', desc: 'Collect 1,000 total coins across runs', icon: '🪙', target: 1000, type: 'total_coins', rewardCoins: 300, rewardKeys: 1 },
+    { id: 'ach_score_15k', title: 'High Flyer', desc: 'Reach a score of 15,000 in one run', icon: '🏆', target: 15000, type: 'score', rewardCoins: 500, rewardKeys: 2 },
+    { id: 'ach_trains_10', title: 'Roof Hopper', desc: 'Climb or vault onto 10 train roofs', icon: '🚂', target: 10, type: 'trains', rewardCoins: 400, rewardKeys: 1 },
+    { id: 'ach_boards_5', title: 'Skate Fanatic', desc: 'Activate hoverboard 5 times', icon: '🛹', target: 5, type: 'boards', rewardCoins: 350, rewardKeys: 1 },
+    { id: 'ach_revive_3', title: 'Second Chance', desc: 'Revive 3 times using keys', icon: '🗝️', target: 3, type: 'revives', rewardCoins: 500, rewardKeys: 2 },
+    { id: 'ach_combo_10', title: 'Combo Master', desc: 'Achieve a 10X Coin Combo streak', icon: '⚡', target: 10, type: 'combo', rewardCoins: 450, rewardKeys: 1 }
+  ];
+
+
+  /* ============================================================
      AUTHENTIC SUBWAY SURFERS 3D CARTOON RUNNER RENDER PIPELINE
      ============================================================ */
   function drawHumanoidRunner(ctx, cx, groundY, animTime, isJumping, isSliding, jumpHeight, tilt, costume, squash, hasShield, scaleFactor = 1.0, baseHeight = 0, isFrontView = false, activeBuffs = {}) {
@@ -820,26 +854,30 @@
       // Lift body by jumpHeight
       ctx.translate(0, -(jumpHeight || 0));
 
-      // 2. ACTIVE HOVERBOARD UNDER RUNNER'S FEET
+      // 2. ACTIVE HOVERBOARD UNDER RUNNER'S FEET (CUSTOM DECK ART & GLOW)
       if (activeBuffs && activeBuffs.hoverboard && !isFrontView) {
         ctx.save();
         ctx.translate(0, 3);
-        const hbGrad = ctx.createLinearGradient(-24, 0, 24, 0);
-        hbGrad.addColorStop(0, '#06b6d4');
-        hbGrad.addColorStop(0.5, '#facc15');
-        hbGrad.addColorStop(1, '#ec4899');
+        const boardMeta = (activeBuffs.board && BOARDS[activeBuffs.board]) ? BOARDS[activeBuffs.board] : BOARDS.classic;
+        const hbGrad = ctx.createLinearGradient(-26, 0, 26, 0);
+        hbGrad.addColorStop(0, boardMeta.swatch || '#ef4444');
+        hbGrad.addColorStop(0.5, '#ffffff');
+        hbGrad.addColorStop(1, boardMeta.trail || '#38bdf8');
         ctx.fillStyle = hbGrad;
         ctx.beginPath();
-        ctx.roundRect(-24, -4, 48, 8, [4, 4, 4, 4]);
+        ctx.roundRect(-25, -4, 50, 8, [5, 5, 5, 5]);
         ctx.fill();
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.6;
         ctx.stroke();
         // Hover thruster neon glow
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.55)';
+        ctx.fillStyle = boardMeta.trail || 'rgba(56, 189, 248, 0.55)';
         ctx.beginPath();
-        ctx.ellipse(0, 5, 26, 5, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 5, 27, 5, 0, 0, Math.PI * 2);
         ctx.fill();
+        // Grip tape stripe
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-18, -1.5, 36, 3);
         ctx.restore();
       }
 
@@ -1549,6 +1587,7 @@
       this.hasJetpack = false;
       this.hasHoverboard = false;
       this.hasSneakers = false;
+      this.equippedBoard = 'classic';
 
       // Subway train roof running mechanics
       this.baseHeight = 0;
@@ -1615,10 +1654,11 @@
     update(dt, particles, obstacles = []) {
       this.animTime += dt;
 
-      // 3D smooth exponential lane shifting
+      // 3D smooth exponential lane shifting (Custom Hoverboard gives 1.32x faster lateral shift)
       const targetNorm = this.lane - 1;
       const dNorm = targetNorm - this.laneNorm;
-      this.laneNorm += dNorm * (1 - Math.exp(-22 * dt));
+      const shiftRate = this.hasHoverboard ? 29 : 22;
+      this.laneNorm += dNorm * (1 - Math.exp(-shiftRate * dt));
 
       // Dynamic 3D banking tilt
       const targetTilt = clamp(dNorm * 0.45, -0.22, 0.22);
@@ -1715,6 +1755,11 @@
         if (this.hasJetpack) {
           particles.trail(this.x - 12 * this.scale, footY, '#f43f5e');
           particles.trail(this.x + 12 * this.scale, footY, '#06b6d4');
+        } else if (this.hasHoverboard) {
+          // Custom Hoverboard plasma thruster trails
+          const bMeta = BOARDS[this.equippedBoard] || BOARDS.classic;
+          particles.trail(this.x - 10 * this.scale, footY, bMeta.trail || '#38bdf8');
+          particles.trail(this.x + 10 * this.scale, footY, bMeta.swatch || '#ef4444');
         } else if (!this.jumping && Math.random() < 0.4) {
           particles.trail(this.x - 5 * this.scale, footY - 2, this.costume.accent);
           particles.trail(this.x + 5 * this.scale, footY - 2, this.costume.visor);
@@ -1729,7 +1774,8 @@
       const buffs = (activeBuffs && Object.keys(activeBuffs).length > 0) ? activeBuffs : {
         jetpack: this.hasJetpack,
         hoverboard: this.hasHoverboard,
-        sneakers: this.hasSneakers
+        sneakers: this.hasSneakers,
+        board: this.equippedBoard || 'classic'
       };
       drawHumanoidRunner(
         ctx,
@@ -1786,6 +1832,17 @@
       hasRamp: false,
       action: 'dodge'
     },
+    TRAIN_ONCOMING: {
+      id: 'TRAIN_ONCOMING',
+      name: 'Subway Train (Oncoming)',
+      w: 104,
+      h: 62,
+      length: 420,
+      isTrain: true,
+      hasRamp: false,
+      speedBonus: 140,
+      action: 'dodge'
+    },
     LOW: {
       id: 'LOW',
       name: 'Track Hurdle',
@@ -1819,19 +1876,110 @@
     }
   };
 
+  /* ============================================================
+     HIGH-PERFORMANCE OBJECT POOLS (ZERO-GC ALLOCATION ON MOBILE)
+     ============================================================ */
+  class ObstaclePool {
+    constructor(size = 28) {
+      this.pool = [];
+      for (let i = 0; i < size; i++) {
+        this.pool.push({
+          active: false,
+          type: null,
+          lane: 0,
+          laneNorm: 0,
+          z: 0,
+          w: 0,
+          h: 0,
+          length: 0,
+          isTrain: false,
+          hasRamp: false,
+          speedBonus: 0,
+          colorScheme: null,
+          hit: false,
+          nearMissChecked: false
+        });
+      }
+    }
+
+    acquire(def, lane, z, colorScheme = null, speedBonus = 0) {
+      let obj = this.pool.find(o => !o.active);
+      if (!obj) {
+        obj = { active: false };
+        this.pool.push(obj);
+      }
+      obj.active = true;
+      obj.type = def;
+      obj.lane = lane;
+      obj.laneNorm = lane - 1;
+      obj.z = z;
+      obj.w = def.w;
+      obj.h = def.h;
+      obj.length = def.length || (def.depth || 36);
+      obj.isTrain = !!def.isTrain;
+      obj.hasRamp = !!def.hasRamp;
+      obj.speedBonus = speedBonus || def.speedBonus || 0;
+      obj.colorScheme = colorScheme;
+      obj.hit = false;
+      obj.nearMissChecked = false;
+      return obj;
+    }
+
+    release(obj) {
+      obj.active = false;
+    }
+  }
+
+  class CollectiblePool {
+    constructor(size = 80) {
+      this.pool = [];
+      for (let i = 0; i < size; i++) {
+        this.pool.push(new CollectibleItem(0, 0, 'coin', {}));
+      }
+    }
+
+    acquire(lane, z, type, opts = {}) {
+      let item = this.pool.find(i => !i.active);
+      if (!item) {
+        item = new CollectibleItem(lane, z, type, opts);
+        this.pool.push(item);
+      }
+      item.active = true;
+      item.lane = lane;
+      item.laneNorm = lane - 1;
+      item.z = z;
+      item.type = type;
+      item.collected = false;
+      item.radius = type === 'coin' ? 14 : (type === 'mystery_box' ? 20 : 18);
+      item.requiresJump = !!opts.requiresJump;
+      item.requiresSlide = !!opts.requiresSlide;
+      item.heightOffset = opts.heightOffset || (item.requiresJump ? 58 : 0);
+      item.spin = Math.random() * Math.PI * 2;
+      return item;
+    }
+
+    release(item) {
+      item.active = false;
+    }
+  }
+
   class TrackManager {
     constructor() {
+      this.pool = new ObstaclePool(30);
       this.obstacles = [];
       this.laneCooldowns = [0, 0, 0];
       this.globalCooldown = 0.5;
-      this.minGapTime = 1.6;
-      this.maxGapTime = 3.2;
-      this.globalMinInterval = 1.3;
-      this.minZGap = 200; // Separation between obstacles in same lane
+      this.minGapTime = 1.5;
+      this.maxGapTime = 3.0;
+      this.globalMinInterval = 1.2;
+      this.minZGap = 190;
       this.onObstacleSpawned = null;
     }
 
     reset() {
+      for (const o of this.obstacles) {
+        this.pool.release(o);
+      }
       this.obstacles = [];
       this.laneCooldowns = [0, 0, 0];
       this.globalCooldown = 0.5;
@@ -1839,31 +1987,28 @@
       // Spawn signature Subway Train right in front at start of run!
       const initialTrainLane = 1;
       const def = OBSTACLE_DEFS.TRAIN_RAMP;
-      const firstTrain = {
-        type: def,
-        lane: initialTrainLane,
-        laneNorm: 0,
-        z: 700,
-        w: def.w,
-        h: def.h,
-        length: def.length || 420,
-        isTrain: true,
-        hasRamp: true,
-        colorScheme: TRAIN_LIVERIES[0], // Red Express
-        hit: false
-      };
+      const firstTrain = this.pool.acquire(def, initialTrainLane, 700, TRAIN_LIVERIES[0], 0);
       this.obstacles.push(firstTrain);
       if (this.onObstacleSpawned) this.onObstacleSpawned(firstTrain);
       this.laneCooldowns[initialTrainLane] = 3.8;
     }
 
     update(dt, speed, elapsed) {
-      // Advance obstacles along 3D depth towards camera
+      // Advance obstacles along 3D depth towards camera (oncoming trains move faster)
       for (const o of this.obstacles) {
-        o.z -= speed * dt;
+        const bonus = o.speedBonus || 0;
+        o.z -= (speed + bonus) * dt;
       }
       // Clean up obstacles once they pass behind camera
-      this.obstacles = this.obstacles.filter(o => (o.z + (o.length || 0)) > -90);
+      const kept = [];
+      for (const o of this.obstacles) {
+        if ((o.z + (o.length || 0)) > -90) {
+          kept.push(o);
+        } else {
+          this.pool.release(o);
+        }
+      }
+      this.obstacles = kept;
 
       this.globalCooldown = Math.max(0, this.globalCooldown - dt);
       for (let i = 0; i < LANE_COUNT; i++) {
@@ -1905,32 +2050,35 @@
       const selected = shuffle([...candidates]).slice(0, count);
 
       for (const lane of selected) {
-        // High frequency of 3D Subway Trains (55% Ramped, 30% Closed, 15% Hurdle)
+        // Procedural weighted difficulty curve that scales with elapsed run time
         const rand = Math.random();
         let typeId = 'TRAIN_RAMP';
-        if (rand < 0.55) {
-          typeId = 'TRAIN_RAMP'; // 55% ramped train with roof climbing
-        } else if (rand < 0.85) {
-          typeId = 'TRAIN_CLOSED'; // 30% closed flat cab train
+
+        if (elapsed < 35) {
+          // Early run: 50% Ramped trains, 25% Closed trains, 25% Low hurdles
+          if (rand < 0.50) typeId = 'TRAIN_RAMP';
+          else if (rand < 0.75) typeId = 'TRAIN_CLOSED';
+          else typeId = 'LOW';
+        } else if (elapsed < 80) {
+          // Mid run: 35% Ramped trains, 20% Oncoming trains, 20% Closed trains, 15% Low hurdles, 10% High gates
+          if (rand < 0.35) typeId = 'TRAIN_RAMP';
+          else if (rand < 0.55) typeId = 'TRAIN_ONCOMING';
+          else if (rand < 0.75) typeId = 'TRAIN_CLOSED';
+          else if (rand < 0.90) typeId = 'LOW';
+          else typeId = 'HIGH';
         } else {
-          typeId = 'LOW'; // 15% low track hurdle
+          // High speed endgame: 28% Oncoming speed trains, 28% Ramped trains, 18% Closed, 13% High gates, 13% Low hurdles
+          if (rand < 0.28) typeId = 'TRAIN_ONCOMING';
+          else if (rand < 0.56) typeId = 'TRAIN_RAMP';
+          else if (rand < 0.74) typeId = 'TRAIN_CLOSED';
+          else if (rand < 0.87) typeId = 'HIGH';
+          else typeId = 'LOW';
         }
 
         const def = OBSTACLE_DEFS[typeId];
         const isTrain = !!def.isTrain;
-        const obstacle = {
-          type: def,
-          lane: lane,
-          laneNorm: lane - 1,
-          z: Z_SPAWN,
-          w: def.w,
-          h: def.h,
-          length: def.length || 36,
-          isTrain: isTrain,
-          hasRamp: !!def.hasRamp,
-          colorScheme: isTrain ? TRAIN_LIVERIES[Math.floor(Math.random() * TRAIN_LIVERIES.length)] : null,
-          hit: false
-        };
+        const livery = isTrain ? TRAIN_LIVERIES[Math.floor(Math.random() * TRAIN_LIVERIES.length)] : null;
+        const obstacle = this.pool.acquire(def, lane, Z_SPAWN, livery, def.speedBonus || 0);
         this.obstacles.push(obstacle);
         if (this.onObstacleSpawned) this.onObstacleSpawned(obstacle);
         this.laneCooldowns[lane] = randRange(this.minGapTime, this.maxGapTime);
@@ -2469,7 +2617,10 @@
     jetpack: { name: 'JETPACK', duration: 9, color: '#f43f5e', icon: '🚀' },
     sneakers: { name: 'SNEAKERS', duration: 14, color: '#10b981', icon: '👟' },
     hoverboard: { name: 'HOVERBOARD', duration: 30, color: '#38bdf8', icon: '🛹' },
-    shield: { name: 'SHIELD', duration: 0, color: '#06d6a0', icon: '🛡️' }
+    shield: { name: 'SHIELD', duration: 0, color: '#06d6a0', icon: '🛡️' },
+    mystery_box: { name: 'MYSTERY BOX', duration: 0, color: '#ec4899', icon: '📦' },
+    key: { name: 'REVIVE KEY', duration: 0, color: '#facc15', icon: '🗝️' },
+    season_token: { name: 'TOKYO SAKURA', duration: 0, color: '#f472b6', icon: '🌸' }
   };
 
   class CollectibleItem {
@@ -2489,6 +2640,7 @@
 
   class CollectibleManager {
     constructor() {
+      this.pool = new CollectiblePool(90);
       this.items = [];
       this.coinCount = 0;
       this.coinScore = 0;
@@ -2498,9 +2650,16 @@
       this.powerupTimer = 10.0;
       this.magnetRadius = 160;
       this.magnetSpeed = 650;
+      this.coinStreak = 0;
+      this.lastCoinTime = 0;
+      this.runKeys = 0;
+      this.runMysteryBoxes = 0;
+      this.runSeasonTokens = 0;
+      this.onCoinCombo = null;
     }
 
     reset(startingShields = 0, magnetDur = 8, magnetRad = 160, multiplierDur = 10) {
+      for (const i of this.items) this.pool.release(i);
       this.items = [];
       this.coinCount = 0;
       this.coinScore = 0;
@@ -2510,7 +2669,12 @@
       this.magnetRadius = magnetRad;
       this.multiplierDuration = multiplierDur;
       this.coinTimer = 1.0;
-      this.powerupTimer = 10.0;
+      this.powerupTimer = 8.0;
+      this.coinStreak = 0;
+      this.lastCoinTime = 0;
+      this.runKeys = 0;
+      this.runMysteryBoxes = 0;
+      this.runSeasonTokens = 0;
     }
 
     onObstacleSpawned(obstacle) {
@@ -2537,7 +2701,7 @@
 
     _spawnCoinLine(lane, startZ, count, spacingZ, opts = {}) {
       for (let i = 0; i < count; i++) {
-        this.items.push(new CollectibleItem(lane, startZ + i * spacingZ, 'coin', opts));
+        this.items.push(this.pool.acquire(lane, startZ + i * spacingZ, 'coin', opts));
       }
     }
 
@@ -2547,12 +2711,12 @@
         const t = i / (count - 1);
         const z = obstacleZ - spreadZ / 2 + t * spreadZ;
         const heightOffset = Math.sin(t * Math.PI) * peak;
-        this.items.push(new CollectibleItem(lane, z, 'coin', { requiresJump, heightOffset }));
+        this.items.push(this.pool.acquire(lane, z, 'coin', { requiresJump, heightOffset }));
       }
     }
 
     _spawnPowerup(lane, z, type) {
-      this.items.push(new CollectibleItem(lane, z, type, { heightOffset: 15 }));
+      this.items.push(this.pool.acquire(lane, z, type, { heightOffset: 15 }));
     }
 
     update(dt, player, speed, particles) {
@@ -2568,13 +2732,23 @@
         }
       }
 
-      // Powerup spawn timer
+      // Powerup & Special Items spawn timer (Power-ups, Season Tokens, Keys, Mystery Boxes)
       this.powerupTimer -= dt;
       if (this.powerupTimer <= 0) {
-        this.powerupTimer = randRange(12, 18);
+        this.powerupTimer = randRange(9, 15);
         const l = Math.floor(Math.random() * LANE_COUNT);
-        const keys = Object.keys(POWERUP_METAS);
-        const chosen = keys[Math.floor(Math.random() * keys.length)];
+        const roll = Math.random();
+        let chosen = 'magnet';
+        if (roll < 0.22) {
+          chosen = 'season_token'; // Tokyo Sakura Event tokens on tracks
+        } else if (roll < 0.32) {
+          chosen = 'mystery_box'; // Mystery Crates
+        } else if (roll < 0.40) {
+          chosen = 'key'; // Rare Revive Keys
+        } else {
+          const standardBuffs = ['magnet', 'multiplier', 'jetpack', 'sneakers', 'hoverboard', 'shield'];
+          chosen = standardBuffs[Math.floor(Math.random() * standardBuffs.length)];
+        }
         this._spawnPowerup(l, Z_SPAWN, chosen);
       }
 
@@ -2661,12 +2835,54 @@
         const multiplier = this.activePowerUps.multiplier ? 2 : 1;
         const gain = 10 * multiplier;
         this.coinScore += gain;
-        try { SoundSystem.coin(); } catch (e) {}
+
+        // Dynamic Chained Coin Grab Combo System
+        const now = performance.now() / 1000;
+        if (now - this.lastCoinTime < 0.75) {
+          this.coinStreak++;
+        } else {
+          this.coinStreak = 1;
+        }
+        this.lastCoinTime = now;
+
+        try {
+          if (this.coinStreak > 1) {
+            SoundSystem.coinCombo(this.coinStreak);
+          } else {
+            SoundSystem.coin();
+          }
+        } catch (e) {}
+
+        if (this.onCoinCombo) {
+          this.onCoinCombo(this.coinStreak);
+        }
+
         if (particles) {
           particles.burst(pos.x, pos.y, '#ffd23f', 10, 45, 130);
           particles.spawnText(pos.x, pos.y - 12, `+${gain}`, '#ffd23f');
         }
         if (this.onCoinCollected) this.onCoinCollected(1);
+      } else if (item.type === 'mystery_box') {
+        this.runMysteryBoxes++;
+        try { SoundSystem.mysteryBox(); } catch (e) {}
+        if (particles) {
+          particles.burst(pos.x, pos.y, '#ec4899', 24, 70, 260);
+          particles.spawnText(pos.x, pos.y - 16, '+1 MYSTERY BOX 📦', '#ec4899');
+        }
+      } else if (item.type === 'key') {
+        this.runKeys++;
+        try { SoundSystem.keyPickup(); } catch (e) {}
+        if (particles) {
+          particles.burst(pos.x, pos.y, '#facc15', 24, 70, 260);
+          particles.spawnText(pos.x, pos.y - 16, '+1 KEY 🗝️', '#facc15');
+        }
+      } else if (item.type === 'season_token') {
+        this.runSeasonTokens++;
+        try { SoundSystem.achievement(); } catch (e) {}
+        if (particles) {
+          particles.burst(pos.x, pos.y, '#f472b6', 24, 70, 260);
+          particles.spawnText(pos.x, pos.y - 16, '+1 SAKURA 🌸', '#f472b6');
+        }
       } else if (item.type === 'shield') {
         this.shieldCharges = Math.min(3, this.shieldCharges + 1);
         try { SoundSystem.powerup(); } catch (e) {}
@@ -2804,12 +3020,19 @@
     MENU: 'MENU',
     PLAYING: 'PLAYING',
     PAUSED: 'PAUSED',
+    REVIVE: 'REVIVE',
     GAMEOVER: 'GAMEOVER'
   });
 
   const STORAGE_KEY = 'run_and_run_best_score';
   const BG_STORAGE_KEY = 'run_and_run_selected_bg';
   const COINS_STORAGE_KEY = 'run_and_run_bank_coins';
+  const KEYS_STORAGE_KEY = 'subway_keys_count';
+  const BOARDS_STORAGE_KEY = 'subway_unlocked_boards';
+  const EQUIPPED_BOARD_KEY = 'subway_equipped_board';
+  const SEASON_TOKENS_KEY = 'subway_season_tokens';
+  const SEASON_CLAIMED_KEY = 'subway_season_claimed';
+  const ACHIEVEMENTS_STORAGE_KEY = 'subway_achievements';
   const COSTUMES_STORAGE_KEY = 'run_and_run_unlocked_costumes';
   const EQUIPPED_STORAGE_KEY = 'run_and_run_equipped_costume';
   const UPGRADES_STORAGE_KEY = 'run_and_run_upgrades';
@@ -2840,11 +3063,26 @@
 
       this.bestScore = this.loadBest();
 
-      // Persistent Bank, Costumes & Tech Upgrades
+      // Persistent Bank, Costumes, Boards & Tech Upgrades
       this.bankCoins = this.loadBankCoins();
+      this.bankKeys = this.loadBankKeys();
       this.unlockedCostumes = this.loadUnlockedCostumes();
       this.equippedCostume = this.loadEquippedCostume();
+      this.unlockedBoards = this.loadUnlockedBoards();
+      this.equippedBoard = this.loadEquippedBoard();
       this.upgrades = this.loadUpgrades();
+      this.seasonTokens = this.loadSeasonTokens();
+      this.seasonClaimed = this.loadSeasonClaimed();
+      this.achievements = this.loadAchievements();
+
+      // Game run state trackers
+      this.coinComboStreak = 0;
+      this.lastCoinPickupTime = 0;
+      this.revivesThisRun = 0;
+      this.runMysteryBoxes = 0;
+      this.inputBuffer = null;
+      this.reviveCountdownTimer = null;
+      this.pendingMysteryBoxes = 0;
 
       // UI elements
       this.hud = document.getElementById('hud');
@@ -2854,6 +3092,18 @@
       this.gameOverScreen = document.getElementById('gameOverScreen');
       this.settingsModal = document.getElementById('settingsModal');
       this.shopModal = document.getElementById('shopModal');
+      this.reviveModal = document.getElementById('reviveModal');
+      this.mysteryBoxModal = document.getElementById('mysteryBoxModal');
+      this.seasonModal = document.getElementById('seasonModal');
+      this.achievementsModal = document.getElementById('achievementsModal');
+
+      // Key & Combo displays
+      this.menuKeyBank = document.getElementById('menuKeyBank');
+      this.shopKeyBank = document.getElementById('shopKeyBank');
+      this.hudKeyDisplay = document.getElementById('hudKeyDisplay');
+      this.hudKeyCount = document.getElementById('hudKeyCount');
+      this.hudCoinCombo = document.getElementById('hudCoinCombo');
+      this.hudCoinComboText = document.getElementById('hudCoinComboText');
 
       this.scoreDisplay = document.getElementById('scoreDisplay');
       this.coinCount = document.getElementById('coinCount');
@@ -3155,6 +3405,138 @@
       } catch (e) {}
     }
 
+
+    /* ---------------- KEYS, BOARDS, SEASON & ACHIEVEMENTS ECONOMY ---------------- */
+    loadBankKeys() {
+      try {
+        const val = localStorage.getItem(KEYS_STORAGE_KEY);
+        // Start players with 3 welcome revival keys
+        return val !== null ? parseInt(val, 10) || 0 : 3;
+      } catch (e) {
+        return 3;
+      }
+    }
+
+    saveBankKeys(keys) {
+      try {
+        this.bankKeys = Math.max(0, keys);
+        localStorage.setItem(KEYS_STORAGE_KEY, String(this.bankKeys));
+      } catch (e) {}
+    }
+
+    loadUnlockedBoards() {
+      try {
+        const val = localStorage.getItem(BOARDS_STORAGE_KEY);
+        if (val) {
+          const arr = JSON.parse(val);
+          if (Array.isArray(arr) && arr.length) return arr;
+        }
+      } catch (e) {}
+      return ['classic'];
+    }
+
+    saveUnlockedBoards(arr) {
+      try {
+        localStorage.setItem(BOARDS_STORAGE_KEY, JSON.stringify(arr));
+      } catch (e) {}
+    }
+
+    loadEquippedBoard() {
+      try {
+        const val = localStorage.getItem(EQUIPPED_BOARD_KEY);
+        if (val && BOARDS[val]) return val;
+      } catch (e) {}
+      return 'classic';
+    }
+
+    saveEquippedBoard(id) {
+      try {
+        this.equippedBoard = id;
+        localStorage.setItem(EQUIPPED_BOARD_KEY, id);
+      } catch (e) {}
+    }
+
+    loadSeasonTokens() {
+      try {
+        const val = localStorage.getItem(SEASON_TOKENS_KEY);
+        return val !== null ? parseInt(val, 10) || 0 : 0;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    saveSeasonTokens(tokens) {
+      try {
+        this.seasonTokens = Math.max(0, tokens);
+        localStorage.setItem(SEASON_TOKENS_KEY, String(this.seasonTokens));
+      } catch (e) {}
+    }
+
+    loadSeasonClaimed() {
+      try {
+        const val = localStorage.getItem(SEASON_CLAIMED_KEY);
+        if (val) return JSON.parse(val) || [];
+      } catch (e) {}
+      return [];
+    }
+
+    saveSeasonClaimed(arr) {
+      try {
+        localStorage.setItem(SEASON_CLAIMED_KEY, JSON.stringify(arr));
+      } catch (e) {}
+    }
+
+    loadAchievements() {
+      try {
+        const val = localStorage.getItem(ACHIEVEMENTS_STORAGE_KEY);
+        if (val) {
+          const parsed = JSON.parse(val);
+          if (parsed && typeof parsed === 'object') return parsed;
+        }
+      } catch (e) {}
+      const state = {};
+      ACHIEVEMENTS_DATA.forEach(a => {
+        state[a.id] = { progress: 0, completed: false, claimed: false };
+      });
+      return state;
+    }
+
+    saveAchievements() {
+      try {
+        localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(this.achievements));
+      } catch (e) {}
+    }
+
+    checkAchievementEvent(type, amount = 1) {
+      if (!this.achievements) return;
+      let stateChanged = false;
+      ACHIEVEMENTS_DATA.forEach(a => {
+        const aState = this.achievements[a.id] || { progress: 0, completed: false, claimed: false };
+        if (aState.completed) return;
+
+        if (a.type === type) {
+          if (type === 'score' || type === 'combo') {
+            aState.progress = Math.max(aState.progress, amount);
+          } else {
+            aState.progress += amount;
+          }
+
+          if (aState.progress >= a.target) {
+            aState.progress = a.target;
+            aState.completed = true;
+            stateChanged = true;
+            try { SoundSystem.achievement(); } catch (e) {}
+            this.showMissionToast({ title: a.title, icon: a.icon });
+          } else {
+            stateChanged = true;
+          }
+        }
+      });
+      if (stateChanged) {
+        this.saveAchievements();
+      }
+    }
+
     loadUnlockedCostumes() {
       try {
         const val = localStorage.getItem(COSTUMES_STORAGE_KEY);
@@ -3221,9 +3603,17 @@
       if (this.menuCoinBank) this.menuCoinBank.textContent = this.bankCoins;
       if (this.shopCoinBank) this.shopCoinBank.textContent = this.bankCoins;
       if (this.gameoverBankTotal) this.gameoverBankTotal.textContent = this.bankCoins;
+      if (this.menuKeyBank) this.menuKeyBank.textContent = this.bankKeys;
+      if (this.shopKeyBank) this.shopKeyBank.textContent = this.bankKeys;
+      if (this.hudKeyCount) this.hudKeyCount.textContent = this.bankKeys;
       if (this.equippedCostumeName) {
-        const current = COSTUMES[this.equippedCostume] || COSTUMES.neo;
+        const current = COSTUMES[this.equippedCostume] || COSTUMES.jake;
         this.equippedCostumeName.textContent = current.name;
+      }
+      const boardEl = document.getElementById('equippedBoardName');
+      if (boardEl) {
+        const b = BOARDS[this.equippedBoard] || BOARDS.classic;
+        boardEl.textContent = b.name;
       }
     }
 
@@ -3421,6 +3811,7 @@
 
       const currentCostume = COSTUMES[this.equippedCostume] || COSTUMES.jake;
       this.player = new Player(currentCostume);
+      this.player.equippedBoard = this.equippedBoard || 'classic';
       this.track = new TrackManager();
       this.collectibles = new CollectibleManager();
 
@@ -3447,8 +3838,25 @@
       this.collectibles.sneakersDuration = sneakersConf.duration;
 
       // Hook mission progress tracking
+      this.revivesThisRun = 0;
       this.collectibles.onCoinCollected = () => {
         this.checkMissionEvent('single_coins', this.collectibles.coinCount);
+      };
+      this.collectibles.onCoinCombo = (streak) => {
+        if (streak >= 3) {
+          if (this.hudCoinCombo && this.hudCoinComboText) {
+            this.hudCoinComboText.textContent = (streak >= 10) ? `${streak}X UNSTOPPABLE! ⚡` : `${streak}X COMBO! 🔥`;
+            this.hudCoinCombo.classList.remove('hidden');
+            this.hudCoinCombo.classList.remove('pop');
+            void this.hudCoinCombo.offsetWidth; // reflow
+            this.hudCoinCombo.classList.add('pop');
+            clearTimeout(this.comboToastTimeout);
+            this.comboToastTimeout = setTimeout(() => {
+              if (this.hudCoinCombo) this.hudCoinCombo.classList.add('hidden');
+            }, 1200);
+          }
+          this.checkAchievementEvent('combo', streak);
+        }
       };
       this.collectibles.onPowerupCollected = (pType) => {
         this.checkMissionEvent('powerups', 1);
@@ -3750,6 +4158,457 @@
       this.renderUpgradesList();
     }
 
+
+    /* ---------------- SKATE SHOP HOVERBOARDS TAB ---------------- */
+    renderBoardsList() {
+      const container = document.getElementById('boardsList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      for (const [id, board] of Object.entries(BOARDS)) {
+        const isUnlocked = this.unlockedBoards.includes(id);
+        const isEquipped = this.equippedBoard === id;
+
+        const card = document.createElement('div');
+        card.className = `board-item-card ${isEquipped ? 'active-equipped' : ''}`;
+
+        const left = document.createElement('div');
+        left.className = 'board-info-left';
+
+        // Custom Deck Visual Swatch
+        const swatch = document.createElement('div');
+        swatch.className = 'board-deck-swatch';
+        swatch.style.background = `linear-gradient(135deg, ${board.swatch}, #ffffff 50%, ${board.trail})`;
+        swatch.innerHTML = `<span class="board-deck-icon">${board.icon}</span>`;
+
+        const text = document.createElement('div');
+        text.className = 'board-text';
+        text.innerHTML = `
+          <span class="board-name">${board.name}</span>
+          <span class="board-special">${board.desc}</span>
+        `;
+
+        left.appendChild(swatch);
+        left.appendChild(text);
+        card.appendChild(left);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'shop-action-btn';
+
+        if (isEquipped) {
+          btn.classList.add('equipped-btn');
+          btn.textContent = 'EQUIPPED';
+        } else if (isUnlocked) {
+          btn.classList.add('equip-btn');
+          btn.textContent = 'EQUIP';
+          this.attachButtonAction(btn, () => this.equipBoard(id));
+        } else {
+          btn.classList.add('buy-btn');
+          const hasCoins = this.bankCoins >= board.price;
+          btn.innerHTML = `BUY 🪙 ${board.price}`;
+          if (!hasCoins) {
+            btn.classList.add('btn-locked');
+          }
+          this.attachButtonAction(btn, () => {
+            if (this.bankCoins < board.price) {
+              this.flashInsufficientFunds(btn, board.price - this.bankCoins);
+              return;
+            }
+            this.buyBoard(id);
+          });
+        }
+
+        card.appendChild(btn);
+        container.appendChild(card);
+      }
+    }
+
+    buyBoard(boardId) {
+      const board = BOARDS[boardId];
+      if (!board || this.bankCoins < board.price) return;
+
+      this.bankCoins -= board.price;
+      if (!this.unlockedBoards.includes(boardId)) {
+        this.unlockedBoards.push(boardId);
+      }
+      this.equippedBoard = boardId;
+      if (this.player) {
+        this.player.equippedBoard = boardId;
+      }
+
+      this.saveBankCoins(this.bankCoins);
+      this.saveUnlockedBoards(this.unlockedBoards);
+      this.saveEquippedBoard(this.equippedBoard);
+
+      try { SoundSystem.buy(); } catch (e) {}
+      this.updateBankDisplays();
+      this.renderBoardsList();
+    }
+
+    equipBoard(boardId) {
+      if (!this.unlockedBoards.includes(boardId)) return;
+      this.equippedBoard = boardId;
+      if (this.player) {
+        this.player.equippedBoard = boardId;
+      }
+      this.saveEquippedBoard(boardId);
+
+      try { SoundSystem.equip(); } catch (e) {}
+      this.updateBankDisplays();
+      this.renderBoardsList();
+    }
+
+    /* ---------------- SEASON HUNT (TOKYO SAKURA) MODAL ---------------- */
+    renderSeasonModal() {
+      const tokenCountEl = document.getElementById('seasonTokenCount');
+      if (tokenCountEl) tokenCountEl.textContent = this.seasonTokens;
+
+      const fillEl = document.getElementById('seasonProgressFill');
+      if (fillEl) {
+        const pct = Math.min(100, (this.seasonTokens / 50) * 100);
+        fillEl.style.width = pct + '%';
+      }
+
+      const container = document.getElementById('seasonTiersList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      SEASON_TIERS.forEach((tier) => {
+        const isCompleted = this.seasonTokens >= tier.tokens;
+        const isClaimed = this.seasonClaimed.includes(tier.tier);
+
+        const card = document.createElement('div');
+        card.className = `season-tier-card ${isCompleted ? 'completed' : ''} ${isClaimed ? 'claimed' : ''}`;
+
+        card.innerHTML = `
+          <div class="season-tier-badge">TIER ${tier.tier}</div>
+          <div class="season-tier-icon">${tier.icon}</div>
+          <div class="season-tier-info">
+            <span class="season-tier-reward">${tier.rewardText}</span>
+            <small class="season-tier-target">${tier.tokens} 🌸 TOKENS (${Math.min(this.seasonTokens, tier.tokens)}/${tier.tokens})</small>
+          </div>
+        `;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'season-claim-btn';
+
+        if (isClaimed) {
+          btn.classList.add('claimed-btn');
+          btn.textContent = 'CLAIMED ✔';
+          btn.disabled = true;
+        } else if (isCompleted) {
+          btn.classList.add('claim-active-btn');
+          btn.textContent = 'CLAIM';
+          this.attachButtonAction(btn, () => this.claimSeasonTier(tier));
+        } else {
+          btn.classList.add('locked-btn');
+          btn.textContent = 'LOCKED 🔒';
+          btn.disabled = true;
+        }
+
+        card.appendChild(btn);
+        container.appendChild(card);
+      });
+    }
+
+    claimSeasonTier(tier) {
+      if (this.seasonClaimed.includes(tier.tier)) return;
+      if (this.seasonTokens < tier.tokens) return;
+
+      this.seasonClaimed.push(tier.tier);
+      this.saveSeasonClaimed(this.seasonClaimed);
+
+      if (tier.type === 'coins') {
+        this.bankCoins += tier.amount;
+        this.saveBankCoins(this.bankCoins);
+      } else if (tier.type === 'keys') {
+        this.bankKeys += tier.amount;
+        this.saveBankKeys(this.bankKeys);
+      } else if (tier.type === 'board') {
+        if (!this.unlockedBoards.includes(tier.boardId)) {
+          this.unlockedBoards.push(tier.boardId);
+          this.saveUnlockedBoards(this.unlockedBoards);
+        }
+      } else if (tier.type === 'both') {
+        this.bankCoins += tier.coins;
+        this.bankKeys += tier.keys;
+        this.saveBankCoins(this.bankCoins);
+        this.saveBankKeys(this.bankKeys);
+      }
+
+      try { SoundSystem.achievement(); } catch (e) {}
+      this.updateBankDisplays();
+      this.renderSeasonModal();
+    }
+
+    /* ---------------- ACHIEVEMENTS MODAL ---------------- */
+    renderAchievementsModal() {
+      const container = document.getElementById('achievementsList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      ACHIEVEMENTS_DATA.forEach(ach => {
+        const state = this.achievements[ach.id] || { progress: 0, completed: false, claimed: false };
+        const card = document.createElement('div');
+        card.className = `achievement-item-card ${state.completed ? 'completed' : ''} ${state.claimed ? 'claimed' : ''}`;
+
+        const pct = Math.min(100, Math.round((state.progress / ach.target) * 100));
+
+        card.innerHTML = `
+          <div class="achievement-icon">${ach.icon}</div>
+          <div class="achievement-info">
+            <span class="achievement-title">${ach.title}</span>
+            <span class="achievement-desc">${ach.desc}</span>
+            <div class="achievement-progress-bar">
+              <div class="achievement-progress-fill" style="width: ${pct}%"></div>
+            </div>
+            <small class="achievement-count">${state.progress.toLocaleString()} / ${ach.target.toLocaleString()}</small>
+          </div>
+        `;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'achievement-claim-btn';
+
+        if (state.claimed) {
+          btn.classList.add('claimed-btn');
+          btn.textContent = 'CLAIMED ✔';
+          btn.disabled = true;
+        } else if (state.completed) {
+          btn.classList.add('claim-active-btn');
+          btn.innerHTML = `CLAIM 🪙${ach.rewardCoins}${ach.rewardKeys ? ' 🗝️' + ach.rewardKeys : ''}`;
+          this.attachButtonAction(btn, () => this.claimAchievement(ach));
+        } else {
+          btn.classList.add('locked-btn');
+          btn.textContent = 'IN PROGRESS';
+          btn.disabled = true;
+        }
+
+        card.appendChild(btn);
+        container.appendChild(card);
+      });
+    }
+
+    claimAchievement(ach) {
+      const state = this.achievements[ach.id];
+      if (!state || !state.completed || state.claimed) return;
+
+      state.claimed = true;
+      this.saveAchievements();
+
+      this.bankCoins += ach.rewardCoins || 0;
+      if (ach.rewardKeys) {
+        this.bankKeys += ach.rewardKeys;
+        this.saveBankKeys(this.bankKeys);
+      }
+      this.saveBankCoins(this.bankCoins);
+
+      try { SoundSystem.achievement(); } catch (e) {}
+      this.updateBankDisplays();
+      this.renderAchievementsModal();
+    }
+
+    /* ---------------- 5-SECOND REVIVAL COUNTDOWN SYSTEM (WITH KEYS) ---------------- */
+    triggerReviveModal() {
+      if (this.state === GameStates.REVIVE) return;
+      this.state = GameStates.REVIVE;
+
+      // Key cost doubles with each consecutive revival in run: 1, 2, 4
+      const cost = Math.pow(2, this.revivesThisRun);
+      const costEl = document.getElementById('reviveKeyCostText');
+      if (costEl) costEl.textContent = `${cost} KEY${cost > 1 ? 'S' : ''}`;
+
+      const scoreEl = document.getElementById('reviveScorePreview');
+      if (scoreEl) scoreEl.textContent = `SCORE: ${this.getScore().toLocaleString()}`;
+
+      const coinsEl = document.getElementById('reviveCoinsPreview');
+      if (coinsEl) coinsEl.textContent = `COINS: ${this.collectibles.coinCount}`;
+
+      const btn = document.getElementById('reviveActionBtn');
+      if (btn) {
+        if (this.bankKeys < cost) {
+          btn.classList.add('btn-locked');
+          btn.innerHTML = `REVIVE (${cost} 🗝️) - NEED KEYS`;
+        } else {
+          btn.classList.remove('btn-locked');
+          btn.innerHTML = `REVIVE NOW (${cost} 🗝️)`;
+        }
+      }
+
+      if (this.reviveModal) this.reviveModal.classList.remove('hidden');
+
+      // 5-second countdown with animated circular SVG ring
+      let timeLeft = 5.0;
+      const ring = document.getElementById('reviveProgressRing');
+      const timeText = document.getElementById('reviveCountdownText');
+
+      if (this.reviveCountdownInterval) clearInterval(this.reviveCountdownInterval);
+
+      this.reviveCountdownInterval = setInterval(() => {
+        timeLeft -= 0.1;
+        if (timeText) timeText.textContent = Math.ceil(Math.max(0, timeLeft));
+
+        if (ring) {
+          // Circumference is 2 * PI * 45 ≈ 283
+          const offset = 283 - (Math.max(0, timeLeft) / 5.0) * 283;
+          ring.style.strokeDashoffset = offset;
+        }
+
+        if (timeLeft <= 0) {
+          clearInterval(this.reviveCountdownInterval);
+          this.skipRevive();
+        }
+      }, 100);
+    }
+
+    executeRevive() {
+      const cost = Math.pow(2, this.revivesThisRun);
+      if (this.bankKeys < cost) return;
+
+      if (this.reviveCountdownInterval) clearInterval(this.reviveCountdownInterval);
+      if (this.reviveModal) this.reviveModal.classList.add('hidden');
+
+      this.bankKeys -= cost;
+      this.saveBankKeys(this.bankKeys);
+      this.revivesThisRun++;
+
+      this.checkAchievementEvent('revives', 1);
+
+      // Grant 2.8 seconds invulnerability & clear immediate obstacles
+      if (this.player) {
+        this.player.hasShield = true;
+        this.collectibles.shieldCharges = Math.max(1, this.collectibles.shieldCharges);
+        this.player.onTrain = false;
+        this.player.baseHeight = 0;
+        this.player.jumpHeight = 0;
+        this.player.jumping = false;
+        this.player.sliding = false;
+      }
+
+      // Clear any obstacles right on top of player
+      if (this.track && this.track.obstacles) {
+        this.track.obstacles = this.track.obstacles.filter(o => o.z > 250);
+      }
+
+      try { SoundSystem.revive(); } catch (e) {}
+      this.particles.burst(this.player.x, this.player.groundY, '#06d6a0', 36, 120, 320);
+      this.particles.spawnText(this.player.x, this.player.groundY - 110, 'REVIVED! ⚡', '#06d6a0');
+
+      this.updateBankDisplays();
+      this.setState(GameStates.PLAYING);
+    }
+
+    skipRevive() {
+      if (this.reviveCountdownInterval) clearInterval(this.reviveCountdownInterval);
+      if (this.reviveModal) this.reviveModal.classList.add('hidden');
+      this.gameOver();
+    }
+
+    /* ---------------- MYSTERY BOX UNBOXING MODAL ---------------- */
+    triggerMysteryBoxModal(onComplete) {
+      if (this.pendingMysteryBoxes <= 0) {
+        if (onComplete) onComplete();
+        return;
+      }
+
+      if (this.mysteryBoxModal) this.mysteryBoxModal.classList.remove('hidden');
+
+      const crate = document.getElementById('mysteryBoxCrate');
+      const countText = document.getElementById('mysteryBoxesRemaining');
+      const rewardArea = document.getElementById('mysteryBoxRewardArea');
+      const claimBtn = document.getElementById('mysteryBoxClaimBtn');
+
+      if (countText) countText.textContent = `CRATES TO UNBOX: ${this.pendingMysteryBoxes}`;
+      if (rewardArea) rewardArea.classList.add('hidden');
+      if (claimBtn) claimBtn.classList.add('hidden');
+      if (crate) {
+        crate.classList.remove('hidden');
+        crate.onclick = () => this.openMysteryBox(onComplete);
+      }
+    }
+
+    openMysteryBox(onComplete) {
+      const crate = document.getElementById('mysteryBoxCrate');
+      const rewardArea = document.getElementById('mysteryBoxRewardArea');
+      const rewardIcon = document.getElementById('mysteryBoxRewardIcon');
+      const rewardTitle = document.getElementById('mysteryBoxRewardTitle');
+      const rewardDesc = document.getElementById('mysteryBoxRewardDesc');
+      const claimBtn = document.getElementById('mysteryBoxClaimBtn');
+      const countText = document.getElementById('mysteryBoxesRemaining');
+
+      this.pendingMysteryBoxes--;
+      if (countText) countText.textContent = `CRATES TO UNBOX: ${this.pendingMysteryBoxes}`;
+
+      try { SoundSystem.mysteryBox(); } catch (e) {}
+
+      // Roll rewards: 55% Coins (200-500), 30% Keys (1-2), 15% Hoverboard (+2)
+      const roll = Math.random();
+      let icon = '🪙', title = '300 COINS', desc = 'Added to your bank!';
+
+      if (roll < 0.55) {
+        const coins = 200 + Math.floor(Math.random() * 7) * 50;
+        this.bankCoins += coins;
+        this.saveBankCoins(this.bankCoins);
+        icon = '🪙';
+        title = `+${coins} COINS!`;
+        desc = 'Added straight to your subway bank.';
+      } else if (roll < 0.85) {
+        const keys = Math.random() < 0.8 ? 1 : 2;
+        this.bankKeys += keys;
+        this.saveBankKeys(this.bankKeys);
+        icon = '🗝️';
+        title = `+${keys} REVIVE KEY${keys > 1 ? 'S' : ''}!`;
+        desc = 'Use this key to revive immediately after crashing.';
+      } else {
+        this.hoverboardStock = (this.hoverboardStock || 0) + 2;
+        icon = '🛹';
+        title = '+2 HOVERBOARDS!';
+        desc = 'Stocked in your run supply.';
+      }
+
+      if (crate) crate.classList.add('hidden');
+      if (rewardIcon) rewardIcon.textContent = icon;
+      if (rewardTitle) rewardTitle.textContent = title;
+      if (rewardDesc) rewardDesc.textContent = desc;
+      if (rewardArea) rewardArea.classList.remove('hidden');
+
+      if (claimBtn) {
+        claimBtn.classList.remove('hidden');
+        claimBtn.textContent = (this.pendingMysteryBoxes > 0) ? 'OPEN NEXT CRATE 📦' : 'COLLECT & CONTINUE';
+        claimBtn.onclick = () => {
+          if (this.pendingMysteryBoxes > 0) {
+            this.triggerMysteryBoxModal(onComplete);
+          } else {
+            if (this.mysteryBoxModal) this.mysteryBoxModal.classList.add('hidden');
+            this.updateBankDisplays();
+            if (onComplete) onComplete();
+          }
+        };
+      }
+    }
+
+    /* ---------------- INPUT BUFFERING & ACTION QUEUE ---------------- */
+    queueAction(act) {
+      if (this.state !== GameStates.PLAYING || !this.player) return;
+
+      const now = performance.now();
+      // If runner can execute immediately, do it!
+      if (act === 'left') {
+        this.player.moveLeft();
+      } else if (act === 'right') {
+        this.player.moveRight();
+      } else if (act === 'jump') {
+        this.player.jump();
+      } else if (act === 'slide') {
+        this.player.slide();
+      }
+
+      // Keep in input buffer for 220ms in case action was triggered while mid-animation
+      this.inputBuffer = { action: act, time: now };
+    }
+
     /* ---------------- AVATAR PREVIEW (PEDESTAL) ---------------- */
     renderAvatarPreview(dt) {
       if (!this.avatarCtx || !this.avatarCanvas) return;
@@ -3928,9 +4787,55 @@
 
       // Shop Modal Open/Close
       const shopModal = this.shopModal;
+
+      // Season Modal Open / Close
+      const seasonModal = this.seasonModal;
+      this.attachButtonAction('menuSeasonBtn', () => {
+        try { SoundSystem.ensure(); } catch (e) {}
+        this.renderSeasonModal();
+        if (seasonModal) seasonModal.classList.remove('hidden');
+      });
+      this.attachButtonAction('closeSeasonBtn', () => {
+        if (seasonModal) seasonModal.classList.add('hidden');
+      });
+      this.attachButtonAction('closeSeasonDoneBtn', () => {
+        if (seasonModal) seasonModal.classList.add('hidden');
+      });
+
+      // Achievements Modal Open / Close
+      const achievementsModal = this.achievementsModal;
+      this.attachButtonAction('menuAchievementsBtn', () => {
+        try { SoundSystem.ensure(); } catch (e) {}
+        this.renderAchievementsModal();
+        if (achievementsModal) achievementsModal.classList.remove('hidden');
+      });
+      this.attachButtonAction('closeAchievementsBtn', () => {
+        if (achievementsModal) achievementsModal.classList.add('hidden');
+      });
+      this.attachButtonAction('closeAchievementsDoneBtn', () => {
+        if (achievementsModal) achievementsModal.classList.add('hidden');
+      });
+
+      // Revive Modal Actions
+      this.attachButtonAction('reviveActionBtn', () => {
+        this.executeRevive();
+      });
+      this.attachButtonAction('reviveGiveUpBtn', () => {
+        this.skipRevive();
+      });
+
+      // Shop Tab: Boards
+      const tabBtnBoards = document.getElementById('tabBtnBoards');
+      if (tabBtnBoards) {
+        this.attachButtonAction(tabBtnBoards, () => {
+          this.renderBoardsList();
+        });
+      }
+
       const openShop = () => {
         try { SoundSystem.ensure(); } catch (e) {}
         this.renderCostumesList();
+        this.renderBoardsList();
         this.renderUpgradesList();
         this.updateBankDisplays();
         if (shopModal) shopModal.classList.remove('hidden');
@@ -4102,10 +5007,9 @@
       handleBtn('ctrlJump', () => this.player.jump());
       handleBtn('ctrlSlide', () => this.player.slide());
 
-      // Touch swipes on canvas
+      // Ultra-fast instant touch swipe response on touchmove (distance > 20px)
       let touchStartX = 0, touchStartY = 0, touchActive = false;
       let lastCanvasTapTime = 0;
-      const swipeThreshold = 30;
 
       canvas.addEventListener('touchstart', (e) => {
         SoundSystem.ensure();
@@ -4127,22 +5031,41 @@
         }
       });
 
+      canvas.addEventListener('touchmove', (e) => {
+        if (this.state !== GameStates.PLAYING || !touchActive) return;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - touchStartX;
+        const dy = t.clientY - touchStartY;
+        const dist = Math.hypot(dx, dy);
+
+        // Instantly trigger swipe the moment finger moves 20px (no need to wait for touchend!)
+        if (dist > 20) {
+          if (Math.abs(dx) > Math.abs(dy)) {
+            if (dx > 0) this.queueAction('right');
+            else this.queueAction('left');
+          } else {
+            if (dy < 0) this.queueAction('jump');
+            else this.queueAction('slide');
+          }
+          // Reset anchor so chain-swiping works seamlessly
+          touchStartX = t.clientX;
+          touchStartY = t.clientY;
+        }
+      }, { passive: true });
+
       canvas.addEventListener('touchend', (e) => {
         if (this.state !== GameStates.PLAYING || !touchActive) return;
         touchActive = false;
         const t = e.changedTouches[0];
         const dx = t.clientX - touchStartX;
         const dy = t.clientY - touchStartY;
-
-        if (Math.abs(dx) > Math.abs(dy)) {
-          if (Math.abs(dx) > swipeThreshold) {
-            if (dx > 0) this.player.moveRight();
-            else this.player.moveLeft();
-          }
-        } else {
-          if (Math.abs(dy) > swipeThreshold) {
-            if (dy < 0) this.player.jump();
-            else this.player.slide();
+        if (Math.hypot(dx, dy) > 20) {
+          if (Math.abs(dx) > Math.abs(dy)) {
+            if (dx > 0) this.queueAction('right');
+            else this.queueAction('left');
+          } else {
+            if (dy < 0) this.queueAction('jump');
+            else this.queueAction('slide');
           }
         }
       }, { passive: true });
@@ -4372,7 +5295,11 @@
             this.particles.spawnText(this.player.x, this.player.groundY - 100, 'SHIELD BROKEN', '#ff3366');
             this.track.obstacles = this.track.obstacles.filter(item => item !== o);
           } else {
-            // Fatal Crash -> Runner wiped out immediately
+            // Fatal Crash -> Trigger 5s Revive with Keys modal if under 3 revives
+            if (this.revivesThisRun < 3) {
+              this.triggerReviveModal();
+              return;
+            }
             this.gameOver();
             return;
           }
@@ -4390,13 +5317,37 @@
       ScreenShake.trigger(20, 0.5);
       this.particles.burst(this.player.x, this.player.groundY - 40 * this.player.scale, '#ff3366', 36, 120, 360);
 
-      // Deposit collected coins into bank
+      // Deposit collected coins, keys & season tokens
       const earned = this.collectibles.coinCount;
       this.bankCoins += earned;
       this.saveBankCoins(this.bankCoins);
 
+      if (this.collectibles.runKeys > 0) {
+        this.bankKeys += this.collectibles.runKeys;
+        this.saveBankKeys(this.bankKeys);
+      }
+
+      if (this.collectibles.runSeasonTokens > 0) {
+        this.seasonTokens += this.collectibles.runSeasonTokens;
+        this.saveSeasonTokens(this.seasonTokens);
+      }
+
+      // Check achievements for score and coin totals
+      this.checkAchievementEvent('score', this.getScore());
+      this.checkAchievementEvent('total_coins', earned);
+
       this.updateProfileUI();
-      this.setState(GameStates.GAMEOVER);
+      this.updateBankDisplays();
+
+      // If mystery boxes collected, unbox them before showing game over!
+      if (this.collectibles.runMysteryBoxes > 0) {
+        this.pendingMysteryBoxes = this.collectibles.runMysteryBoxes;
+        this.triggerMysteryBoxModal(() => {
+          this.setState(GameStates.GAMEOVER);
+        });
+      } else {
+        this.setState(GameStates.GAMEOVER);
+      }
     }
 
     updateTheme(dt) {
@@ -4444,6 +5395,18 @@
 
       // Check run score milestones for missions
       this.checkMissionEvent('score', this.getScore());
+
+      // Process mobile touch / keyboard input buffer (<220ms responsiveness guarantee)
+      if (this.inputBuffer && (performance.now() - this.inputBuffer.time < 220)) {
+        const act = this.inputBuffer.action;
+        if (act === 'jump' && !this.player.jumping) {
+          this.player.jump();
+          this.inputBuffer = null;
+        } else if (act === 'slide' && !this.player.sliding) {
+          this.player.slide();
+          this.inputBuffer = null;
+        }
+      }
 
       this.player.hasShield = this.collectibles.shieldCharges > 0;
       this.player.update(dt, this.particles, this.track.obstacles);
