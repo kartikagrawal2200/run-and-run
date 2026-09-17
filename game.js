@@ -125,6 +125,23 @@
      ============================================================ */
   const THEMES = [
     {
+      id: 'subway_classic',
+      name: 'SUBWAY CITY CLASSIC',
+      flag: '🚇',
+      type: 'classic',
+      sky: ['#0f172a', '#1e3a8a', '#0284c7'],
+      ground: '#1e293b',
+      rails: '#f8fafc',
+      ties: '#334155',
+      ballast: '#64748b',
+      grid: '#38bdf8',
+      building: '#090d16',
+      accent: '#fde047',
+      celestial: 'sun',
+      horizonGlow: 'rgba(56, 189, 248, 0.7)',
+      isBright: true
+    },
+    {
       id: 'tokyo_food',
       name: 'TOKYO FOOD STREET',
       flag: '🐙',
@@ -156,6 +173,40 @@
       accent: '#fde047',
       celestial: 'sun',
       horizonGlow: 'rgba(251, 146, 60, 0.75)',
+      isBright: true
+    },
+    {
+      id: 'rio_beach',
+      name: 'RIO CARNIVAL BEACH',
+      flag: '🌴',
+      type: 'rio',
+      sky: ['#14532d', '#059669', '#34d399'],
+      ground: '#064e3b',
+      rails: '#fef08a',
+      ties: '#065f46',
+      ballast: '#047857',
+      grid: '#10b981',
+      building: '#022c22',
+      accent: '#fbbf24',
+      celestial: 'sun',
+      horizonGlow: 'rgba(52, 211, 153, 0.7)',
+      isBright: true
+    },
+    {
+      id: 'cairo_pyramids',
+      name: 'CAIRO PYRAMIDS',
+      flag: '🐪',
+      type: 'cairo',
+      sky: ['#713f12', '#a16207', '#eab308'],
+      ground: '#451a03',
+      rails: '#fef08a',
+      ties: '#78350f',
+      ballast: '#b45309',
+      grid: '#ca8a04',
+      building: '#3b1704',
+      accent: '#facc15',
+      celestial: 'sun',
+      horizonGlow: 'rgba(234, 179, 8, 0.8)',
       isBright: true
     }
   ];
@@ -649,11 +700,11 @@
   const UPGRADES = {
     magnet: {
       id: 'magnet',
-      name: 'Magnet Tech',
+      name: 'Coin Magnet',
       icon: '🧲',
       maxLevel: 4,
       levels: [
-        { level: 1, duration: 8, radius: 160, cost: 0, desc: '8s duration, standard reach' },
+        { level: 1, duration: 8, radius: 160, cost: 0, desc: '8s duration, standard pull' },
         { level: 2, duration: 12, radius: 190, cost: 80, desc: '12s duration, +20% reach' },
         { level: 3, duration: 16, radius: 220, cost: 160, desc: '16s duration, +40% reach' },
         { level: 4, duration: 20, radius: 260, cost: 300, desc: '20s duration, hyper pull' }
@@ -661,7 +712,7 @@
     },
     multiplier: {
       id: 'multiplier',
-      name: '2X Score Boost',
+      name: '2X Multiplier',
       icon: '⭐',
       maxLevel: 4,
       levels: [
@@ -669,6 +720,42 @@
         { level: 2, duration: 15, cost: 100, desc: '15s duration of 2X score' },
         { level: 3, duration: 20, cost: 200, desc: '20s duration of 2X score' },
         { level: 4, duration: 25, cost: 350, desc: '25s duration of 2X score' }
+      ]
+    },
+    jetpack: {
+      id: 'jetpack',
+      name: 'Paint Jetpack',
+      icon: '🚀',
+      maxLevel: 4,
+      levels: [
+        { level: 1, duration: 8, cost: 0, desc: '8s sky flight above tracks' },
+        { level: 2, duration: 11, cost: 120, desc: '11s sky flight + extra coins' },
+        { level: 3, duration: 14, cost: 220, desc: '14s sky flight + extra coins' },
+        { level: 4, duration: 18, cost: 400, desc: '18s extended sky flight' }
+      ]
+    },
+    sneakers: {
+      id: 'sneakers',
+      name: 'Super Sneakers',
+      icon: '👟',
+      maxLevel: 4,
+      levels: [
+        { level: 1, duration: 12, cost: 0, desc: '12s high bounce over trains' },
+        { level: 2, duration: 16, cost: 100, desc: '16s high bounce duration' },
+        { level: 3, duration: 20, cost: 180, desc: '20s high bounce duration' },
+        { level: 4, duration: 25, cost: 300, desc: '25s high bounce duration' }
+      ]
+    },
+    hoverboard: {
+      id: 'hoverboard',
+      name: 'Hoverboard Supply',
+      icon: '🛹',
+      maxLevel: 4,
+      levels: [
+        { level: 1, stock: 3, cost: 0, desc: 'Start runs with 3 hoverboards' },
+        { level: 2, stock: 6, cost: 150, desc: 'Start runs with 6 hoverboards' },
+        { level: 3, stock: 10, cost: 250, desc: 'Start runs with 10 hoverboards' },
+        { level: 4, stock: 15, cost: 450, desc: 'Start runs with 15 hoverboards' }
       ]
     },
     shield: {
@@ -685,9 +772,23 @@
   };
 
   /* ============================================================
+     DAILY MISSIONS & CHALLENGES DATA
+     ============================================================ */
+  const MISSIONS_DATA = [
+    { id: 'm_coins_100', title: 'Collect 100 Coins in one run', icon: '🪙', type: 'single_coins', target: 100, rewardCoins: 150, rewardMult: 0 },
+    { id: 'm_jumps_15', title: 'Jump 15 times over tracks', icon: '🏃', type: 'jumps', target: 15, rewardCoins: 150, rewardMult: 0 },
+    { id: 'm_slides_10', title: 'Roll or slide 10 times', icon: '👟', type: 'slides', target: 10, rewardCoins: 150, rewardMult: 0 },
+    { id: 'm_trains_3', title: 'Climb on top of 3 trains', icon: '🚂', type: 'trains', target: 3, rewardCoins: 250, rewardMult: 1 },
+    { id: 'm_powerups_2', title: 'Pick up 2 Power-ups', icon: '⚡', type: 'powerups', target: 2, rewardCoins: 200, rewardMult: 0 },
+    { id: 'm_score_5k', title: 'Reach 5,000 Score in one run', icon: '🏆', type: 'score', target: 5000, rewardCoins: 300, rewardMult: 1 },
+    { id: 'm_coins_300', title: 'Collect 300 Coins in one run', icon: '🪙', type: 'single_coins', target: 300, rewardCoins: 350, rewardMult: 1 },
+    { id: 'm_hoverboard_1', title: 'Activate Hoverboard once', icon: '🛹', type: 'hoverboard', target: 1, rewardCoins: 200, rewardMult: 0 }
+  ];
+
+  /* ============================================================
      AUTHENTIC SUBWAY SURFERS 3D CARTOON RUNNER RENDER PIPELINE
      ============================================================ */
-  function drawHumanoidRunner(ctx, cx, groundY, animTime, isJumping, isSliding, jumpHeight, tilt, costume, squash, hasShield, scaleFactor = 1.0, baseHeight = 0, isFrontView = false) {
+  function drawHumanoidRunner(ctx, cx, groundY, animTime, isJumping, isSliding, jumpHeight, tilt, costume, squash, hasShield, scaleFactor = 1.0, baseHeight = 0, isFrontView = false, activeBuffs = {}) {
     try {
       const c = costume || COSTUMES.jake;
       ctx.save();
@@ -697,13 +798,13 @@
       }
       if (tilt) ctx.rotate(tilt);
 
-      // Surface elevation: train roof or ramp
+      // Surface elevation: train roof, ramp or jetpack sky flight
       if (baseHeight > 0) {
         ctx.translate(0, -baseHeight);
       }
 
       // 1. Soft Cartoon Ground / Roof Shadow
-      if (jumpHeight !== undefined) {
+      if (jumpHeight !== undefined && (!activeBuffs || !activeBuffs.jetpack)) {
         ctx.save();
         const shadowScale = clamp(1 - (jumpHeight || 0) / 260, 0.25, 1);
         ctx.globalAlpha = 0.45 * shadowScale;
@@ -718,6 +819,80 @@
 
       // Lift body by jumpHeight
       ctx.translate(0, -(jumpHeight || 0));
+
+      // 2. ACTIVE HOVERBOARD UNDER RUNNER'S FEET
+      if (activeBuffs && activeBuffs.hoverboard && !isFrontView) {
+        ctx.save();
+        ctx.translate(0, 3);
+        const hbGrad = ctx.createLinearGradient(-24, 0, 24, 0);
+        hbGrad.addColorStop(0, '#06b6d4');
+        hbGrad.addColorStop(0.5, '#facc15');
+        hbGrad.addColorStop(1, '#ec4899');
+        ctx.fillStyle = hbGrad;
+        ctx.beginPath();
+        ctx.roundRect(-24, -4, 48, 8, [4, 4, 4, 4]);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // Hover thruster neon glow
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.55)';
+        ctx.beginPath();
+        ctx.ellipse(0, 5, 26, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 3. ACTIVE JETPACK ON RUNNER'S BACK
+      if (activeBuffs && activeBuffs.jetpack && !isFrontView) {
+        ctx.save();
+        ctx.translate(0, -32);
+        // Dual chrome canisters
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.roundRect(-16, -10, 10, 22, [4, 4, 2, 2]);
+        ctx.roundRect(6, -10, 10, 22, [4, 4, 2, 2]);
+        ctx.fill();
+        // Red hazard stripes
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(-16, -2, 10, 4);
+        ctx.fillRect(6, -2, 10, 4);
+        // Nozzles
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(-15, 12, 8, 4);
+        ctx.fillRect(7, 12, 8, 4);
+        // Rainbow thruster smoke & flames
+        const flameL = 18 + Math.sin(animTime * 25) * 8;
+        const flameGrad = ctx.createLinearGradient(0, 14, 0, 14 + flameL);
+        flameGrad.addColorStop(0, '#facc15');
+        flameGrad.addColorStop(0.5, '#f97316');
+        flameGrad.addColorStop(1, '#ec4899');
+        ctx.fillStyle = flameGrad;
+        ctx.beginPath();
+        ctx.moveTo(-15, 16); ctx.lineTo(-11, 16 + flameL); ctx.lineTo(-7, 16);
+        ctx.moveTo(7, 16); ctx.lineTo(11, 16 + flameL); ctx.lineTo(15, 16);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 4. ACTIVE SUPER SNEAKERS (Golden Wings on Shoes)
+      if (activeBuffs && activeBuffs.sneakers && !isFrontView) {
+        ctx.save();
+        ctx.strokeStyle = '#facc15';
+        ctx.fillStyle = '#fef08a';
+        ctx.lineWidth = 1.5;
+        // Left shoe wing
+        ctx.beginPath();
+        ctx.moveTo(-16, 26); ctx.lineTo(-26, 18); ctx.lineTo(-20, 26);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        // Right shoe wing
+        ctx.beginPath();
+        ctx.moveTo(16, 26); ctx.lineTo(26, 18); ctx.lineTo(20, 26);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+      }
 
       // Shield Aura
       if (hasShield) {
@@ -1370,6 +1545,11 @@
       this.height = 80;
       this.slideHeight = 38;
 
+      // Power-up Buff Flags
+      this.hasJetpack = false;
+      this.hasHoverboard = false;
+      this.hasSneakers = false;
+
       // Subway train roof running mechanics
       this.baseHeight = 0;
       this.targetBaseHeight = 0;
@@ -1378,6 +1558,10 @@
       this.hasShield = false;
       this.animTime = 0;
       this.squash = 0;
+
+      // Callbacks for missions
+      this.onJump = null;
+      this.onSlide = null;
 
       // Project initial 3D position
       const pPos = project3D(this.laneNorm, PLAYER_Z);
@@ -1401,18 +1585,30 @@
     }
 
     jump() {
-      if (!this.jumping && !this.sliding) {
+      if (this.sliding) {
+        this.sliding = false;
+      }
+      if (!this.jumping) {
         this.jumping = true;
-        this.jumpVel = this.jumpImpulse;
-        try { SoundSystem.jump(); } catch (e) {}
+        const mult = this.hasSneakers ? 1.55 : 1.0;
+        this.jumpVel = this.jumpImpulse * mult;
+        try {
+          if (this.hasSneakers) SoundSystem.sneakers();
+          else SoundSystem.jump();
+        } catch (e) {}
+        if (this.onJump) this.onJump();
       }
     }
 
     slide() {
-      if (!this.jumping && !this.sliding) {
+      if (this.jumping) {
+        this.jumpVel = -1200; // fast downward stomp from jump
+      }
+      if (!this.sliding) {
         this.sliding = true;
         this.slideTimer = this.slideDuration;
         try { SoundSystem.slide(); } catch (e) {}
+        if (this.onSlide) this.onSlide();
       }
     }
 
@@ -1428,43 +1624,47 @@
       const targetTilt = clamp(dNorm * 0.45, -0.22, 0.22);
       this.tilt = lerp(this.tilt, targetTilt, 1 - Math.exp(-18 * dt));
 
-      // Check if runner is over a subway train roof
-      let underTrain = null;
-      if (obstacles && obstacles.length) {
-        for (const o of obstacles) {
-          if (o.isTrain) {
-            const inLane = Math.abs(this.laneNorm - o.laneNorm) < 0.62;
-            const onZ = (o.z - 35 <= PLAYER_Z) && (PLAYER_Z <= o.z + o.length + 20);
-            if (inLane && onZ) {
-              underTrain = o;
-              break;
+      // Jetpack sky altitude takes priority
+      if (this.hasJetpack) {
+        this.targetBaseHeight = 145;
+        this.onTrain = false;
+      } else {
+        // Check if runner is over a subway train roof
+        let underTrain = null;
+        if (obstacles && obstacles.length) {
+          for (const o of obstacles) {
+            if (o.isTrain) {
+              const inLane = Math.abs(this.laneNorm - o.laneNorm) < 0.62;
+              const onZ = (o.z - 35 <= PLAYER_Z) && (PLAYER_Z <= o.z + o.length + 20);
+              if (inLane && onZ) {
+                underTrain = o;
+                break;
+              }
             }
+          }
+        }
+
+        if (underTrain) {
+          if (this.onTrain || (this.jumpHeight + this.baseHeight >= underTrain.h - 18) || underTrain.hasRamp) {
+            this.onTrain = true;
+            this.targetBaseHeight = underTrain.h;
+          }
+        } else {
+          if (this.onTrain) {
+            this.onTrain = false;
+            this.jumpHeight = Math.max(this.jumpHeight, this.baseHeight);
+            this.baseHeight = 0;
+            this.targetBaseHeight = 0;
+            this.jumping = true;
+            this.jumpVel = Math.min(this.jumpVel, -50);
+          } else {
+            this.targetBaseHeight = 0;
           }
         }
       }
 
-      if (underTrain) {
-        // If runner was already on the train OR jumped onto it OR boarded ramp
-        if (this.onTrain || (this.jumpHeight + this.baseHeight >= underTrain.h - 18) || underTrain.hasRamp) {
-          this.onTrain = true;
-          this.targetBaseHeight = underTrain.h;
-        }
-      } else {
-        if (this.onTrain) {
-          // Ran off the back of the train or jumped off into an open track
-          this.onTrain = false;
-          this.jumpHeight = Math.max(this.jumpHeight, this.baseHeight);
-          this.baseHeight = 0;
-          this.targetBaseHeight = 0;
-          this.jumping = true;
-          this.jumpVel = Math.min(this.jumpVel, -50);
-        } else {
-          this.targetBaseHeight = 0;
-        }
-      }
-
-      // Smooth altitude transitions when boarding or leaving trains
-      this.baseHeight = lerp(this.baseHeight, this.targetBaseHeight, 1 - Math.exp(-22 * dt));
+      // Smooth altitude transitions when boarding trains or jetpack flight
+      this.baseHeight = lerp(this.baseHeight, this.targetBaseHeight, 1 - Math.exp(-18 * dt));
 
       // Calculate current 3D screen position
       const pPos = project3D(this.laneNorm, PLAYER_Z);
@@ -1509,18 +1709,28 @@
         }
       }
 
-      // Continuous running particles
-      if (!this.jumping && particles && Math.random() < 0.4) {
+      // Continuous running particles & jetpack smoke
+      if (particles) {
         const footY = this.groundY - this.baseHeight * this.scale;
-        particles.trail(this.x - 5 * this.scale, footY - 2, this.costume.accent);
-        particles.trail(this.x + 5 * this.scale, footY - 2, this.costume.visor);
+        if (this.hasJetpack) {
+          particles.trail(this.x - 12 * this.scale, footY, '#f43f5e');
+          particles.trail(this.x + 12 * this.scale, footY, '#06b6d4');
+        } else if (!this.jumping && Math.random() < 0.4) {
+          particles.trail(this.x - 5 * this.scale, footY - 2, this.costume.accent);
+          particles.trail(this.x + 5 * this.scale, footY - 2, this.costume.visor);
+        }
       }
     }
 
-    render(ctx, customZ, customScale, isFrontView = false) {
+    render(ctx, customZ, customScale, isFrontView = false, activeBuffs = {}) {
       const z = (customZ !== undefined) ? customZ : PLAYER_Z;
       const pPos = project3D(this.laneNorm, z);
       const s = (customScale !== undefined) ? customScale : pPos.scale;
+      const buffs = (activeBuffs && Object.keys(activeBuffs).length > 0) ? activeBuffs : {
+        jetpack: this.hasJetpack,
+        hoverboard: this.hasHoverboard,
+        sneakers: this.hasSneakers
+      };
       drawHumanoidRunner(
         ctx,
         pPos.x,
@@ -1528,14 +1738,15 @@
         this.animTime,
         this.jumping,
         this.sliding,
-        this.jumpHeight, // Vertical jump height above surface
+        this.jumpHeight,
         this.tilt,
         this.costume,
         this.squash,
         this.hasShield,
         s,
-        this.baseHeight, // Base surface elevation (train roof or ground)
-        isFrontView
+        this.baseHeight,
+        isFrontView,
+        buffs
       );
     }
   }
@@ -2255,6 +2466,9 @@
   const POWERUP_METAS = {
     magnet: { name: 'MAGNET', duration: 8, color: '#4cc9f0', icon: '🧲' },
     multiplier: { name: '2X SCORE', duration: 10, color: '#ffd23f', icon: '⭐' },
+    jetpack: { name: 'JETPACK', duration: 9, color: '#f43f5e', icon: '🚀' },
+    sneakers: { name: 'SNEAKERS', duration: 14, color: '#10b981', icon: '👟' },
+    hoverboard: { name: 'HOVERBOARD', duration: 30, color: '#38bdf8', icon: '🛹' },
     shield: { name: 'SHIELD', duration: 0, color: '#06d6a0', icon: '🛡️' }
   };
 
@@ -2413,6 +2627,16 @@
         }
       }
 
+      // Sky Coins generation during Jetpack flight
+      if (player && player.hasJetpack) {
+        this.skyCoinTimer = (this.skyCoinTimer || 0) - dt;
+        if (this.skyCoinTimer <= 0) {
+          this.skyCoinTimer = 0.22;
+          const skyWaveY = 145 + Math.sin(this.items.length * 0.7) * 24;
+          this.items.push(new CollectibleItem(player.lane, Z_SPAWN, 'coin', { heightOffset: skyWaveY }));
+        }
+      }
+
       // Filter collected and out-of-screen items
       this.items = this.items.filter(i => !i.collected && i.z > -80);
 
@@ -2421,6 +2645,9 @@
         this.activePowerUps[key] -= dt;
         if (this.activePowerUps[key] <= 0) {
           delete this.activePowerUps[key];
+          if (key === 'jetpack' && player) player.hasJetpack = false;
+          if (key === 'sneakers' && player) player.hasSneakers = false;
+          if (key === 'hoverboard' && player) player.hasHoverboard = false;
         }
       }
     }
@@ -2436,9 +2663,10 @@
         this.coinScore += gain;
         try { SoundSystem.coin(); } catch (e) {}
         if (particles) {
-          particles.burst(pos.x, pos.y, '#ffd23f', 8, 40, 120);
-          particles.spawnText(pos.x, pos.y - 10, `+${gain}`, '#ffd23f');
+          particles.burst(pos.x, pos.y, '#ffd23f', 10, 45, 130);
+          particles.spawnText(pos.x, pos.y - 12, `+${gain}`, '#ffd23f');
         }
+        if (this.onCoinCollected) this.onCoinCollected(1);
       } else if (item.type === 'shield') {
         this.shieldCharges = Math.min(3, this.shieldCharges + 1);
         try { SoundSystem.powerup(); } catch (e) {}
@@ -2446,17 +2674,35 @@
           particles.burst(pos.x, pos.y, '#06d6a0', 16, 60, 200);
           particles.spawnText(pos.x, pos.y - 12, 'SHIELD ARMED', '#06d6a0');
         }
+        if (this.onPowerupCollected) this.onPowerupCollected('shield');
       } else {
-        const meta = POWERUP_METAS[item.type];
+        const meta = POWERUP_METAS[item.type] || { name: item.type.toUpperCase(), duration: 10, color: '#facc15' };
         let duration = meta.duration;
         if (item.type === 'magnet' && this.magnetDuration) duration = this.magnetDuration;
         if (item.type === 'multiplier' && this.multiplierDuration) duration = this.multiplierDuration;
+        if (item.type === 'jetpack' && this.jetpackDuration) duration = this.jetpackDuration;
+        if (item.type === 'sneakers' && this.sneakersDuration) duration = this.sneakersDuration;
+
         this.activePowerUps[item.type] = duration;
-        try { SoundSystem.powerup(); } catch (e) {}
-        if (particles) {
-          particles.burst(pos.x, pos.y, meta.color, 16, 60, 200);
-          particles.spawnText(pos.x, pos.y - 12, meta.name, meta.color);
+
+        if (item.type === 'jetpack' && player) {
+          player.hasJetpack = true;
+          try { SoundSystem.jetpack(); } catch (e) {}
+        } else if (item.type === 'sneakers' && player) {
+          player.hasSneakers = true;
+          try { SoundSystem.sneakers(); } catch (e) {}
+        } else if (item.type === 'hoverboard' && player) {
+          player.hasHoverboard = true;
+          try { SoundSystem.hoverboard(); } catch (e) {}
+        } else {
+          try { SoundSystem.powerup(); } catch (e) {}
         }
+
+        if (particles) {
+          particles.burst(pos.x, pos.y, meta.color, 20, 70, 220);
+          particles.spawnText(pos.x, pos.y - 14, meta.name, meta.color);
+        }
+        if (this.onPowerupCollected) this.onPowerupCollected(item.type);
       }
     }
 
@@ -2634,6 +2880,12 @@
       this.menuBestScore.textContent = this.bestScore;
       this.updateBankDisplays();
 
+      // Subway Surfers Missions & Multiplier System
+      this.baseMultiplier = this.loadBaseMultiplier();
+      this.missionsState = this.loadMissionsState();
+      this.missionToastTimeout = null;
+      this.updateMissionsNotificationBadge();
+
       // Pilot Profile & Rank
       this.profile = this.loadProfile();
       this.updateProfileUI();
@@ -2670,6 +2922,221 @@
       try {
         localStorage.setItem(STORAGE_KEY, String(score));
       } catch (e) {}
+    }
+
+    loadBaseMultiplier() {
+      try {
+        const val = parseInt(localStorage.getItem('subway_base_multiplier'), 10);
+        return (val >= 1 && val <= 30) ? val : 1;
+      } catch (e) {
+        return 1;
+      }
+    }
+
+    saveBaseMultiplier(mult) {
+      try {
+        localStorage.setItem('subway_base_multiplier', String(mult));
+      } catch (e) {}
+    }
+
+    loadMissionsState() {
+      try {
+        const val = localStorage.getItem('subway_missions_state');
+        if (val) {
+          const parsed = JSON.parse(val);
+          if (parsed && typeof parsed === 'object') {
+            MISSIONS_DATA.forEach(m => {
+              if (!parsed[m.id]) {
+                parsed[m.id] = { progress: 0, completed: false, claimed: false };
+              }
+            });
+            return parsed;
+          }
+        }
+      } catch (e) {}
+      const state = {};
+      MISSIONS_DATA.forEach(m => {
+        state[m.id] = { progress: 0, completed: false, claimed: false };
+      });
+      return state;
+    }
+
+    saveMissionsState() {
+      try {
+        localStorage.setItem('subway_missions_state', JSON.stringify(this.missionsState));
+      } catch (e) {}
+    }
+
+    checkMissionEvent(type, amount = 1) {
+      if (!this.missionsState) return;
+      let stateChanged = false;
+      MISSIONS_DATA.forEach(m => {
+        const mState = this.missionsState[m.id] || { progress: 0, completed: false, claimed: false };
+        if (mState.completed) return;
+
+        if (m.type === type) {
+          if (type === 'single_coins' || type === 'score') {
+            mState.progress = Math.max(mState.progress, amount);
+          } else {
+            mState.progress += amount;
+          }
+
+          if (mState.progress >= m.target) {
+            mState.progress = m.target;
+            mState.completed = true;
+            stateChanged = true;
+            this.showMissionToast(m);
+            try { SoundSystem.missionComplete(); } catch (e) {}
+          } else {
+            stateChanged = true;
+          }
+        }
+      });
+      if (stateChanged) {
+        this.saveMissionsState();
+        this.updateMissionsNotificationBadge();
+      }
+    }
+
+    showMissionToast(mission) {
+      const toast = document.getElementById('missionToast');
+      const text = document.getElementById('missionToastText');
+      if (toast && text) {
+        text.textContent = `🎯 MISSION COMPLETE: ${mission.title}!`;
+        toast.classList.remove('hidden');
+        toast.classList.add('slide-in');
+        clearTimeout(this.missionToastTimeout);
+        this.missionToastTimeout = setTimeout(() => {
+          toast.classList.remove('slide-in');
+          toast.classList.add('hidden');
+        }, 3600);
+      }
+    }
+
+    claimMission(missionId) {
+      const m = MISSIONS_DATA.find(x => x.id === missionId);
+      const mState = this.missionsState ? this.missionsState[missionId] : null;
+      if (!m || !mState || !mState.completed || mState.claimed) return;
+
+      mState.claimed = true;
+      this.bankCoins += m.rewardCoins;
+      this.saveBankCoins(this.bankCoins);
+
+      if (m.rewardMult > 0) {
+        this.baseMultiplier = Math.min(30, (this.baseMultiplier || 1) + m.rewardMult);
+        this.saveBaseMultiplier(this.baseMultiplier);
+      }
+
+      this.saveMissionsState();
+      try { SoundSystem.buy(); } catch (e) {}
+      this.updateBankDisplays();
+      this.renderMissionsModal();
+      this.updateMissionsNotificationBadge();
+    }
+
+    renderMissionsModal() {
+      const container = document.getElementById('missionsList');
+      const multVal = document.getElementById('missionsMultiplierVal') || document.getElementById('modalMultiplierVal');
+      if (multVal) multVal.textContent = `x${this.baseMultiplier || 1} ⭐`;
+      if (!container) return;
+      container.innerHTML = '';
+
+      MISSIONS_DATA.forEach(m => {
+        const mState = (this.missionsState && this.missionsState[m.id]) || { progress: 0, completed: false, claimed: false };
+        const card = document.createElement('div');
+        card.className = `mission-item-card ${mState.claimed ? 'claimed' : (mState.completed ? 'completed' : '')}`;
+
+        const pct = Math.min(100, Math.floor((mState.progress / m.target) * 100));
+
+        card.innerHTML = `
+          <div class="mission-info-left">
+            <div class="mission-icon-box">${m.icon}</div>
+            <div class="mission-text">
+              <div class="mission-title">${m.title}</div>
+              <div class="mission-progress-bar-wrap">
+                <div class="mission-progress-bar-fill" style="width: ${pct}%"></div>
+              </div>
+              <div class="mission-progress-num">${mState.progress} / ${m.target} (${pct}%)</div>
+            </div>
+          </div>
+          <div class="mission-action-right">
+            ${mState.claimed ? `
+              <button class="mission-btn mission-claimed-btn" disabled>CLAIMED ✓</button>
+            ` : (mState.completed ? `
+              <button class="mission-btn mission-claim-btn" data-mission="${m.id}">CLAIM 🪙 +${m.rewardCoins}${m.rewardMult ? ` ⭐ +${m.rewardMult}X` : ''}</button>
+            ` : `
+              <div class="mission-reward-tag">🪙 +${m.rewardCoins}${m.rewardMult ? ` ⭐ +${m.rewardMult}X` : ''}</div>
+            `)}
+          </div>
+        `;
+
+        const claimBtn = card.querySelector('.mission-claim-btn');
+        if (claimBtn) {
+          this.attachButtonAction(claimBtn, () => {
+            this.claimMission(m.id);
+          });
+        }
+
+        container.appendChild(card);
+      });
+    }
+
+    updateMissionsNotificationBadge() {
+      if (!this.missionsState) return;
+      const unclaimedCount = MISSIONS_DATA.filter(m => {
+        const s = this.missionsState[m.id];
+        return s && s.completed && !s.claimed;
+      }).length;
+
+      const badge = document.getElementById('missionsNotificationBadge');
+      if (badge) {
+        if (unclaimedCount > 0) {
+          badge.textContent = unclaimedCount;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    }
+
+    renderLeaderboardModal() {
+      const container = document.getElementById('leaderboardList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const myScore = this.bestScore || 0;
+      const myName = (this.profile && this.profile.callsign) ? this.profile.callsign : 'YOU';
+      const myAvatar = (this.profile && this.profile.avatar) ? this.profile.avatar : '🏃';
+
+      const rivals = [
+        { name: 'Kai_Speedster', avatar: '⚡', score: Math.max(12500, Math.floor(myScore * 1.35) + 450), league: 'DIAMOND', medal: '🥇' },
+        { name: 'Tokyo_Rider', avatar: '🐙', score: Math.max(9200, Math.floor(myScore * 1.18) + 210), league: 'DIAMOND', medal: '🥈' },
+        { name: 'SubwaySurfer99', avatar: '🛹', score: Math.max(7600, Math.floor(myScore * 1.05) + 90), league: 'GOLD', medal: '🥉' },
+        { name: myName, avatar: myAvatar, score: myScore, league: this.getProfileRank(myScore).title.split(' ')[1] || 'GOLD', isMe: true },
+        { name: 'TrackPhantom', avatar: '👻', score: Math.max(3400, Math.floor(myScore * 0.82)), league: 'SILVER' },
+        { name: 'NeonDash', avatar: '🚀', score: Math.max(2100, Math.floor(myScore * 0.65)), league: 'BRONZE' },
+        { name: 'RookieSkater', avatar: '👟', score: Math.max(900, Math.floor(myScore * 0.40)), league: 'BRONZE' }
+      ];
+
+      rivals.sort((a, b) => b.score - a.score);
+
+      rivals.forEach((r, idx) => {
+        const rankNum = idx + 1;
+        const card = document.createElement('div');
+        card.className = `leaderboard-item-card ${r.isMe ? 'my-rank' : ''}`;
+        const medalOrNum = r.medal || `#${rankNum}`;
+
+        card.innerHTML = `
+          <div class="lb-rank-num ${rankNum <= 3 ? 'top-three' : ''}">${medalOrNum}</div>
+          <div class="lb-avatar">${r.avatar}</div>
+          <div class="lb-info">
+            <div class="lb-name">${r.name} ${r.isMe ? '<span class="lb-me-tag">YOU</span>' : ''}</div>
+            <div class="lb-league-badge">${r.league}</div>
+          </div>
+          <div class="lb-score">🏆 ${r.score.toLocaleString()}</div>
+        `;
+        container.appendChild(card);
+      });
     }
 
     loadBankCoins() {
@@ -2940,12 +3407,19 @@
     resetRun() {
       this.distance = 0;
       this.elapsed = 0;
-      this.baseSpeed = 320;
-      this.maxSpeed = 820;
+      this.baseSpeed = 330;
+      this.maxSpeed = 880;
       this.speed = this.baseSpeed;
-      this.speedRamp = 3.5;
+      this.speedRamp = 3.8;
+      this.slowMoTimer = 0;
+      this.tauntTimer = 0;
 
-      const currentCostume = COSTUMES[this.equippedCostume] || COSTUMES.neo;
+      // Hoverboard supply stock
+      const hbLevel = this.upgrades.hoverboard || 1;
+      const hbConf = (UPGRADES.hoverboard && UPGRADES.hoverboard.levels[hbLevel - 1]) || { stock: 3 };
+      this.hoverboardStock = hbConf.stock || 3;
+
+      const currentCostume = COSTUMES[this.equippedCostume] || COSTUMES.jake;
       this.player = new Player(currentCostume);
       this.track = new TrackManager();
       this.collectibles = new CollectibleManager();
@@ -2957,12 +3431,35 @@
       const multiplierLevel = this.upgrades.multiplier || 1;
       const multiplierConf = UPGRADES.multiplier.levels[multiplierLevel - 1] || UPGRADES.multiplier.levels[0];
 
+      const jetpackLevel = this.upgrades.jetpack || 1;
+      const jetpackConf = (UPGRADES.jetpack && UPGRADES.jetpack.levels[jetpackLevel - 1]) || { duration: 9 };
+
+      const sneakersLevel = this.upgrades.sneakers || 1;
+      const sneakersConf = (UPGRADES.sneakers && UPGRADES.sneakers.levels[sneakersLevel - 1]) || { duration: 14 };
+
       const shieldLevel = this.upgrades.shield || 0;
       const shieldConf = UPGRADES.shield.levels[shieldLevel] || UPGRADES.shield.levels[0];
 
       this.track.onObstacleSpawned = (o) => this.collectibles.onObstacleSpawned(o);
       this.track.reset();
       this.collectibles.reset(shieldConf.shields, magnetConf.duration, magnetConf.radius, multiplierConf.duration);
+      this.collectibles.jetpackDuration = jetpackConf.duration;
+      this.collectibles.sneakersDuration = sneakersConf.duration;
+
+      // Hook mission progress tracking
+      this.collectibles.onCoinCollected = () => {
+        this.checkMissionEvent('single_coins', this.collectibles.coinCount);
+      };
+      this.collectibles.onPowerupCollected = (pType) => {
+        this.checkMissionEvent('powerups', 1);
+        try { SoundSystem.taunt(); } catch (e) {}
+      };
+      this.player.onJump = () => {
+        this.checkMissionEvent('jumps', 1);
+      };
+      this.player.onSlide = () => {
+        this.checkMissionEvent('slides', 1);
+      };
 
       // Maintain user's chosen background
       this.themeIndex = this.selectedBgIndex;
@@ -2972,7 +3469,30 @@
     }
 
     getScore() {
-      return Math.floor(this.distance / 10) + this.collectibles.coinScore;
+      const activeMult = (this.collectibles && this.collectibles.activePowerUps && this.collectibles.activePowerUps.multiplier) ? 2 : 1;
+      const totalMult = (this.baseMultiplier || 1) * activeMult;
+      return (Math.floor(this.distance / 10) + (this.collectibles ? this.collectibles.coinScore : 0)) * totalMult;
+    }
+
+    activateHoverboard() {
+      if (this.state !== GameStates.PLAYING) return;
+      if (this.player.hasHoverboard || (this.collectibles && this.collectibles.activePowerUps.hoverboard)) {
+        return;
+      }
+      if (this.hoverboardStock <= 0) {
+        this.particles.spawnText(this.player.x, this.player.groundY - 95, 'NO BOARDS! 🛹', '#ef4444');
+        try { SoundSystem.equip(); } catch (e) {}
+        return;
+      }
+      this.hoverboardStock--;
+      this.player.hasHoverboard = true;
+      if (!this.collectibles.activePowerUps) this.collectibles.activePowerUps = {};
+      this.collectibles.activePowerUps.hoverboard = 30;
+      try { SoundSystem.hoverboard(); } catch (e) {}
+      this.particles.burst(this.player.x, this.player.groundY, '#38bdf8', 24);
+      this.particles.spawnText(this.player.x, this.player.groundY - 110, 'HOVERBOARD ON! 🛹', '#38bdf8');
+      this.checkMissionEvent('hoverboard', 1);
+      this.syncHUD();
     }
 
     /* ---------------- ARMORY SHOP SYSTEM ---------------- */
@@ -3016,7 +3536,8 @@
       if (!container) return;
       container.innerHTML = '';
 
-      for (const suit of Object.values(COSTUMES)) {
+      const uniqueSuits = ['jake', 'tricky', 'fresh', 'spike', 'yutani'].map(id => COSTUMES[id]).filter(Boolean);
+      for (const suit of uniqueSuits) {
         const isUnlocked = this.unlockedCostumes.includes(suit.id);
         const isEquipped = this.equippedCostume === suit.id;
 
@@ -3026,15 +3547,21 @@
         const left = document.createElement('div');
         left.className = 'costume-info-left';
 
-        const orb = document.createElement('div');
-        orb.className = 'costume-avatar-orb';
-        orb.style.background = suit.swatch;
+        // 3D Mini Avatar Canvas Preview
+        const previewCanvas = document.createElement('canvas');
+        previewCanvas.width = 60;
+        previewCanvas.height = 70;
+        previewCanvas.className = 'costume-avatar-canvas';
+        const pctx = previewCanvas.getContext('2d');
+        if (pctx) {
+          drawHumanoidRunner(pctx, 30, 62, 0, false, false, 0, 0, suit, 0, false, 0.72, 0, true);
+        }
 
         const text = document.createElement('div');
         text.className = 'costume-text';
         text.innerHTML = `<span class="costume-name">${suit.name}</span><span class="costume-desc">${suit.desc}</span>`;
 
-        left.appendChild(orb);
+        left.appendChild(previewCanvas);
         left.appendChild(text);
         card.appendChild(left);
 
@@ -3327,6 +3854,39 @@
         if (worldTourModal) worldTourModal.classList.add('hidden');
       });
 
+      // Side Rail: Missions & Challenges (QUESTS)
+      const missionsModal = document.getElementById('missionsModal');
+      this.attachButtonAction('menuMissionsBtn', () => {
+        try { SoundSystem.ensure(); } catch (e) {}
+        this.renderMissionsModal();
+        if (missionsModal) missionsModal.classList.remove('hidden');
+      });
+      this.attachButtonAction('closeMissionsBtn', () => {
+        if (missionsModal) missionsModal.classList.add('hidden');
+      });
+      this.attachButtonAction('closeMissionsDoneBtn', () => {
+        if (missionsModal) missionsModal.classList.add('hidden');
+      });
+
+      // Side Rail: Top Run Leaderboard
+      const leaderboardModal = document.getElementById('leaderboardModal');
+      this.attachButtonAction('menuLeaderboardBtn', () => {
+        try { SoundSystem.ensure(); } catch (e) {}
+        this.renderLeaderboardModal();
+        if (leaderboardModal) leaderboardModal.classList.remove('hidden');
+      });
+      this.attachButtonAction('closeLeaderboardBtn', () => {
+        if (leaderboardModal) leaderboardModal.classList.add('hidden');
+      });
+      this.attachButtonAction('closeLeaderboardDoneBtn', () => {
+        if (leaderboardModal) leaderboardModal.classList.add('hidden');
+      });
+
+      // HUD Hoverboard Button
+      this.attachButtonAction('hudHoverboardBtn', () => {
+        this.activateHoverboard();
+      });
+
       // Side Rail: Character Suits (ME)
       this.attachButtonAction('menuSuitsBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
@@ -3544,16 +4104,28 @@
 
       // Touch swipes on canvas
       let touchStartX = 0, touchStartY = 0, touchActive = false;
+      let lastCanvasTapTime = 0;
       const swipeThreshold = 30;
 
       canvas.addEventListener('touchstart', (e) => {
         SoundSystem.ensure();
         if (this.state !== GameStates.PLAYING) return;
+        const now = Date.now();
+        if (now - lastCanvasTapTime < 320) {
+          this.activateHoverboard();
+        }
+        lastCanvasTapTime = now;
         const t = e.changedTouches[0];
         touchStartX = t.clientX;
         touchStartY = t.clientY;
         touchActive = true;
       }, { passive: true });
+
+      canvas.addEventListener('dblclick', () => {
+        if (this.state === GameStates.PLAYING) {
+          this.activateHoverboard();
+        }
+      });
 
       canvas.addEventListener('touchend', (e) => {
         if (this.state !== GameStates.PLAYING || !touchActive) return;
@@ -3680,6 +4252,11 @@
       if (this.state !== GameStates.PLAYING) return;
       if (!this.player || !this.track) return;
 
+      // Paint Jetpack: complete sky flight altitude clearance above tracks
+      if (this.player.hasJetpack || (this.collectibles && this.collectibles.activePowerUps && this.collectibles.activePowerUps.jetpack)) {
+        return;
+      }
+
       for (const o of this.track.obstacles) {
         if (o.hit) continue;
 
@@ -3721,6 +4298,7 @@
                 try { SoundSystem.jump(); } catch (e) {}
                 this.particles.burst(this.player.x, this.player.groundY - 24, '#facc15', 18);
                 this.particles.spawnText(this.player.x, this.player.groundY - 110, 'ROOF CLIMBED! 🚂', '#facc15');
+                this.checkMissionEvent('trains', 1);
                 continue;
               } else {
                 // CLOSED FLAT CAB TRAIN: Solid metal bumper!
@@ -3732,6 +4310,7 @@
                   this.player.jumpHeight = 0;
                   try { SoundSystem.jump(); } catch (e) {}
                   this.particles.spawnText(this.player.x, this.player.groundY - 110, 'ROOF VAULT! 🚂', '#38bdf8');
+                  this.checkMissionEvent('trains', 1);
                   continue;
                 }
                 // Frontal collision with closed train cab
@@ -3767,7 +4346,23 @@
         if (collided) {
           o.hit = true;
 
-          // Shield absorption
+          // 1. Hoverboard crash-immunity save
+          if (this.player.hasHoverboard || (this.collectibles && this.collectibles.activePowerUps && this.collectibles.activePowerUps.hoverboard)) {
+            if (this.collectibles && this.collectibles.activePowerUps) {
+              delete this.collectibles.activePowerUps.hoverboard;
+            }
+            this.player.hasHoverboard = false;
+            try { SoundSystem.boardCrash(); } catch (e) {}
+            ScreenShake.trigger(16, 0.45);
+            const pos = project3D(o.laneNorm, o.z, (o.h || (o.type && o.type.h) || 30) / 2);
+            this.particles.burst(pos.x, pos.y, '#38bdf8', 32, 100, 320);
+            this.particles.spawnText(this.player.x, this.player.groundY - 115, 'BOARD SAVED YOU! 🛹💥', '#38bdf8');
+            this.track.obstacles = this.track.obstacles.filter(item => item !== o);
+            this.syncHUD();
+            continue;
+          }
+
+          // 2. Shield absorption
           if (this.collectibles.shieldCharges > 0) {
             this.collectibles.shieldCharges--;
             try { SoundSystem.shieldBreak(); } catch (e) {}
@@ -3814,8 +4409,41 @@
       if (this.state !== GameStates.PLAYING) return;
 
       this.elapsed += dt;
-      this.speed = Math.min(this.maxSpeed, this.baseSpeed + this.elapsed * this.speedRamp);
+      // Progressive difficulty ramp
+      this.speed = Math.min(this.maxSpeed, this.baseSpeed + Math.pow(this.elapsed, 1.14) * 2.2);
       this.distance += this.speed * dt;
+
+      // Near-miss obstacle detection
+      if (this.track && this.track.obstacles) {
+        for (const o of this.track.obstacles) {
+          if (o.hit || o.nearMissChecked) continue;
+          const distZ = Math.abs(o.z - PLAYER_Z);
+          const laneDiff = Math.abs(this.player.laneNorm - o.laneNorm);
+          if (distZ < 28 && laneDiff > 0.58 && laneDiff < 1.35) {
+            o.nearMissChecked = true;
+            try { SoundSystem.nearMiss(); } catch (e) {}
+            this.particles.spawnText(this.player.x, this.player.groundY - 100, 'NEAR MISS! 💨', '#38bdf8');
+            ScreenShake.trigger(5, 0.14);
+            this.slowMoTimer = 0.12;
+          }
+        }
+      }
+
+      // Slow-mo brief effect
+      if (this.slowMoTimer > 0) {
+        this.slowMoTimer -= dt;
+        dt *= 0.55;
+      }
+
+      // Periodic character voice taunts ("Woohoo!")
+      this.tauntTimer = (this.tauntTimer || 0) + dt;
+      if (this.tauntTimer > 18) {
+        this.tauntTimer = 0;
+        try { SoundSystem.taunt(); } catch (e) {}
+      }
+
+      // Check run score milestones for missions
+      this.checkMissionEvent('score', this.getScore());
 
       this.player.hasShield = this.collectibles.shieldCharges > 0;
       this.player.update(dt, this.particles, this.track.obstacles);
@@ -3836,6 +4464,53 @@
       this.scoreDisplay.textContent = this.getScore();
       this.coinCount.textContent = this.collectibles.coinCount;
 
+      // Multiplier Tag
+      const activeMult = (this.collectibles && this.collectibles.activePowerUps && this.collectibles.activePowerUps.multiplier) ? 2 : 1;
+      const totalMult = (this.baseMultiplier || 1) * activeMult;
+      const hudMultiplierTag = document.getElementById('hudMultiplierTag');
+      if (hudMultiplierTag) {
+        hudMultiplierTag.textContent = `${totalMult}X`;
+      }
+
+      // Hoverboard HUD Button Stock
+      const hudHoverboardBtn = document.getElementById('hudHoverboardBtn');
+      const hudHoverboardStock = document.getElementById('hudHoverboardStock') || document.getElementById('hudHoverboardQty');
+      if (hudHoverboardBtn && hudHoverboardStock) {
+        hudHoverboardStock.textContent = `x${this.hoverboardStock || 0}`;
+        if (this.player && this.player.hasHoverboard) {
+          hudHoverboardBtn.classList.add('board-active');
+        } else {
+          hudHoverboardBtn.classList.remove('board-active');
+        }
+      }
+
+      // Active Powerups Countdown List
+      const activeList = document.getElementById('activePowerupsList');
+      if (activeList) {
+        activeList.innerHTML = '';
+        const entries = Object.entries(this.collectibles.activePowerUps);
+        if (entries.length > 0) {
+          activeList.classList.remove('hidden');
+          entries.forEach(([pType, timeLeft]) => {
+            const meta = POWERUP_METAS[pType] || { name: pType.toUpperCase(), icon: '⚡', color: '#facc15', duration: 10 };
+            const itemEl = document.createElement('div');
+            itemEl.className = 'hud-powerup-bar-item';
+            const totalDur = meta.duration || 10;
+            const pct = Math.min(100, Math.max(0, (timeLeft / totalDur) * 100));
+            itemEl.innerHTML = `
+              <span class="hud-powerup-icon">${meta.icon}</span>
+              <div class="hud-powerup-meter">
+                <div class="hud-powerup-fill" style="width: ${pct}%; background: ${meta.color}"></div>
+              </div>
+              <span class="hud-powerup-time">${Math.ceil(timeLeft)}s</span>
+            `;
+            activeList.appendChild(itemEl);
+          });
+        } else {
+          activeList.classList.add('hidden');
+        }
+      }
+
       if (this.collectibles.shieldCharges > 0) {
         this.shieldDisplay.classList.remove('hidden');
         this.shieldCount.textContent = this.collectibles.shieldCharges;
@@ -3849,7 +4524,7 @@
       const speedPercent = ((this.speed - this.baseSpeed) / (this.maxSpeed - this.baseSpeed)) * 100;
       this.speedBarFill.style.width = Math.max(15, speedPercent) + '%';
 
-      // Power-up badge
+      // Power-up badge (legacy badge fallback)
       const activeEntry = Object.entries(this.collectibles.activePowerUps)[0];
       if (activeEntry) {
         const [pType, timeLeft] = activeEntry;
@@ -3913,7 +4588,6 @@
       if (to.type === 'western') {
         // Bright green grass strips flanking both sides of the railroad (Screenshot 2)
         ctx.fillStyle = '#22c55e';
-        // Left grass verge
         ctx.beginPath();
         ctx.moveTo(0, VP_Y);
         ctx.lineTo(VP_X - ROAD_WIDTH_BG / 2 - 10, VP_Y);
@@ -3922,7 +4596,6 @@
         ctx.closePath();
         ctx.fill();
 
-        // Right grass verge
         ctx.beginPath();
         ctx.moveTo(DESIGN_WIDTH, VP_Y);
         ctx.lineTo(VP_X + ROAD_WIDTH_BG / 2 + 10, VP_Y);
@@ -3935,6 +4608,71 @@
         ctx.fillStyle = '#92400e';
         ctx.fillRect(0, DESIGN_HEIGHT - 65, Math.max(0, VP_X - ROAD_WIDTH_FG / 2 - 32), 65);
         ctx.fillRect(VP_X + ROAD_WIDTH_FG / 2 + 32, DESIGN_HEIGHT - 65, DESIGN_WIDTH, 65);
+      } else if (to.type === 'rio') {
+        // Rio Carnival: Golden tropical beach sand with turquoise ocean water
+        ctx.fillStyle = '#fde047';
+        // Left sand beach
+        ctx.beginPath();
+        ctx.moveTo(0, VP_Y);
+        ctx.lineTo(VP_X - ROAD_WIDTH_BG / 2 - 10, VP_Y);
+        ctx.lineTo(VP_X - ROAD_WIDTH_FG / 2 - 25, DESIGN_HEIGHT);
+        ctx.lineTo(0, DESIGN_HEIGHT);
+        ctx.closePath();
+        ctx.fill();
+
+        // Right sand beach
+        ctx.beginPath();
+        ctx.moveTo(DESIGN_WIDTH, VP_Y);
+        ctx.lineTo(VP_X + ROAD_WIDTH_BG / 2 + 10, VP_Y);
+        ctx.lineTo(VP_X + ROAD_WIDTH_FG / 2 + 25, DESIGN_HEIGHT);
+        ctx.lineTo(DESIGN_WIDTH, DESIGN_HEIGHT);
+        ctx.closePath();
+        ctx.fill();
+
+        // Turquoise ocean water flanking outer edges
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(0, DESIGN_HEIGHT - 80, Math.max(0, VP_X - ROAD_WIDTH_FG / 2 - 50), 80);
+        ctx.fillRect(VP_X + ROAD_WIDTH_FG / 2 + 50, DESIGN_HEIGHT - 80, DESIGN_WIDTH, 80);
+      } else if (to.type === 'cairo') {
+        // Cairo: Warm golden sand dunes flanking the ancient railway
+        ctx.fillStyle = '#ca8a04';
+        ctx.beginPath();
+        ctx.moveTo(0, VP_Y);
+        ctx.lineTo(VP_X - ROAD_WIDTH_BG / 2 - 10, VP_Y);
+        ctx.lineTo(VP_X - ROAD_WIDTH_FG / 2 - 25, DESIGN_HEIGHT);
+        ctx.lineTo(0, DESIGN_HEIGHT);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(DESIGN_WIDTH, VP_Y);
+        ctx.lineTo(VP_X + ROAD_WIDTH_BG / 2 + 10, VP_Y);
+        ctx.lineTo(VP_X + ROAD_WIDTH_FG / 2 + 25, DESIGN_HEIGHT);
+        ctx.lineTo(DESIGN_WIDTH, DESIGN_HEIGHT);
+        ctx.closePath();
+        ctx.fill();
+      } else if (to.type === 'classic') {
+        // Classic Subway City: Industrial weathered concrete curbs & asphalt
+        const leftWallX = VP_X - ROAD_WIDTH_FG / 2 - 32;
+        const rightWallX = VP_X + ROAD_WIDTH_FG / 2 + 32;
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(0, VP_Y, Math.max(0, leftWallX), DESIGN_HEIGHT - VP_Y);
+        ctx.fillRect(rightWallX, VP_Y, DESIGN_WIDTH - rightWallX, DESIGN_HEIGHT - VP_Y);
+
+        // Weathered red and white safety curbs
+        ctx.save();
+        const curbW = 10;
+        const stripeStep = 28;
+        const sOffset = (this.distance * 0.8) % stripeStep;
+        for (let sy = VP_Y - 20; sy < DESIGN_HEIGHT; sy += stripeStep) {
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(leftWallX, sy + sOffset, curbW, stripeStep / 2);
+          ctx.fillRect(rightWallX - curbW, sy + sOffset, curbW, stripeStep / 2);
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(leftWallX, sy + sOffset + stripeStep / 2, curbW, stripeStep / 2);
+          ctx.fillRect(rightWallX - curbW, sy + sOffset + stripeStep / 2, curbW, stripeStep / 2);
+        }
+        ctx.restore();
       } else {
         // Tokyo Food Street: Concrete elevated embankment with yellow & black hazard stripes (Screenshot 1)
         const leftWallX = VP_X - ROAD_WIDTH_FG / 2 - 32;
@@ -4223,6 +4961,320 @@
             ctx.fillText('TNT', pL.x, pL.y - 6 * ss);
             ctx.fillText('TNT', pR.x, pR.y - 6 * ss);
             ctx.restore();
+          }
+        }
+      } else if (currentTheme === 'rio') {
+        // --- RIO CARNIVAL BEACH THEME ---
+        // A. Sugarloaf Mountain Silhouette in background
+        ctx.save();
+        const mountainX = ((DESIGN_WIDTH * 0.35) + (this.distance * 0.05)) % (DESIGN_WIDTH + 260) - 130;
+        const mountainY = VP_Y;
+        ctx.fillStyle = '#064e3b';
+        ctx.beginPath();
+        ctx.moveTo(mountainX - 120, mountainY);
+        ctx.quadraticCurveTo(mountainX, mountainY - 145, mountainX + 120, mountainY);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // B. Tropical Palm Trees flanking tracks
+        const palmStep = 180;
+        const palmOffset = (this.distance * 0.95) % palmStep;
+        for (let pz = palmOffset; pz < 860; pz += palmStep) {
+          for (const side of [-2.0, 2.0]) {
+            const pP = project3D(side, pz, 0);
+            const sp = pP.scale;
+            if (sp < 0.09) continue;
+            ctx.save();
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = Math.max(3, 8 * sp);
+            ctx.beginPath();
+            ctx.moveTo(pP.x, pP.y);
+            const curveX = side < 0 ? -18 * sp : 18 * sp;
+            ctx.quadraticCurveTo(pP.x + curveX, pP.y - 50 * sp, pP.x + curveX * 1.5, pP.y - 95 * sp);
+            ctx.stroke();
+            const topX = pP.x + curveX * 1.5;
+            const topY = pP.y - 95 * sp;
+            ctx.fillStyle = '#22c55e';
+            for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+              ctx.beginPath();
+              ctx.ellipse(topX + Math.cos(a) * 22 * sp, topY + Math.sin(a) * 14 * sp, 22 * sp, 7 * sp, a, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            ctx.fillStyle = '#451a03';
+            ctx.beginPath();
+            ctx.arc(topX, topY, 4 * sp, 0, Math.PI * 2);
+            ctx.arc(topX + 5 * sp, topY + 2 * sp, 4 * sp, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+
+        // C. Vibrant Carnival Favela Hillside Houses
+        const favelaStep = 440;
+        const favelaOffset = (this.distance * 0.9) % favelaStep;
+        const favelaColors = ['#06b6d4', '#facc15', '#f43f5e', '#10b981', '#a855f7'];
+        for (let fz = favelaOffset; fz < 860; fz += favelaStep) {
+          const pF = project3D(2.4, fz, 0);
+          const sf = pF.scale;
+          if (sf > 0.12) {
+            ctx.save();
+            for (let h = 0; h < 3; h++) {
+              const hCol = favelaColors[(Math.floor(fz / favelaStep) + h) % favelaColors.length];
+              const boxW = (75 - h * 12) * sf;
+              const boxH = 45 * sf;
+              const boxX = pF.x - boxW / 2 + (h % 2 === 0 ? 10 : -10) * sf;
+              const boxY = pF.y - (h + 1) * boxH;
+              ctx.fillStyle = hCol;
+              ctx.fillRect(boxX, boxY, boxW, boxH);
+              ctx.fillStyle = '#475569';
+              ctx.fillRect(boxX - 4 * sf, boxY - 4 * sf, boxW + 8 * sf, 4 * sf);
+              ctx.fillStyle = '#fef08a';
+              ctx.fillRect(boxX + 8 * sf, boxY + 12 * sf, 12 * sf, 12 * sf);
+              ctx.fillRect(boxX + boxW - 20 * sf, boxY + 12 * sf, 12 * sf, 12 * sf);
+            }
+            ctx.fillStyle = '#ec4899';
+            ctx.fillRect(pF.x - 30 * sf, pF.y - 155 * sf, 60 * sf, 14 * sf);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `900 ${Math.max(7, 11 * sf)}px "Orbitron", sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText('CARNAVAL 🌴', pF.x, pF.y - 144 * sf);
+            ctx.restore();
+          }
+        }
+
+        // D. Trackside Walls with Rio Graffiti
+        const wallNorms = [-1.58, 1.58];
+        const rioTags = [
+          { text: 'RIO', col: '#10b981', outline: '#ffffff' },
+          { text: 'SAMBA', col: '#facc15', outline: '#064e3b' },
+          { text: 'CARNAVAL', col: '#ec4899', outline: '#ffffff' },
+          { text: 'SURF ★', col: '#06b6d4', outline: '#ffffff' }
+        ];
+        for (const wNorm of wallNorms) {
+          const grafStep = 160;
+          const grafOffset = (this.distance * 0.9) % grafStep;
+          for (let gz = grafOffset; gz < 860; gz += grafStep) {
+            const pG = project3D(wNorm, gz, 24);
+            const sG = pG.scale;
+            const tag = rioTags[Math.floor(gz / grafStep) % rioTags.length];
+            if (sG > 0.28) {
+              ctx.save();
+              ctx.fillStyle = tag.col;
+              ctx.strokeStyle = tag.outline;
+              ctx.lineWidth = Math.max(1, 1.8 * sG);
+              ctx.font = `900 ${Math.max(8, 16 * sG)}px "Orbitron", Impact, sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.strokeText(tag.text, pG.x, pG.y);
+              ctx.fillText(tag.text, pG.x, pG.y);
+              ctx.restore();
+            }
+          }
+        }
+      } else if (currentTheme === 'cairo') {
+        // --- CAIRO PYRAMIDS THEME ---
+        // A. Great Pyramids of Giza on Horizon
+        ctx.save();
+        const pyrStep = 480;
+        const pyrOffset = (this.distance * 0.08) % pyrStep;
+        const p1X = (DESIGN_WIDTH * 0.35 + pyrOffset) % (DESIGN_WIDTH + 260) - 130;
+        const p1Y = VP_Y;
+        const p1W = 160;
+        const p1H = 95;
+        ctx.fillStyle = '#eab308';
+        ctx.beginPath();
+        ctx.moveTo(p1X, p1Y - p1H);
+        ctx.lineTo(p1X + p1W * 0.45, p1Y);
+        ctx.lineTo(p1X - p1W * 0.1, p1Y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#a16207';
+        ctx.beginPath();
+        ctx.moveTo(p1X, p1Y - p1H);
+        ctx.lineTo(p1X - p1W * 0.55, p1Y);
+        ctx.lineTo(p1X - p1W * 0.1, p1Y);
+        ctx.closePath();
+        ctx.fill();
+
+        const p2X = (DESIGN_WIDTH * 0.75 + pyrOffset * 0.7) % (DESIGN_WIDTH + 260) - 130;
+        const p2H = 75;
+        const p2W = 130;
+        ctx.fillStyle = '#ca8a04';
+        ctx.beginPath();
+        ctx.moveTo(p2X, p1Y - p2H);
+        ctx.lineTo(p2X + p2W * 0.45, p1Y);
+        ctx.lineTo(p2X - p2W * 0.1, p1Y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#854d0e';
+        ctx.beginPath();
+        ctx.moveTo(p2X, p1Y - p2H);
+        ctx.lineTo(p2X - p2W * 0.55, p1Y);
+        ctx.lineTo(p2X - p2W * 0.1, p1Y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // B. Ancient Egyptian Obelisks flanking tracks
+        const obeliskStep = 240;
+        const obeliskOffset = (this.distance * 0.95) % obeliskStep;
+        for (let oz = obeliskOffset; oz < 860; oz += obeliskStep) {
+          for (const side of [-2.1, 2.1]) {
+            const pO = project3D(side, oz, 0);
+            const so = pO.scale;
+            if (so < 0.1) continue;
+            ctx.save();
+            const obW = 16 * so;
+            const obH = 95 * so;
+            ctx.fillStyle = '#d97706';
+            ctx.beginPath();
+            ctx.moveTo(pO.x - obW / 2, pO.y);
+            ctx.lineTo(pO.x - obW * 0.35, pO.y - obH * 0.88);
+            ctx.lineTo(pO.x + obW * 0.35, pO.y - obH * 0.88);
+            ctx.lineTo(pO.x + obW / 2, pO.y);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = '#fde047';
+            ctx.beginPath();
+            ctx.moveTo(pO.x, pO.y - obH);
+            ctx.lineTo(pO.x + obW * 0.35, pO.y - obH * 0.88);
+            ctx.lineTo(pO.x - obW * 0.35, pO.y - obH * 0.88);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = '#78350f';
+            for (let hy = pO.y - obH * 0.8; hy < pO.y - 10 * so; hy += 16 * so) {
+              ctx.fillRect(pO.x - 2 * so, hy, 4 * so, 4 * so);
+              ctx.fillRect(pO.x - 4 * so, hy + 6 * so, 8 * so, 2 * so);
+            }
+            ctx.restore();
+          }
+        }
+
+        // C. Cairo Graffiti
+        const wallNorms = [-1.58, 1.58];
+        const cairoTags = [
+          { text: 'CAIRO', col: '#facc15', outline: '#451a03' },
+          { text: 'PHARAOH', col: '#f97316', outline: '#ffffff' },
+          { text: 'PYRAMID', col: '#fde047', outline: '#78350f' },
+          { text: 'RA ★', col: '#ec4899', outline: '#ffffff' }
+        ];
+        for (const wNorm of wallNorms) {
+          const grafStep = 170;
+          const grafOffset = (this.distance * 0.9) % grafStep;
+          for (let gz = grafOffset; gz < 860; gz += grafStep) {
+            const pG = project3D(wNorm, gz, 24);
+            const sG = pG.scale;
+            const tag = cairoTags[Math.floor(gz / grafStep) % cairoTags.length];
+            if (sG > 0.28) {
+              ctx.save();
+              ctx.fillStyle = tag.col;
+              ctx.strokeStyle = tag.outline;
+              ctx.lineWidth = Math.max(1, 1.8 * sG);
+              ctx.font = `900 ${Math.max(8, 16 * sG)}px "Orbitron", Impact, sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.strokeText(tag.text, pG.x, pG.y);
+              ctx.fillText(tag.text, pG.x, pG.y);
+              ctx.restore();
+            }
+          }
+        }
+      } else if (currentTheme === 'classic') {
+        // --- SUBWAY CITY CLASSIC THEME ---
+        // A. Vintage Industrial Brick Subway Tunnel Portal
+        const tunnelStep = 520;
+        const tunnelOffset = (this.distance * 1.0) % tunnelStep;
+        for (let tz = tunnelOffset; tz < 880; tz += tunnelStep) {
+          const pL = project3D(-1.75, tz, 0);
+          const pR = project3D(1.75, tz, 0);
+          const pM = project3D(0, tz, 100);
+          const st = pL.scale;
+          if (st > 0.1) {
+            ctx.save();
+            ctx.fillStyle = '#b91c1c';
+            ctx.fillRect(pL.x - 22 * st, pM.y - 30 * st, (pR.x - pL.x) + 44 * st, 30 * st);
+            ctx.fillStyle = '#991b1b';
+            ctx.fillRect(pL.x - 22 * st, pM.y, 22 * st, pL.y - pM.y);
+            ctx.fillRect(pR.x, pM.y, 22 * st, pR.y - pM.y);
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(pM.x - 55 * st, pM.y - 24 * st, 110 * st, 20 * st);
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = `900 ${Math.max(8, 13 * st)}px "Orbitron", sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText('SUBWAY CITY 🚇', pM.x, pM.y - 10 * st);
+            ctx.restore();
+          }
+        }
+
+        // B. Vintage Wooden Water Tower on side
+        const towerStep = 460;
+        const towerOffset = (this.distance * 0.95 + 180) % towerStep;
+        for (let wz = towerOffset; wz < 850; wz += towerStep) {
+          const pW = project3D(-2.3, wz, 0);
+          const sw = pW.scale;
+          if (sw > 0.12) {
+            ctx.save();
+            const tankW = 60 * sw;
+            const tankH = 50 * sw;
+            const legH = 65 * sw;
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 3 * sw;
+            ctx.beginPath();
+            ctx.moveTo(pW.x - tankW * 0.45, pW.y);
+            ctx.lineTo(pW.x - tankW * 0.35, pW.y - legH);
+            ctx.moveTo(pW.x + tankW * 0.45, pW.y);
+            ctx.lineTo(pW.x + tankW * 0.35, pW.y - legH);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(pW.x - tankW * 0.45, pW.y);
+            ctx.lineTo(pW.x + tankW * 0.35, pW.y - legH);
+            ctx.moveTo(pW.x + tankW * 0.45, pW.y);
+            ctx.lineTo(pW.x - tankW * 0.35, pW.y - legH);
+            ctx.stroke();
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(pW.x - tankW / 2, pW.y - legH - tankH, tankW, tankH);
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(pW.x - tankW / 2, pW.y - legH - tankH * 0.75, tankW, 3 * sw);
+            ctx.fillRect(pW.x - tankW / 2, pW.y - legH - tankH * 0.25, tankW, 3 * sw);
+            ctx.fillStyle = '#15803d';
+            ctx.beginPath();
+            ctx.moveTo(pW.x - tankW * 0.55, pW.y - legH - tankH);
+            ctx.lineTo(pW.x, pW.y - legH - tankH - 22 * sw);
+            ctx.lineTo(pW.x + tankW * 0.55, pW.y - legH - tankH);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+
+        // C. Classic Subway Graffiti Tags
+        const wallNorms = [-1.58, 1.58];
+        const classicTags = [
+          { text: 'SUBWAY', col: '#38bdf8', outline: '#ffffff' },
+          { text: 'SURFERS', col: '#facc15', outline: '#0f172a' },
+          { text: 'JAKE ★', col: '#ef4444', outline: '#ffffff' },
+          { text: 'FRESH', col: '#22c55e', outline: '#ffffff' }
+        ];
+        for (const wNorm of wallNorms) {
+          const grafStep = 160;
+          const grafOffset = (this.distance * 0.9) % grafStep;
+          for (let gz = grafOffset; gz < 860; gz += grafStep) {
+            const pG = project3D(wNorm, gz, 24);
+            const sG = pG.scale;
+            const tag = classicTags[Math.floor(gz / grafStep) % classicTags.length];
+            if (sG > 0.28) {
+              ctx.save();
+              ctx.fillStyle = tag.col;
+              ctx.strokeStyle = tag.outline;
+              ctx.lineWidth = Math.max(1, 1.8 * sG);
+              ctx.font = `900 ${Math.max(8, 16 * sG)}px "Orbitron", Impact, sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.strokeText(tag.text, pG.x, pG.y);
+              ctx.fillText(tag.text, pG.x, pG.y);
+              ctx.restore();
+            }
           }
         }
       } else {
@@ -4580,7 +5632,12 @@
         } else if (entity.type === 'collectible') {
           this.collectibles.renderItem(ctx, entity.item);
         } else if (entity.type === 'player') {
-          this.player.render(ctx, entity.customZ, entity.customScale, entity.isFrontView);
+          const buffs = {
+            jetpack: this.player.hasJetpack,
+            hoverboard: this.player.hasHoverboard,
+            sneakers: this.player.hasSneakers
+          };
+          this.player.render(ctx, entity.customZ, entity.customScale, entity.isFrontView, buffs);
         }
       }
 

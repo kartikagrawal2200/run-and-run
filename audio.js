@@ -198,6 +198,60 @@ const SoundSystem = (function () {
     } catch (e) {}
   }
 
+  function playJetpack() {
+    try {
+      playTone(180, 0.45, 'sawtooth', 0.15, 0, 520);
+      playTone(340, 0.35, 'triangle', 0.18, 0.05, 780);
+      playTone(680, 0.25, 'sine', 0.12, 0.15, 960);
+    } catch (e) {}
+  }
+
+  function playHoverboard() {
+    try {
+      playTone(260, 0.12, 'sine', 0.15, 0, 520);
+      playTone(520, 0.18, 'triangle', 0.18, 0.04, 880);
+      playTone(1040, 0.22, 'sine', 0.14, 0.08, 1320);
+    } catch (e) {}
+  }
+
+  function playBoardCrash() {
+    try {
+      playTone(440, 0.15, 'sawtooth', 0.25, 0, 110);
+      playCrash();
+      playTone(880, 0.22, 'sine', 0.18, 0.05, 220);
+    } catch (e) {}
+  }
+
+  function playSneakers() {
+    try {
+      playTone(220, 0.22, 'sine', 0.22, 0, 920);
+      playTone(440, 0.18, 'triangle', 0.16, 0.04, 1100);
+    } catch (e) {}
+  }
+
+  function playNearMiss() {
+    try {
+      playTone(720, 0.14, 'sine', 0.15, 0, 260);
+    } catch (e) {}
+  }
+
+  function playTaunt() {
+    try {
+      playTone(587.33, 0.09, 'sine', 0.18, 0, 880);     // D5 -> A5
+      playTone(880.00, 0.12, 'triangle', 0.2, 0.07, 1174); // A5 -> D6
+      playTone(1174.66, 0.18, 'sine', 0.16, 0.14);      // D6
+    } catch (e) {}
+  }
+
+  function playMissionComplete() {
+    try {
+      playTone(523.25, 0.1, 'triangle', 0.2, 0);       // C5
+      playTone(659.25, 0.1, 'triangle', 0.2, 0.09);    // E5
+      playTone(783.99, 0.12, 'triangle', 0.22, 0.18);  // G5
+      playTone(1046.50, 0.35, 'square', 0.24, 0.27);   // C6
+    } catch (e) {}
+  }
+
   /* ---------------- Procedural Synthwave BGM ---------------- */
   function scheduleBgmNote(time) {
     if (bgmMuted || !isPlayingBgm || !ctx) return;
@@ -372,6 +426,13 @@ const SoundSystem = (function () {
     laneSwitch: playLaneSwitch,
     coin: playCoin,
     powerup: playPowerup,
+    jetpack: playJetpack,
+    hoverboard: playHoverboard,
+    boardCrash: playBoardCrash,
+    sneakers: playSneakers,
+    nearMiss: playNearMiss,
+    taunt: playTaunt,
+    missionComplete: playMissionComplete,
     shieldBreak: playShieldBreak,
     crash: playCrash,
     buy: playBuy,
