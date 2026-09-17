@@ -3613,20 +3613,24 @@
       qBox.classList.remove('hidden');
       cBox.classList.add('hidden');
 
+      const letters = ['A', 'B', 'C', 'D'];
       const quizData = [
         {
-          q: "Which character rocks the iconic backwards red cap?",
+          cat: "🛹 SURFER LORE",
+          q: "Which iconic character rocks the famous backwards red cap & denim vest?",
           options: ["Jake", "Tricky", "Fresh", "Spike"],
           correct: 0
         },
         {
-          q: "What power-up lets you fly high above the tracks with rainbow smoke?",
-          options: ["Super Sneakers", "Jetpack", "Coin Magnet", "Score 2X"],
+          cat: "🚀 GEAR & BOOSTS",
+          q: "What power-up lets you fly high above trains with colorful spray smoke?",
+          options: ["Super Sneakers", "Jetpack", "Coin Magnet", "2X Multiplier"],
           correct: 1
         },
         {
-          q: "What gives you crash-immunity & high-speed rail glide?",
-          options: ["Headstart", "Hoverboard", "Mystery Box", "Shield"],
+          cat: "🚇 TRACK MASTERY",
+          q: "What gives you temporary crash-immunity and high-speed rail gliding?",
+          options: ["Headstart", "Hoverboard", "Mystery Box", "Shield Boost"],
           correct: 1
         }
       ];
@@ -3636,7 +3640,7 @@
       }
 
       const item = quizData[this.dailyQuizStep];
-      if (countEl) countEl.textContent = `QUESTION ${this.dailyQuizStep + 1} OF ${quizData.length}`;
+      if (countEl) countEl.innerHTML = `<span class="quiz-pill" style="margin-right:8px;">${item.cat}</span> QUESTION ${this.dailyQuizStep + 1} OF ${quizData.length}`;
       if (titleEl) titleEl.textContent = item.q;
 
       grid.innerHTML = '';
@@ -3644,9 +3648,12 @@
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'quiz-opt-btn';
-        btn.textContent = optText;
+        btn.innerHTML = `
+          <div class="quiz-opt-letter">${letters[optIdx]}</div>
+          <span class="quiz-opt-text">${optText}</span>
+        `;
 
-        btn.onclick = () => {
+        this.attachButtonAction(btn, () => {
           if (optIdx === item.correct) {
             btn.classList.add('correct');
             try { SoundSystem.powerup(); } catch (e) {}
@@ -3662,12 +3669,13 @@
                   SoundSystem.missionComplete();
                 } catch (e) {}
                 this.particles.burst(DESIGN_WIDTH / 2, 400, '#facc15', 36, 90, 280);
+                this.particles.burst(DESIGN_WIDTH / 2, 400, '#10b981', 24, 70, 240);
                 this.updateBankDisplays();
                 this.renderDailyQuiz();
               } else {
                 this.renderDailyQuiz();
               }
-            }, 350);
+            }, 320);
           } else {
             btn.classList.add('wrong');
             try { SoundSystem.crash(); } catch (e) {}
@@ -3675,7 +3683,7 @@
               btn.classList.remove('wrong');
             }, 400);
           }
-        };
+        });
 
         grid.appendChild(btn);
       });
@@ -4132,6 +4140,75 @@
       }
     }
 
+    renderSettingsWorldsList() {
+      const list = document.getElementById('bgChoicesList');
+      if (!list) return;
+      list.innerHTML = '';
+
+      THEMES.forEach((theme, idx) => {
+        const isActive = idx === this.selectedBgIndex;
+        const card = document.createElement('div');
+        card.className = `settings-world-card ${isActive ? 'active' : ''}`;
+        card.innerHTML = `
+          <div class="settings-world-left">
+            <div class="settings-world-icon-art">${theme.flag || '🚇'}</div>
+            <div class="settings-world-text">
+              <span class="settings-world-name">${theme.name}</span>
+              <span class="settings-world-desc">${theme.desc || 'Authentic 3D railway tracks with themed obstacles & scenery!'}</span>
+            </div>
+          </div>
+          <button type="button" class="settings-world-btn ${isActive ? 'active-btn' : ''}">
+            ${isActive ? 'ACTIVE ✔' : 'SELECT ▶'}
+          </button>
+        `;
+
+        this.attachButtonAction(card, () => {
+          this.selectBackground(idx);
+          try { SoundSystem.equip(); } catch (e) {}
+          this.renderSettingsWorldsList();
+          this.updateProfileUI();
+        });
+
+        list.appendChild(card);
+      });
+    }
+
+    syncAudioSettingsUI() {
+      try {
+        const bgmToggle = document.getElementById('settingsBgmToggle');
+        const bgmSlider = document.getElementById('settingsBgmSlider');
+        const bgmVolText = document.getElementById('bgmVolText');
+        if (bgmToggle) {
+          const active = (typeof SoundSystem !== 'undefined' && SoundSystem.bgmEnabled !== undefined) ? SoundSystem.bgmEnabled : true;
+          bgmToggle.textContent = active ? 'ON' : 'OFF';
+          if (active) bgmToggle.classList.add('active');
+          else bgmToggle.classList.remove('active');
+        }
+        if (bgmSlider && typeof SoundSystem !== 'undefined') {
+          const vol = SoundSystem.bgmVolume !== undefined ? SoundSystem.bgmVolume : 0.7;
+          bgmSlider.value = Math.round(vol * 100);
+          if (bgmVolText) bgmVolText.textContent = `${Math.round(vol * 100)}%`;
+        }
+
+        const sfxToggle = document.getElementById('settingsSfxToggle');
+        const sfxSlider = document.getElementById('settingsSfxSlider');
+        const sfxVolText = document.getElementById('sfxVolText');
+        if (sfxToggle) {
+          const active = (typeof SoundSystem !== 'undefined' && SoundSystem.sfxEnabled !== undefined) ? SoundSystem.sfxEnabled : true;
+          sfxToggle.textContent = active ? 'ON' : 'OFF';
+          if (active) sfxToggle.classList.add('active');
+          else sfxToggle.classList.remove('active');
+        }
+        if (sfxSlider && typeof SoundSystem !== 'undefined') {
+          const vol = SoundSystem.sfxVolume !== undefined ? SoundSystem.sfxVolume : 0.9;
+          sfxSlider.value = Math.round(vol * 100);
+          if (sfxVolText) sfxVolText.textContent = `${Math.round(vol * 100)}%`;
+        }
+      } catch (err) {
+        console.warn('[syncAudioSettingsUI error]', err);
+      }
+    }
+
     renderWorldTourModal() {
       const container = document.getElementById('worldTourCards');
       const dotsContainer = document.getElementById('worldTourDots');
@@ -4163,6 +4240,7 @@
           this.selectBackground(idx);
           try { SoundSystem.equip(); } catch (e) {}
           this.renderWorldTourModal();
+          this.renderSettingsWorldsList();
           const modal = document.getElementById('worldTourModal');
           if (modal) {
             setTimeout(() => modal.classList.add('hidden'), 220);
@@ -4184,15 +4262,33 @@
 
         container.appendChild(card);
         cards.push(card);
+      });
 
-        // Dot indicator
+      // Active carousel index tracker
+      let currentCarouselIdx = this.selectedBgIndex || 0;
+      const updateDots = (idx) => {
+        dots.forEach((d, i) => {
+          if (i === idx) d.classList.add('active');
+          else d.classList.remove('active');
+        });
+      };
+
+      const scrollToCard = (idx, smooth = true) => {
+        if (!cards[idx]) return;
+        currentCarouselIdx = idx;
+        cards[idx].scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', inline: 'center', block: 'nearest' });
+        updateDots(idx);
+      };
+
+      // Dot indicators
+      THEMES.forEach((theme, idx) => {
         if (dotsContainer) {
           const dot = document.createElement('div');
-          dot.className = `world-dot ${isActive ? 'active' : ''}`;
+          dot.className = `world-dot ${idx === this.selectedBgIndex ? 'active' : ''}`;
           dot.title = theme.name;
           dot.addEventListener('click', (e) => {
             e.stopPropagation();
-            card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            scrollToCard(idx);
           });
           dotsContainer.appendChild(dot);
           dots.push(dot);
@@ -4224,14 +4320,12 @@
         if (scrollRaf) cancelAnimationFrame(scrollRaf);
         scrollRaf = requestAnimationFrame(() => {
           const activeIdx = getClosestCardIndex();
-          dots.forEach((d, i) => {
-            if (i === activeIdx) d.classList.add('active');
-            else d.classList.remove('active');
-          });
+          currentCarouselIdx = activeIdx;
+          updateDots(activeIdx);
         });
       };
 
-      // Pointer drag support (works for mouse & touch without breaking window listeners)
+      // Pointer drag support
       let isPointerDown = false;
       let startX = 0;
       let scrollStart = 0;
@@ -4270,37 +4364,32 @@
         }
       };
 
-      // Clean Arrow navigation buttons
+      // Clean Arrow navigation buttons - Smooth & reliable scroll to Prev / Next card
       const prevBtn = document.getElementById('worldTourPrevBtn');
       const nextBtn = document.getElementById('worldTourNextBtn');
       if (prevBtn) {
         prevBtn.onclick = (e) => {
-          e.stopPropagation();
-          const curr = getClosestCardIndex();
-          const target = Math.max(0, curr - 1);
-          if (cards[target]) {
-            cards[target].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          if (e) {
+            try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
           }
+          const target = Math.max(0, currentCarouselIdx - 1);
+          scrollToCard(target);
         };
       }
       if (nextBtn) {
         nextBtn.onclick = (e) => {
-          e.stopPropagation();
-          const curr = getClosestCardIndex();
-          const target = Math.min(cards.length - 1, curr + 1);
-          if (cards[target]) {
-            cards[target].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          if (e) {
+            try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
           }
+          const target = Math.min(cards.length - 1, currentCarouselIdx + 1);
+          scrollToCard(target);
         };
       }
 
       // Auto-scroll active card into view when opening
       setTimeout(() => {
-        const target = cards[this.selectedBgIndex] || cards[0];
-        if (target) {
-          target.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
-        }
-      }, 60);
+        scrollToCard(this.selectedBgIndex || 0, false);
+      }, 70);
     }
 
     resetRun() {
@@ -4419,7 +4508,10 @@
       let lastTrigger = 0;
       const handler = (e) => {
         const now = Date.now();
-        if (now - lastTrigger < 200) return;
+        if (now - lastTrigger < 320) {
+          if (e && e.cancelable) e.preventDefault();
+          return;
+        }
         lastTrigger = now;
         try {
           callback(e);
@@ -4428,9 +4520,6 @@
         }
       };
       el.addEventListener('click', handler);
-      el.addEventListener('touchend', (e) => {
-        handler(e);
-      }, { passive: true });
     }
 
     flashInsufficientFunds(btn, needed) {
@@ -4868,22 +4957,47 @@
       if (!container) return;
       container.innerHTML = '';
 
+      const categoryMap = {
+        'ach_coins_1k': '🪙 WEALTH',
+        'ach_score_15k': '🏆 RECORD',
+        'ach_trains_10': '🚂 ACROBAT',
+        'ach_boards_5': '🛹 SKATER',
+        'ach_revive_3': '🔑 RESCUE',
+        'ach_combo_10': '⚡ STREAK'
+      };
+
+      const completedCount = ACHIEVEMENTS_DATA.filter(a => {
+        const s = this.achievements[a.id];
+        return s && s.completed;
+      }).length;
+
+      const countBadge = document.getElementById('achievementsUnlockedCount');
+      if (countBadge) {
+        countBadge.textContent = `${completedCount} / ${ACHIEVEMENTS_DATA.length} COMPLETED`;
+      }
+
       ACHIEVEMENTS_DATA.forEach(ach => {
         const state = this.achievements[ach.id] || { progress: 0, completed: false, claimed: false };
         const card = document.createElement('div');
         card.className = `achievement-item-card ${state.completed ? 'completed' : ''} ${state.claimed ? 'claimed' : ''}`;
 
         const pct = Math.min(100, Math.round((state.progress / ach.target) * 100));
+        const catTag = categoryMap[ach.id] || '⭐ AWARD';
 
         card.innerHTML = `
-          <div class="achievement-icon">${ach.icon}</div>
-          <div class="achievement-info">
-            <span class="achievement-title">${ach.title}</span>
-            <span class="achievement-desc">${ach.desc}</span>
-            <div class="achievement-progress-bar">
-              <div class="achievement-progress-fill" style="width: ${pct}%"></div>
+          <div class="achievement-left-wrap">
+            <div class="achievement-badge-box">${ach.icon}</div>
+            <div class="achievement-info">
+              <div class="achievement-title-row">
+                <span class="achievement-title">${ach.title}</span>
+                <span class="achievement-category-badge">${catTag}</span>
+              </div>
+              <span class="achievement-desc">${ach.desc}</span>
+              <div class="achievement-progress-track">
+                <div class="achievement-progress-fill" style="width: ${pct}%"></div>
+              </div>
+              <small class="achievement-count">${state.progress.toLocaleString()} / ${ach.target.toLocaleString()} (${pct}%)</small>
             </div>
-            <small class="achievement-count">${state.progress.toLocaleString()} / ${ach.target.toLocaleString()}</small>
           </div>
         `;
 
@@ -4924,7 +5038,13 @@
       }
       this.saveBankCoins(this.bankCoins);
 
-      try { SoundSystem.achievement(); } catch (e) {}
+      try {
+        SoundSystem.achievement();
+        SoundSystem.buy();
+      } catch (e) {}
+
+      this.particles.burst(DESIGN_WIDTH / 2, 380, '#facc15', 32, 90, 280);
+      this.particles.burst(DESIGN_WIDTH / 2, 380, '#ec4899', 18, 70, 240);
       this.updateBankDisplays();
       this.renderAchievementsModal();
     }
@@ -5033,13 +5153,18 @@
 
       const crate = document.getElementById('mysteryCrateEl');
       const openBtn = document.getElementById('mysteryBoxOpenBtn');
+      const buyBtn = document.getElementById('mysteryBoxBuyBtn');
       const countText = document.getElementById('mysteryBoxesCount');
       const rewardArea = document.getElementById('mysteryRewardReveal');
       const doneBtn = document.getElementById('mysteryBoxDoneBtn');
       const closeBtn = document.getElementById('closeMysteryBoxBtn');
 
-      const remaining = Math.max(1, this.pendingMysteryBoxes || 1);
-      if (countText) countText.textContent = `CRATES TO UNBOX: ${remaining}`;
+      const hasCrates = (this.pendingMysteryBoxes || 0) > 0;
+      if (countText) {
+        countText.textContent = hasCrates
+          ? `CRATES TO UNBOX: ${this.pendingMysteryBoxes}`
+          : `NO UNOPENED CRATES • BUY FOR 500 🪙`;
+      }
       if (rewardArea) rewardArea.classList.add('hidden');
       if (doneBtn) doneBtn.classList.add('hidden');
 
@@ -5048,26 +5173,64 @@
       };
 
       if (crate) {
-        crate.classList.remove('hidden', 'crate-opening-shake');
-        crate.onclick = openAction;
+        crate.classList.remove('hidden', 'crate-opening-shake', 'crate-bursting');
+        this.attachButtonAction(crate, () => {
+          if (hasCrates) {
+            openAction();
+          } else if (this.bankCoins >= 500) {
+            this.bankCoins -= 500;
+            this.saveBankCoins(this.bankCoins);
+            this.updateBankDisplays();
+            this.pendingMysteryBoxes = 1;
+            openAction();
+          } else if (buyBtn) {
+            this.flashInsufficientFunds(buyBtn, 500 - this.bankCoins);
+          }
+        });
       }
+
       if (openBtn) {
-        openBtn.classList.remove('hidden');
-        openBtn.disabled = false;
-        openBtn.onclick = openAction;
+        if (hasCrates) {
+          openBtn.classList.remove('hidden');
+          openBtn.disabled = false;
+          this.attachButtonAction(openBtn, openAction);
+        } else {
+          openBtn.classList.add('hidden');
+        }
       }
+
+      if (buyBtn) {
+        if (!hasCrates) {
+          buyBtn.classList.remove('hidden');
+          this.attachButtonAction(buyBtn, () => {
+            if (this.bankCoins >= 500) {
+              this.bankCoins -= 500;
+              this.saveBankCoins(this.bankCoins);
+              this.updateBankDisplays();
+              this.pendingMysteryBoxes = 1;
+              openAction();
+            } else {
+              this.flashInsufficientFunds(buyBtn, 500 - this.bankCoins);
+            }
+          });
+        } else {
+          buyBtn.classList.add('hidden');
+        }
+      }
+
       if (closeBtn) {
-        closeBtn.onclick = () => {
+        this.attachButtonAction(closeBtn, () => {
           if (modal) modal.classList.add('hidden');
           this.updateBankDisplays();
           if (onComplete) onComplete();
-        };
+        });
       }
     }
 
     openMysteryBox(onComplete) {
       const crate = document.getElementById('mysteryCrateEl');
       const openBtn = document.getElementById('mysteryBoxOpenBtn');
+      const buyBtn = document.getElementById('mysteryBoxBuyBtn');
       const rewardArea = document.getElementById('mysteryRewardReveal');
       const rewardIcon = document.getElementById('mysteryRewardIcon');
       const rewardTitle = document.getElementById('mysteryRewardTitle');
@@ -5076,11 +5239,14 @@
       const countText = document.getElementById('mysteryBoxesCount');
 
       if (openBtn) openBtn.disabled = true;
+      if (buyBtn) buyBtn.classList.add('hidden');
       if (crate) {
         crate.classList.add('crate-opening-shake', 'crate-bursting');
       }
 
-      try { SoundSystem.mysteryBox(); } catch (e) {}
+      try {
+        SoundSystem.mysteryBox();
+      } catch (e) {}
 
       setTimeout(() => {
         if (crate) {
@@ -5090,14 +5256,18 @@
         if (openBtn) openBtn.classList.add('hidden');
 
         this.pendingMysteryBoxes = Math.max(0, (this.pendingMysteryBoxes || 1) - 1);
-        if (countText) countText.textContent = `CRATES TO UNBOX: ${this.pendingMysteryBoxes}`;
+        if (countText) {
+          countText.textContent = (this.pendingMysteryBoxes > 0)
+            ? `CRATES TO UNBOX: ${this.pendingMysteryBoxes}`
+            : `CRATE OPENED! 🎉`;
+        }
 
-        // Roll rewards: 60% Coins (250-750), 25% Keys (1-2), 15% Hoverboards (+2)
+        // Roll authentic rewards: 60% Coins (300-800), 25% Keys (1-2), 15% Hoverboards (+2)
         const roll = Math.random();
-        let icon = '🪙', title = '+300 COINS!', desc = 'Added straight to your subway bank!';
+        let icon = '🪙', title = '+350 COINS!', desc = 'Added straight to your subway bank!';
 
         if (roll < 0.60) {
-          const coins = 250 + Math.floor(Math.random() * 6) * 100;
+          const coins = 300 + Math.floor(Math.random() * 6) * 100;
           this.bankCoins += coins;
           this.saveBankCoins(this.bankCoins);
           icon = '🪙';
@@ -5117,10 +5287,14 @@
           desc = 'Stocked in your run supply for crash immunity.';
         }
 
-        try { SoundSystem.buy(); } catch (e) {}
-        this.particles.burst(DESIGN_WIDTH / 2, 400, '#facc15', 30, 90, 280);
-        this.particles.burst(DESIGN_WIDTH / 2 - 35, 390, '#ec4899', 18, 70, 230);
-        this.particles.burst(DESIGN_WIDTH / 2 + 35, 390, '#38bdf8', 18, 70, 230);
+        try {
+          SoundSystem.buy();
+          SoundSystem.achievement();
+        } catch (e) {}
+
+        this.particles.burst(DESIGN_WIDTH / 2, 400, '#facc15', 36, 100, 300);
+        this.particles.burst(DESIGN_WIDTH / 2 - 35, 390, '#ec4899', 20, 80, 240);
+        this.particles.burst(DESIGN_WIDTH / 2 + 35, 390, '#38bdf8', 20, 80, 240);
 
         if (rewardIcon) rewardIcon.textContent = icon;
         if (rewardTitle) rewardTitle.textContent = title;
@@ -5130,7 +5304,7 @@
         if (doneBtn) {
           doneBtn.classList.remove('hidden');
           doneBtn.textContent = (this.pendingMysteryBoxes > 0) ? 'OPEN NEXT CRATE 📦' : 'COLLECT & CONTINUE ▶';
-          doneBtn.onclick = () => {
+          this.attachButtonAction(doneBtn, () => {
             if (this.pendingMysteryBoxes > 0) {
               this.triggerMysteryBoxModal(onComplete);
             } else {
@@ -5139,7 +5313,7 @@
               this.updateBankDisplays();
               if (onComplete) onComplete();
             }
-          };
+          });
         }
       }, 580);
     }
@@ -5205,36 +5379,54 @@
         this.setState(GameStates.PLAYING);
       });
 
+      // Cache All Modal Elements Safely
+      const settingsModal = document.getElementById('settingsModal');
+      const shopModal = document.getElementById('shopModal');
+      const seasonModal = document.getElementById('seasonModal');
+      const achievementsModal = document.getElementById('achievementsModal');
+      const worldTourModal = document.getElementById('worldTourModal');
+      const missionsModal = document.getElementById('missionsModal');
+      const nameModal = document.getElementById('nameModal');
+
+      // Modal Open Timestamps (Blocks phantom ghost touch closures)
+      const modalOpenTimes = {};
+      const registerModalOpen = (m) => {
+        if (!m) return;
+        modalOpenTimes[m.id] = Date.now();
+        m.classList.remove('hidden');
+      };
+      const setupBackdropClose = (m, closeFn) => {
+        if (!m) return;
+        m.addEventListener('click', (e) => {
+          if (e.target === m && Date.now() - (modalOpenTimes[m.id] || 0) > 600) {
+            closeFn();
+          }
+        });
+      };
+
       // Settings Modal Open/Close
       const openSettings = () => {
         try { SoundSystem.ensure(); } catch (e) {}
         try { this.updateProfileUI(); } catch (e) {}
-        const sm = document.getElementById('settingsModal') || this.settingsModal;
-        if (sm) sm.classList.remove('hidden');
+        try { this.renderSettingsWorldsList(); } catch (e) {}
+        try { this.syncAudioSettingsUI(); } catch (e) {}
+        registerModalOpen(settingsModal);
       };
       const closeSettings = () => {
-        const sm = document.getElementById('settingsModal') || this.settingsModal;
-        if (sm) sm.classList.add('hidden');
+        if (settingsModal) settingsModal.classList.add('hidden');
       };
 
       this.attachButtonAction('menuSettingsBtn', openSettings);
       this.attachButtonAction('closeSettingsBtn', closeSettings);
       this.attachButtonAction('applySettingsBtn', closeSettings);
-
-      const smOverlay = document.getElementById('settingsModal');
-      if (smOverlay) {
-        smOverlay.addEventListener('click', (e) => {
-          if (e.target === smOverlay) closeSettings();
-        });
-      }
+      setupBackdropClose(settingsModal, closeSettings);
 
       // Dedicated Runner Name Modal (Direct Custom Name Input)
-      const nameModal = document.getElementById('nameModal');
       this.attachButtonAction('menuProfileBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
         this.updateProfileUI();
         if (nameModal) {
-          nameModal.classList.remove('hidden');
+          registerModalOpen(nameModal);
           const inp = document.getElementById('playerNameInput');
           if (inp) {
             setTimeout(() => { inp.focus(); inp.select(); }, 120);
@@ -5251,8 +5443,10 @@
         if (nameModal) nameModal.classList.add('hidden');
       });
 
-      // Name Modal Close Button
       this.attachButtonAction('closeNameModalBtn', () => {
+        if (nameModal) nameModal.classList.add('hidden');
+      });
+      setupBackdropClose(nameModal, () => {
         if (nameModal) nameModal.classList.add('hidden');
       });
 
@@ -5265,29 +5459,31 @@
         });
       });
 
-      // World Tour Modal Open/Close
-      const worldTourModal = document.getElementById('worldTourModal');
+      // World Tour Destination Modal Open/Close
       this.attachButtonAction('menuWorldBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
         this.renderWorldTourModal();
-        if (worldTourModal) worldTourModal.classList.remove('hidden');
+        registerModalOpen(worldTourModal);
       });
 
       this.attachButtonAction('closeWorldTourBtn', () => {
         if (worldTourModal) worldTourModal.classList.add('hidden');
       });
-      if (worldTourModal) {
-        worldTourModal.addEventListener('click', (e) => {
-          if (e.target === worldTourModal) worldTourModal.classList.add('hidden');
-        });
-      }
+      setupBackdropClose(worldTourModal, () => {
+        if (worldTourModal) worldTourModal.classList.add('hidden');
+      });
+
+      // Side Rail: Chest / Mystery Box
+      this.attachButtonAction('menuChestBtn', () => {
+        try { SoundSystem.ensure(); } catch (e) {}
+        this.triggerMysteryBoxModal();
+      });
 
       // Side Rail: Missions & Challenges (QUESTS & DAILY QUIZ)
-      const missionsModal = document.getElementById('missionsModal');
       this.attachButtonAction('menuMissionsBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
         this.renderMissionsModal();
-        if (missionsModal) missionsModal.classList.remove('hidden');
+        registerModalOpen(missionsModal);
       });
       this.attachButtonAction('closeMissionsBtn', () => {
         if (missionsModal) missionsModal.classList.add('hidden');
@@ -5295,11 +5491,9 @@
       this.attachButtonAction('closeMissionsDoneBtn', () => {
         if (missionsModal) missionsModal.classList.add('hidden');
       });
-      if (missionsModal) {
-        missionsModal.addEventListener('click', (e) => {
-          if (e.target === missionsModal) missionsModal.classList.add('hidden');
-        });
-      }
+      setupBackdropClose(missionsModal, () => {
+        if (missionsModal) missionsModal.classList.add('hidden');
+      });
 
       // Dual Tabs inside Missions & Quests Modal
       const tabMissions = document.getElementById('tabBtnMissions');
@@ -5324,16 +5518,18 @@
       }
 
       // Side Rail: Top Run Leaderboard
-      const leaderboardModal = document.getElementById('leaderboardModal');
       this.attachButtonAction('menuLeaderboardBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
         this.renderLeaderboardModal();
-        if (leaderboardModal) leaderboardModal.classList.remove('hidden');
+        registerModalOpen(leaderboardModal);
       });
       this.attachButtonAction('closeLeaderboardBtn', () => {
         if (leaderboardModal) leaderboardModal.classList.add('hidden');
       });
       this.attachButtonAction('closeLeaderboardDoneBtn', () => {
+        if (leaderboardModal) leaderboardModal.classList.add('hidden');
+      });
+      setupBackdropClose(leaderboardModal, () => {
         if (leaderboardModal) leaderboardModal.classList.add('hidden');
       });
 
@@ -5342,7 +5538,27 @@
         this.activateHoverboard();
       });
 
-      // Side Rail: Character Suits (ME)
+      // Shop Open & Close Functions (Hoisted Upfront)
+      const openShop = () => {
+        try { SoundSystem.ensure(); } catch (e) {}
+        this.renderCostumesList();
+        this.renderBoardsList();
+        this.renderUpgradesList();
+        this.updateBankDisplays();
+        registerModalOpen(shopModal);
+      };
+      const closeShop = () => {
+        if (shopModal) shopModal.classList.add('hidden');
+        this.updateBankDisplays();
+      };
+
+      this.attachButtonAction('menuShopBtn', openShop);
+      this.attachButtonAction('gameoverShopBtn', openShop);
+      this.attachButtonAction('closeShopBtn', closeShop);
+      this.attachButtonAction('leaveShopBtn', closeShop);
+      setupBackdropClose(shopModal, closeShop);
+
+      // Side Rail: Character Suits (ME / CREW)
       this.attachButtonAction('menuSuitsBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
         openShop();
@@ -5354,7 +5570,7 @@
       this.attachButtonAction('menuUpgradesBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
         openShop();
-        const tabBtn = document.getElementById('tabBtnShopUpgrades');
+        const tabBtn = document.getElementById('tabBtnUpgrades');
         if (tabBtn) tabBtn.click();
       });
 
@@ -5381,15 +5597,11 @@
         });
       });
 
-      // Shop Modal Open/Close
-      const shopModal = this.shopModal;
-
       // Season Modal Open / Close
-      const seasonModal = this.seasonModal;
       this.attachButtonAction('menuSeasonBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
         this.renderSeasonModal();
-        if (seasonModal) seasonModal.classList.remove('hidden');
+        registerModalOpen(seasonModal);
       });
       this.attachButtonAction('closeSeasonBtn', () => {
         if (seasonModal) seasonModal.classList.add('hidden');
@@ -5397,18 +5609,23 @@
       this.attachButtonAction('closeSeasonDoneBtn', () => {
         if (seasonModal) seasonModal.classList.add('hidden');
       });
+      setupBackdropClose(seasonModal, () => {
+        if (seasonModal) seasonModal.classList.add('hidden');
+      });
 
       // Achievements Modal Open / Close
-      const achievementsModal = this.achievementsModal;
       this.attachButtonAction('menuAchievementsBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
         this.renderAchievementsModal();
-        if (achievementsModal) achievementsModal.classList.remove('hidden');
+        registerModalOpen(achievementsModal);
       });
       this.attachButtonAction('closeAchievementsBtn', () => {
         if (achievementsModal) achievementsModal.classList.add('hidden');
       });
       this.attachButtonAction('closeAchievementsDoneBtn', () => {
+        if (achievementsModal) achievementsModal.classList.add('hidden');
+      });
+      setupBackdropClose(achievementsModal, () => {
         if (achievementsModal) achievementsModal.classList.add('hidden');
       });
 
@@ -5428,24 +5645,6 @@
         });
       }
 
-      const openShop = () => {
-        try { SoundSystem.ensure(); } catch (e) {}
-        this.renderCostumesList();
-        this.renderBoardsList();
-        this.renderUpgradesList();
-        this.updateBankDisplays();
-        if (shopModal) shopModal.classList.remove('hidden');
-      };
-      this.attachButtonAction('menuShopBtn', openShop);
-      this.attachButtonAction('gameoverShopBtn', openShop);
-
-      const closeShop = () => {
-        if (shopModal) shopModal.classList.add('hidden');
-        this.updateBankDisplays();
-      };
-      this.attachButtonAction('closeShopBtn', closeShop);
-      this.attachButtonAction('leaveShopBtn', closeShop);
-
       // Scoped Modal Tabs (Each modal controls its own tabs independently)
       document.querySelectorAll('.modal-panel').forEach(panel => {
         const tabs = panel.querySelectorAll('.modal-nav-tabs .tab-btn');
@@ -5459,6 +5658,14 @@
               if (c.id === targetId) c.classList.remove('hidden');
               else c.classList.add('hidden');
             });
+            // Lazily render worlds list when switching to Backgrounds tab
+            if (targetId === 'tabBackgrounds') {
+              try { this.renderSettingsWorldsList(); } catch (e) {}
+            }
+            // Sync audio UI when switching to Audio tab
+            if (targetId === 'tabAudio') {
+              try { this.syncAudioSettingsUI(); } catch (e) {}
+            }
           });
         });
       });
@@ -5466,6 +5673,8 @@
       // Audio volume & toggle controls in Settings
       const bgmToggle = document.getElementById('settingsBgmToggle');
       const bgmSlider = document.getElementById('settingsBgmSlider');
+      const bgmVolText = document.getElementById('bgmVolText');
+      const testBgmBtn = document.getElementById('testBgmBtn');
       if (bgmToggle && bgmSlider) {
         this.attachButtonAction(bgmToggle, () => {
           const active = SoundSystem.toggleBgm();
@@ -5476,11 +5685,22 @@
         bgmSlider.addEventListener('input', (e) => {
           const val = parseFloat(e.target.value) / 100;
           SoundSystem.setBgmVolume(val);
+          if (bgmVolText) bgmVolText.textContent = `${Math.round(val * 100)}%`;
+        });
+      }
+      if (testBgmBtn) {
+        this.attachButtonAction(testBgmBtn, () => {
+          try {
+            SoundSystem.ensure();
+            SoundSystem.startBgm();
+          } catch (e) {}
         });
       }
 
       const sfxToggle = document.getElementById('settingsSfxToggle');
       const sfxSlider = document.getElementById('settingsSfxSlider');
+      const sfxVolText = document.getElementById('sfxVolText');
+      const testSfxBtn = document.getElementById('testSfxBtn');
       if (sfxToggle && sfxSlider) {
         this.attachButtonAction(sfxToggle, () => {
           const active = SoundSystem.toggleSfx();
@@ -5491,6 +5711,16 @@
         sfxSlider.addEventListener('input', (e) => {
           const val = parseFloat(e.target.value) / 100;
           SoundSystem.setSfxVolume(val);
+          if (sfxVolText) sfxVolText.textContent = `${Math.round(val * 100)}%`;
+        });
+      }
+      if (testSfxBtn) {
+        this.attachButtonAction(testSfxBtn, () => {
+          try {
+            SoundSystem.ensure();
+            SoundSystem.coin();
+            setTimeout(() => SoundSystem.jump(), 120);
+          } catch (e) {}
         });
       }
 

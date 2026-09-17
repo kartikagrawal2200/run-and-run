@@ -8,7 +8,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800;900&family=Titan+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=subway3d_v21">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="stylesheet" href="style.css?v=subway3d_v26">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#4cc9f0">
@@ -215,7 +218,7 @@
 
           <!-- Subway Surfers Floating Side Rails (Left & Right Quick Actions) -->
           <div class="subway-side-rails" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 4px; box-sizing: border-box; pointer-events: auto; z-index: 25;">
-            <!-- Left Rail: World Tour, Characters (Crew), Daily Missions, and Season Hunt -->
+            <!-- Left Rail: World Tour, Characters (Crew), Chest, Daily Missions, and Season Hunt -->
             <div class="side-rail-col side-rail-left" style="display: flex; flex-direction: column; gap: 8px;">
               <button type="button" id="menuWorldBtn" class="subway-side-btn world-side-btn" title="Choose City World">
                 <svg viewBox="0 0 24 24" class="side-btn-svg"><circle cx="12" cy="12" r="10" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/><ellipse cx="12" cy="12" rx="4.5" ry="10" fill="none" stroke="#ffffff" stroke-width="1.2"/><line x1="2" y1="12" x2="22" y2="12" stroke="#ffffff" stroke-width="1.2"/></svg>
@@ -224,6 +227,11 @@
               <button type="button" id="menuSuitsBtn" class="subway-side-btn me-side-btn" title="Character Outfits">
                 <svg viewBox="0 0 24 24" class="side-btn-svg"><path d="M12 2a5 5 0 0 1 5 5c0 2.76-2.24 5-5 5s-5-2.24-5-5a5 5 0 0 1 5-5zm0 12c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4z" fill="#ec4899"/></svg>
                 <span class="side-btn-lbl">CREW</span>
+              </button>
+              <button type="button" id="menuChestBtn" class="subway-side-btn chest-side-btn" title="Open Mystery Chest">
+                <svg viewBox="0 0 24 24" class="side-btn-svg"><rect x="3" y="8" width="18" height="13" rx="2" fill="#b45309" stroke="#fde047" stroke-width="1.2"/><rect x="2" y="5" width="20" height="4" rx="1.5" fill="#d97706"/><circle cx="12" cy="13" r="2.5" fill="#fde047"/><path d="M12 2l2.5 4H9.5z" fill="#facc15"/></svg>
+                <span class="side-btn-lbl">CHEST</span>
+                <span id="chestBadge" class="side-notify-dot hidden">!</span>
               </button>
               <button type="button" id="menuMissionsBtn" class="subway-side-btn missions-side-btn" title="Daily Missions &amp; Quests">
                 <svg viewBox="0 0 24 24" class="side-btn-svg"><circle cx="12" cy="12" r="10" fill="#ef4444"/><circle cx="12" cy="12" r="6.5" fill="#ffffff"/><circle cx="12" cy="12" r="3" fill="#ef4444"/></svg>
@@ -345,26 +353,62 @@
 
             <!-- Tab 2: Worlds (rendered dynamically) -->
             <div id="tabBackgrounds" class="tab-content hidden">
+              <div class="worlds-modal-header">
+                <div class="worlds-modal-tag">CHOOSE DESTINATION</div>
+                <p class="worlds-modal-subtitle">Pick any world theme to change 3D tracks, skyline &amp; obstacles!</p>
+              </div>
               <div class="worlds-scroll-list" id="bgChoicesList"></div>
             </div>
 
             <!-- Tab 3: Audio Settings -->
             <div id="tabAudio" class="tab-content hidden">
               <div class="audio-controls-card modal-card">
-                <div class="setting-item">
-                  <div class="setting-label-row">
-                    <span>MUSIC</span>
-                    <button type="button" id="settingsBgmToggle" class="cyber-toggle active">ON</button>
+                <div class="audio-banner-header">
+                  <span class="audio-banner-icon">🎧</span>
+                  <div class="audio-banner-text">
+                    <h4>SURF AUDIO STATION</h4>
+                    <small>BGM tracks, dynamic sound effects &amp; audio balance</small>
                   </div>
-                  <input type="range" id="settingsBgmSlider" min="0" max="100" value="70" class="cyber-slider">
                 </div>
 
-                <div class="setting-item">
+                <div class="setting-item audio-box-card">
                   <div class="setting-label-row">
-                    <span>SOUND FX</span>
-                    <button type="button" id="settingsSfxToggle" class="cyber-toggle active">ON</button>
+                    <div class="setting-label-left">
+                      <span class="setting-icon-pill">🎵</span>
+                      <div class="setting-titles">
+                        <span class="main-title">MUSIC (BGM)</span>
+                        <small class="sub-title">Tokyo Subway &amp; Railway Melodies</small>
+                      </div>
+                    </div>
+                    <div class="setting-ctrls-right">
+                      <span id="bgmVolText" class="audio-percent-pill">70%</span>
+                      <button type="button" id="settingsBgmToggle" class="subway-audio-toggle active">ON</button>
+                    </div>
                   </div>
-                  <input type="range" id="settingsSfxSlider" min="0" max="100" value="90" class="cyber-slider">
+                  <input type="range" id="settingsBgmSlider" min="0" max="100" value="70" class="subway-slider-track">
+                  <div class="audio-action-row">
+                    <button type="button" id="testBgmBtn" class="audio-test-btn">▶ PLAY MUSIC PREVIEW</button>
+                  </div>
+                </div>
+
+                <div class="setting-item audio-box-card">
+                  <div class="setting-label-row">
+                    <div class="setting-label-left">
+                      <span class="setting-icon-pill">🔊</span>
+                      <div class="setting-titles">
+                        <span class="main-title">SOUND FX</span>
+                        <small class="sub-title">Coin Pickups, Jetpack, Jumps &amp; Trains</small>
+                      </div>
+                    </div>
+                    <div class="setting-ctrls-right">
+                      <span id="sfxVolText" class="audio-percent-pill">90%</span>
+                      <button type="button" id="settingsSfxToggle" class="subway-audio-toggle active">ON</button>
+                    </div>
+                  </div>
+                  <input type="range" id="settingsSfxSlider" min="0" max="100" value="90" class="subway-slider-track">
+                  <div class="audio-action-row">
+                    <button type="button" id="testSfxBtn" class="audio-test-btn">🔊 TEST SOUND EFFECT</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -767,6 +811,10 @@
               </div>
             </div>
             <button type="button" id="mysteryBoxOpenBtn" class="cyber-btn primary-btn unbox-btn">TAP TO OPEN 🎁</button>
+            <button type="button" id="mysteryBoxBuyBtn" class="subway-buy-crate-btn hidden">
+              <span class="btn-icon">🪙</span>
+              <span>BUY &amp; OPEN CRATE (500 COINS)</span>
+            </button>
             <button type="button" id="mysteryBoxDoneBtn" class="cyber-btn primary-btn modal-done-btn hidden">COLLECT &amp; CONTINUE ▶</button>
           </div>
         </section>
@@ -804,10 +852,20 @@
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <span class="modal-tag">SURFER TROPHIES</span>
-                <h2>ACHIEVEMENTS</h2>
+                <h2>AWARDS &amp; ACHIEVEMENTS</h2>
               </div>
               <button type="button" id="closeAchievementsBtn" class="close-icon-btn" aria-label="Close Achievements">✕</button>
             </div>
+
+            <!-- Authentic Subway Surfers Trophy Progress Ribbon -->
+            <div class="achievements-summary-banner">
+              <div class="ach-trophy-big">🏆</div>
+              <div class="ach-summary-info">
+                <span class="ach-summary-label">COLLECTED TROPHIES</span>
+                <strong id="achievementsUnlockedCount" class="ach-summary-count">0 / 6 COMPLETED</strong>
+              </div>
+            </div>
+
             <div class="achievements-scroll-list" id="achievementsList">
               <!-- Achievements items populated dynamically -->
             </div>
@@ -818,8 +876,8 @@
     </main>
   </div>
 
-  <script src="audio.js?v=subway3d_v21"></script>
-  <script src="game.js?v=subway3d_v21"></script>
-  <script src="pwa.js?v=subway3d_v21"></script>
+  <script src="audio.js?v=subway3d_v26"></script>
+  <script src="game.js?v=subway3d_v26"></script>
+  <script src="pwa.js?v=subway3d_v26"></script>
 </body>
 </html>

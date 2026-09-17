@@ -1,35 +1,28 @@
 /**
- * Progressive Web App (PWA) Offline Engine
- * Handles Service Worker registration and native App installation prompt.
+ * Subway Surf 3D - Cache Management & App Install Engine
+ * Automatically unregisters stale workers and cleans caches to ensure 100% fresh assets.
  */
 (function () {
   'use strict';
 
-  // Automatically purge outdated cache names if present
+  // Purge ALL browser caches completely to prevent stale scripts/styles
   if ('caches' in window) {
     caches.keys().then((names) => {
       for (const name of names) {
-        if (name !== 'subway-surf-3d-v9') {
-          console.log('[PWA] Purging stale cache:', name);
-          caches.delete(name);
-        }
+        console.log('[PWA] Purging browser cache:', name);
+        caches.delete(name);
       }
-    });
+    }).catch(() => {});
   }
 
+  // Unregister all existing service workers in development so fresh code loads instantly
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker
-        .register('./sw.js?v=subway3d_v9')
-        .then((reg) => {
-          console.log('[PWA] Service Worker registered:', reg.scope);
-          // Check for latest worker version immediately
-          reg.update().catch(() => {});
-        })
-        .catch((err) => {
-          console.warn('[PWA] Service Worker registration failed:', err);
-        });
-    });
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const registration of registrations) {
+        console.log('[PWA] Unregistering service worker:', registration.scope);
+        registration.unregister();
+      }
+    }).catch(() => {});
   }
 
   let deferredPrompt = null;
