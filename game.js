@@ -128,6 +128,7 @@
       id: 'subway_classic',
       name: 'SUBWAY CITY CLASSIC',
       flag: '🚇',
+      desc: 'Industrial red-brick viaducts, catenary gantries & legendary graffiti train yards!',
       type: 'classic',
       sky: ['#0f172a', '#1e3a8a', '#0284c7'],
       ground: '#1e293b',
@@ -144,7 +145,8 @@
     {
       id: 'tokyo_food',
       name: 'TOKYO FOOD STREET',
-      flag: '🐙',
+      flag: '🏮',
+      desc: 'Glowing Chochin lanterns, neon Torii gates, ramen stalls & drifting sakura petals!',
       type: 'tokyo',
       sky: ['#1e143b', '#701a75', '#db2777'],
       ground: '#18112c',
@@ -161,7 +163,8 @@
     {
       id: 'wild_west',
       name: 'WILD WEST CANYON',
-      flag: '🤠',
+      flag: '🏜️',
+      desc: 'Towering red sandstone canyon mesas, timber trestles & vintage water towers!',
       type: 'western',
       sky: ['#431407', '#9a3412', '#fb923c'],
       ground: '#3a1708',
@@ -179,6 +182,7 @@
       id: 'rio_beach',
       name: 'RIO CARNIVAL BEACH',
       flag: '🌴',
+      desc: 'Breezy beachfront palms, carnival feather streamers & Sugarloaf mountain dusk!',
       type: 'rio',
       sky: ['#14532d', '#059669', '#34d399'],
       ground: '#064e3b',
@@ -195,7 +199,8 @@
     {
       id: 'cairo_pyramids',
       name: 'CAIRO PYRAMIDS',
-      flag: '🐪',
+      flag: '🏛️',
+      desc: 'Massive sunlit limestone pyramids, hieroglyphic obelisks & warm desert dunes!',
       type: 'cairo',
       sky: ['#713f12', '#a16207', '#eab308'],
       ground: '#451a03',
@@ -221,8 +226,7 @@
     }
 
     burst(x, y, color, count = 12, speedMin = 80, speedMax = 260) {
-      // Mobile performance: cap active particles
-      if (this.particles.length > 32) return;
+      if (this.particles.length > 40) return;
       const actualCount = Math.min(count, 14);
       for (let i = 0; i < actualCount; i++) {
         const angle = Math.random() * Math.PI * 2;
@@ -235,7 +239,41 @@
           life: randRange(0.35, 0.75),
           maxLife: 0.75,
           radius: randRange(2.5, 5),
-          color: color || '#4cc9f0'
+          color: color || '#4cc9f0',
+          isStar: (color === '#ffd23f' || color === '#facc15') && Math.random() < 0.6
+        });
+      }
+    }
+
+    dust(x, y) {
+      if (this.particles.length > 42) return;
+      for (let i = 0; i < 3; i++) {
+        this.particles.push({
+          x: x + randRange(-12, 12),
+          y: y + randRange(-3, 3),
+          vx: randRange(-20, 20),
+          vy: randRange(-35, -10),
+          life: randRange(0.28, 0.45),
+          maxLife: 0.45,
+          radius: randRange(4, 9),
+          color: 'rgba(226, 232, 240, 0.65)',
+          isDust: true
+        });
+      }
+    }
+
+    spark(x, y, color = '#facc15') {
+      if (this.particles.length > 45) return;
+      for (let i = 0; i < 2; i++) {
+        this.particles.push({
+          x: x + randRange(-6, 6),
+          y: y,
+          vx: randRange(-45, 45),
+          vy: randRange(-90, -30),
+          life: 0.22,
+          maxLife: 0.22,
+          radius: randRange(1.8, 3.2),
+          color: color
         });
       }
     }
@@ -259,24 +297,27 @@
         y,
         text,
         color,
-        life: 0.8,
-        maxLife: 0.8,
+        life: 0.85,
+        maxLife: 0.85,
         vy: -75
       });
     }
 
     update(dt) {
-      // Particles
       for (const p of this.particles) {
         p.life -= dt;
         p.x += p.vx * dt;
         p.y += p.vy * dt;
-        p.vy += 450 * dt;
-        p.vx *= 0.97;
+        if (p.isDust) {
+          p.radius += dt * 8; // expanding dust puff
+          p.vx *= 0.92;
+        } else {
+          p.vy += 450 * dt;
+          p.vx *= 0.97;
+        }
       }
       this.particles = this.particles.filter(p => p.life > 0);
 
-      // Floating Texts
       for (const ft of this.floatingTexts) {
         ft.life -= dt;
         ft.y += ft.vy * dt;
@@ -285,26 +326,47 @@
     }
 
     render(ctx) {
-      // Draw particles with glowing circles
       for (const p of this.particles) {
         const a = clamp(p.life / p.maxLife, 0, 1);
         ctx.save();
         ctx.globalAlpha = a;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius * a, 0, Math.PI * 2);
-        ctx.fill();
+
+        if (p.isStar) {
+          // 4-point twinkling gold star sparkle
+          const r = p.radius * (1 + (1 - a) * 0.5);
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y - r * 1.6);
+          ctx.quadraticCurveTo(p.x, p.y, p.x + r * 1.6, p.y);
+          ctx.quadraticCurveTo(p.x, p.y, p.x, p.y + r * 1.6);
+          ctx.quadraticCurveTo(p.x, p.y, p.x - r * 1.6, p.y);
+          ctx.quadraticCurveTo(p.x, p.y, p.x, p.y - r * 1.6);
+          ctx.closePath();
+          ctx.fill();
+        } else if (p.isDust) {
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius * a, 0, Math.PI * 2);
+          ctx.fill();
+        }
         ctx.restore();
       }
 
-      // Draw floating texts
       for (const ft of this.floatingTexts) {
         const a = clamp(ft.life / ft.maxLife, 0, 1);
         ctx.save();
         ctx.globalAlpha = a;
-        ctx.font = 'bold 16px "Orbitron", sans-serif';
+        ctx.font = '900 16px "Titan One", "Fredoka", "Orbitron", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillStyle = ft.color;
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 3;
+        ctx.strokeText(ft.text, ft.x, ft.y);
         ctx.fillText(ft.text, ft.x, ft.y);
         ctx.restore();
       }
@@ -818,6 +880,143 @@
     { id: 'ach_combo_10', title: 'Combo Master', desc: 'Achieve a 10X Coin Combo streak', icon: '⚡', target: 10, type: 'combo', rewardCoins: 450, rewardKeys: 1 }
   ];
 
+
+
+  /* ============================================================
+     3D CHIBI CHARACTER PORTRAIT GENERATOR (NO EMOJIS)
+     ============================================================ */
+  function drawCharacterPortrait(pctx, costumeId, size = 34) {
+    if (!pctx) return;
+    const c = COSTUMES[costumeId] || COSTUMES.jake;
+    const half = size / 2;
+    pctx.save();
+    pctx.clearRect(0, 0, size, size);
+
+    // Circular background badge with gradient
+    pctx.beginPath();
+    pctx.arc(half, half, half - 1, 0, Math.PI * 2);
+    pctx.clip();
+
+    const bgGrad = pctx.createLinearGradient(0, 0, size, size);
+    bgGrad.addColorStop(0, '#1e293b');
+    bgGrad.addColorStop(1, '#0f172a');
+    pctx.fillStyle = bgGrad;
+    pctx.fillRect(0, 0, size, size);
+
+    // Character bust position
+    pctx.translate(half, half + 7);
+    const s = size / 48; // scale factor
+    pctx.scale(s, s);
+
+    // Neck & Hoodie collar
+    pctx.fillStyle = c.skin || '#fed7aa';
+    pctx.fillRect(-4, -16, 8, 8);
+
+    pctx.fillStyle = c.hoodie || '#ffffff';
+    pctx.beginPath();
+    pctx.roundRect(-14, -10, 28, 16, [6, 6, 2, 2]);
+    pctx.fill();
+
+    // Denim vest collar
+    pctx.fillStyle = c.vest || '#2563eb';
+    pctx.fillRect(-11, -8, 7, 14);
+    pctx.fillRect(4, -8, 7, 14);
+
+    // Chibi Head
+    pctx.fillStyle = c.skin || '#fed7aa';
+    pctx.beginPath();
+    pctx.arc(0, -22, 13, 0, Math.PI * 2);
+    pctx.fill();
+
+    // Cute Cartoon Eyes
+    pctx.fillStyle = '#ffffff';
+    pctx.beginPath();
+    pctx.ellipse(-5, -22, 3.5, 4.5, 0, 0, Math.PI * 2);
+    pctx.ellipse(5, -22, 3.5, 4.5, 0, 0, Math.PI * 2);
+    pctx.fill();
+
+    pctx.fillStyle = '#0f172a';
+    pctx.beginPath();
+    pctx.arc(-4.5, -22, 2.2, 0, Math.PI * 2);
+    pctx.arc(5.5, -22, 2.2, 0, Math.PI * 2);
+    pctx.fill();
+
+    // Eye catchlights
+    pctx.fillStyle = '#ffffff';
+    pctx.beginPath();
+    pctx.arc(-5.2, -23.2, 0.9, 0, Math.PI * 2);
+    pctx.arc(4.8, -23.2, 0.9, 0, Math.PI * 2);
+    pctx.fill();
+
+    // Friendly smirk
+    pctx.strokeStyle = '#c2410c';
+    pctx.lineWidth = 1.2;
+    pctx.beginPath();
+    pctx.arc(0, -17, 3.5, 0.2, Math.PI - 0.2);
+    pctx.stroke();
+
+    // Character Headwear / Hair
+    if (c.character === 'tricky') {
+      // Blue knit beanie
+      pctx.fillStyle = c.cap || '#0284c7';
+      pctx.beginPath();
+      pctx.arc(0, -26, 13.5, Math.PI, Math.PI * 2);
+      pctx.fill();
+      // Blonde pigtails
+      pctx.fillStyle = '#facc15';
+      pctx.beginPath();
+      pctx.ellipse(-14, -20, 4, 7, -0.3, 0, Math.PI * 2);
+      pctx.ellipse(14, -20, 4, 7, 0.3, 0, Math.PI * 2);
+      pctx.fill();
+    } else if (c.character === 'fresh') {
+      // Hi-top fade dark hair
+      pctx.fillStyle = '#0f172a';
+      pctx.fillRect(-9, -38, 18, 12);
+      // Yellow retro sunglasses
+      pctx.fillStyle = '#facc15';
+      pctx.fillRect(-9, -24, 8, 4);
+      pctx.fillRect(1, -24, 8, 4);
+      pctx.fillRect(-2, -23, 4, 1.5);
+    } else if (c.character === 'spike') {
+      // Red punk mohawk
+      pctx.fillStyle = '#ef4444';
+      pctx.beginPath();
+      pctx.moveTo(-3, -34); pctx.lineTo(0, -44); pctx.lineTo(3, -34);
+      pctx.closePath();
+      pctx.fill();
+    } else if (c.character === 'yutani') {
+      // Alien green mascot hood
+      pctx.fillStyle = '#22c55e';
+      pctx.beginPath();
+      pctx.arc(0, -24, 14, Math.PI, Math.PI * 2);
+      pctx.fill();
+      // Antennae
+      pctx.fillRect(-7, -42, 2, 8);
+      pctx.fillRect(5, -42, 2, 8);
+      pctx.fillStyle = '#facc15';
+      pctx.beginPath();
+      pctx.arc(-6, -42, 2.5, 0, Math.PI * 2);
+      pctx.arc(6, -42, 2.5, 0, Math.PI * 2);
+      pctx.fill();
+    } else {
+      // Jake's Red Snapback Cap
+      pctx.fillStyle = c.cap || '#ef4444';
+      pctx.beginPath();
+      pctx.arc(0, -27, 13, Math.PI * 0.95, Math.PI * 2.05);
+      pctx.fill();
+      // Cap Visor pointing backward
+      pctx.beginPath();
+      pctx.roundRect(-10, -20, 20, 4, [2, 2, 2, 2]);
+      pctx.fill();
+      // White top cap button
+      pctx.fillStyle = '#ffffff';
+      pctx.beginPath();
+      pctx.arc(0, -36, 1.8, 0, Math.PI * 2);
+      pctx.fill();
+    }
+
+    pctx.restore();
+  }
 
   /* ============================================================
      AUTHENTIC SUBWAY SURFERS 3D CARTOON RUNNER RENDER PIPELINE
@@ -1753,16 +1952,23 @@
       if (particles) {
         const footY = this.groundY - this.baseHeight * this.scale;
         if (this.hasJetpack) {
-          particles.trail(this.x - 12 * this.scale, footY, '#f43f5e');
-          particles.trail(this.x + 12 * this.scale, footY, '#06b6d4');
+          // Dual rainbow paint thruster flame plumes
+          particles.trail(this.x - 12 * this.scale, footY, '#facc15');
+          particles.trail(this.x + 12 * this.scale, footY, '#f97316');
+          if (Math.random() < 0.5) particles.dust(this.x, footY + 8 * this.scale);
         } else if (this.hasHoverboard) {
           // Custom Hoverboard plasma thruster trails
           const bMeta = BOARDS[this.equippedBoard] || BOARDS.classic;
           particles.trail(this.x - 10 * this.scale, footY, bMeta.trail || '#38bdf8');
           particles.trail(this.x + 10 * this.scale, footY, bMeta.swatch || '#ef4444');
-        } else if (!this.jumping && Math.random() < 0.4) {
-          particles.trail(this.x - 5 * this.scale, footY - 2, this.costume.accent);
-          particles.trail(this.x + 5 * this.scale, footY - 2, this.costume.visor);
+        } else if (this.sliding) {
+          // Rail grinding friction sparks while sliding!
+          particles.spark(this.x, footY, '#facc15');
+        } else if (!this.jumping) {
+          // Sneaker dust puffs while running
+          if (Math.random() < 0.35) {
+            particles.dust(this.x, footY);
+          }
         }
       }
     }
@@ -2267,6 +2473,8 @@
       const byBack = pBack.y - hBack;
 
       const livery = o.colorScheme || TRAIN_LIVERIES[0];
+      const isFreight = (o.lane === 0 && !o.hasRamp); // lane 0 features freight container cargo
+      const isGraffiti = (o.lane === 2);
 
       // Ground Drop Shadow
       ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
@@ -2604,6 +2812,32 @@
           ctx.textAlign = 'center';
           ctx.fillText('▲ CLIMB ROOF ▲', pRampBase.x, pRampBase.y - (pRampBase.y - byFront) * 0.5);
         }
+      }
+
+      // 5. Oncoming Speed Train: Blazing dual xenon headlights with rail forward beam
+      if (o.speedBonus > 0) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(254, 240, 138, 0.28)';
+        ctx.beginPath();
+        ctx.moveTo(bxFront, pFront.y);
+        ctx.lineTo(bxFront - 50 * sFront, pFront.y + 80 * sFront);
+        ctx.lineTo(bxFront + wFront + 50 * sFront, pFront.y + 80 * sFront);
+        ctx.lineTo(bxFront + wFront, pFront.y);
+        ctx.closePath();
+        ctx.fill();
+
+        // Dual intense white xenon lamps
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(bxFront + wFront * 0.22, byFront + hFront * 0.72, 4.5 * sFront, 0, Math.PI * 2);
+        ctx.arc(bxFront + wFront * 0.78, byFront + hFront * 0.72, 4.5 * sFront, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(254, 240, 138, 0.6)';
+        ctx.beginPath();
+        ctx.arc(bxFront + wFront * 0.22, byFront + hFront * 0.72, 11 * sFront, 0, Math.PI * 2);
+        ctx.arc(bxFront + wFront * 0.78, byFront + hFront * 0.72, 11 * sFront, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
     }
   }
@@ -3359,13 +3593,13 @@
       const myAvatar = (this.profile && this.profile.avatar) ? this.profile.avatar : '🏃';
 
       const rivals = [
-        { name: 'Kai_Speedster', avatar: '⚡', score: Math.max(12500, Math.floor(myScore * 1.35) + 450), league: 'DIAMOND', medal: '🥇' },
-        { name: 'Tokyo_Rider', avatar: '🐙', score: Math.max(9200, Math.floor(myScore * 1.18) + 210), league: 'DIAMOND', medal: '🥈' },
-        { name: 'SubwaySurfer99', avatar: '🛹', score: Math.max(7600, Math.floor(myScore * 1.05) + 90), league: 'GOLD', medal: '🥉' },
-        { name: myName, avatar: myAvatar, score: myScore, league: this.getProfileRank(myScore).title.split(' ')[1] || 'GOLD', isMe: true },
-        { name: 'TrackPhantom', avatar: '👻', score: Math.max(3400, Math.floor(myScore * 0.82)), league: 'SILVER' },
-        { name: 'NeonDash', avatar: '🚀', score: Math.max(2100, Math.floor(myScore * 0.65)), league: 'BRONZE' },
-        { name: 'RookieSkater', avatar: '👟', score: Math.max(900, Math.floor(myScore * 0.40)), league: 'BRONZE' }
+        { name: 'Kai_Speedster', character: 'spike', score: Math.max(12500, Math.floor(myScore * 1.35) + 450), league: 'DIAMOND', medal: '🥇' },
+        { name: 'Tokyo_Rider', character: 'tricky', score: Math.max(9200, Math.floor(myScore * 1.18) + 210), league: 'DIAMOND', medal: '🥈' },
+        { name: 'SubwaySurfer99', character: 'jake', score: Math.max(7600, Math.floor(myScore * 1.05) + 90), league: 'GOLD', medal: '🥉' },
+        { name: myName, character: this.equippedCostume, score: myScore, league: this.getProfileRank(myScore).title.split(' ')[1] || 'GOLD', isMe: true },
+        { name: 'TrackPhantom', character: 'fresh', score: Math.max(3400, Math.floor(myScore * 0.82)), league: 'SILVER' },
+        { name: 'NeonDash', character: 'yutani', score: Math.max(2100, Math.floor(myScore * 0.65)), league: 'BRONZE' },
+        { name: 'RookieSkater', character: 'jake', score: Math.max(900, Math.floor(myScore * 0.40)), league: 'BRONZE' }
       ];
 
       rivals.sort((a, b) => b.score - a.score);
@@ -3376,15 +3610,23 @@
         card.className = `leaderboard-item-card ${r.isMe ? 'my-rank' : ''}`;
         const medalOrNum = r.medal || `#${rankNum}`;
 
+        const portraitCanvas = document.createElement('canvas');
+        portraitCanvas.width = 34;
+        portraitCanvas.height = 34;
+        portraitCanvas.className = 'lb-avatar-canvas';
+        const pctx = portraitCanvas.getContext('2d');
+        drawCharacterPortrait(pctx, r.character, 34);
+
         card.innerHTML = `
           <div class="lb-rank-num ${rankNum <= 3 ? 'top-three' : ''}">${medalOrNum}</div>
-          <div class="lb-avatar">${r.avatar}</div>
+          <div class="lb-avatar-wrap"></div>
           <div class="lb-info">
             <div class="lb-name">${r.name} ${r.isMe ? '<span class="lb-me-tag">YOU</span>' : ''}</div>
             <div class="lb-league-badge">${r.league}</div>
           </div>
-          <div class="lb-score">🏆 ${r.score.toLocaleString()}</div>
+          <div class="lb-score">${r.score.toLocaleString()}</div>
         `;
+        card.querySelector('.lb-avatar-wrap').appendChild(portraitCanvas);
         container.appendChild(card);
       });
     }
@@ -3660,13 +3902,15 @@
 
     updateProfileUI() {
       const callsign = (this.profile && this.profile.callsign) ? this.profile.callsign : 'RUNNER 1';
-      const avatar = (this.profile && this.profile.avatar) ? this.profile.avatar : '🏃';
       const rankInfo = this.getProfileRank(this.bestScore);
 
-      // Top bar profile button
-      const avatarPill = document.getElementById('profileAvatarPill');
+      // Top bar profile button: Render 3D Chibi Character Portrait Canvas
+      const avatarCanvas = document.getElementById('profileAvatarCanvas');
+      if (avatarCanvas) {
+        const pctx = avatarCanvas.getContext('2d');
+        drawCharacterPortrait(pctx, this.equippedCostume, 34);
+      }
       const callsignPill = document.getElementById('profileCallsignPill');
-      if (avatarPill) avatarPill.textContent = avatar;
       if (callsignPill) callsignPill.textContent = callsign;
 
       // Settings Modal Profile Tab
@@ -3772,13 +4016,18 @@
       if (!container) return;
       container.innerHTML = '';
       THEMES.forEach((theme, idx) => {
+        const isActive = idx === this.selectedBgIndex;
         const card = document.createElement('div');
-        card.className = `world-city-card ${idx === this.selectedBgIndex ? 'active' : ''}`;
+        card.className = `world-carousel-card ${isActive ? 'active' : ''}`;
         card.innerHTML = `
-          <div class="world-city-flag">${theme.flag || '🏙️'}</div>
-          <div class="world-city-info">
-            <span class="world-city-name">${theme.name}</span>
-            <small class="world-city-status">${idx === this.selectedBgIndex ? '● ACTIVE WORLD' : 'TAP TO SELECT'}</small>
+          <div class="world-card-banner" style="background: linear-gradient(135deg, ${theme.sky[0]}, ${theme.sky[1] || theme.sky[0]});">
+            <span class="world-card-stamp">${isActive ? 'VISITING NOW' : 'WORLD TOUR'}</span>
+            <div class="world-card-icon-art">${theme.flag || '🚇'}</div>
+          </div>
+          <div class="world-card-body">
+            <span class="world-card-name">${theme.name}</span>
+            <p class="world-card-desc">${theme.desc || 'Vibrant 3D railway tracks with unique obstacles & custom city scenery!'}</p>
+            <button type="button" class="world-card-select-btn">${isActive ? 'VISITING NOW ✔' : 'TRAVEL HERE ▶'}</button>
           </div>
         `;
         card.onclick = () => {
@@ -3787,7 +4036,7 @@
           this.renderWorldTourModal();
           const modal = document.getElementById('worldTourModal');
           if (modal) {
-            setTimeout(() => modal.classList.add('hidden'), 200);
+            setTimeout(() => modal.classList.add('hidden'), 250);
           }
         };
         container.appendChild(card);
@@ -5419,6 +5668,21 @@
       this.particles.update(dt);
       ScreenShake.update(dt);
       this.updateTheme(dt);
+
+      // Full-Screen Power-Up Shaders & Vignette FX
+      const fxJetpack = document.getElementById('fxJetpack');
+      const fxMagnet = document.getElementById('fxMagnet');
+      const fxMultiplier = document.getElementById('fxMultiplier');
+      const fxSneakers = document.getElementById('fxSneakers');
+      const fxHoverboard = document.getElementById('fxHoverboard');
+      if (this.collectibles && this.collectibles.activePowerUps) {
+        const ups = this.collectibles.activePowerUps;
+        if (fxJetpack) fxJetpack.classList.toggle('hidden', !ups.jetpack);
+        if (fxMagnet) fxMagnet.classList.toggle('hidden', !ups.magnet);
+        if (fxMultiplier) fxMultiplier.classList.toggle('hidden', !ups.multiplier);
+        if (fxSneakers) fxSneakers.classList.toggle('hidden', !ups.sneakers);
+        if (fxHoverboard) fxHoverboard.classList.toggle('hidden', !(this.player && this.player.hasHoverboard));
+      }
 
       this.syncHUD();
     }

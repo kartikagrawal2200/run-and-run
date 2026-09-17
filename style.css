@@ -3931,6 +3931,424 @@ canvas {
   color: #10b981;
 }
 
+
+/* ============================================================
+   AUTHENTIC SUBWAY SURFERS 3D HUD & FULL-SCREEN POWERUP FX
+   ============================================================ */
+
+/* Full-Screen Power-Up Shaders & Vignette Overlays */
+.powerup-filter-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 12;
+  overflow: hidden;
+}
+
+.filter-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.filter-layer:not(.hidden) {
+  opacity: 1;
+}
+
+/* 1. Paint Jetpack Sky Flight FX: Chromatic Vignette + High-Speed Motion Lines */
+.jetpack-speedlines {
+  background: 
+    radial-gradient(ellipse at center, transparent 45%, rgba(6, 182, 212, 0.3) 75%, rgba(244, 63, 94, 0.45) 100%),
+    repeating-linear-gradient(0deg, transparent, transparent 18px, rgba(255, 255, 255, 0.12) 19px, transparent 20px);
+  animation: jetpackLinesScroll 0.25s linear infinite;
+  box-shadow: inset 0 0 60px rgba(6, 182, 212, 0.5), inset 0 0 120px rgba(244, 63, 94, 0.35);
+}
+
+@keyframes jetpackLinesScroll {
+  0% { transform: translateY(-30px); }
+  100% { transform: translateY(30px); }
+}
+
+/* 2. Coin Magnet Electric Pulse Ring */
+.magnet-pulse-ring {
+  background: radial-gradient(circle at 50% 65%, transparent 35%, rgba(56, 189, 248, 0.25) 60%, rgba(6, 182, 212, 0.45) 85%, rgba(14, 165, 233, 0.6) 100%);
+  animation: magnetPulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes magnetPulse {
+  0% { transform: scale(0.97); opacity: 0.7; }
+  100% { transform: scale(1.02); opacity: 1; }
+}
+
+/* 3. 2X Multiplier Golden Starburst Aura */
+.multiplier-gold-aura {
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(250, 204, 21, 0.2) 70%, rgba(234, 179, 8, 0.45) 90%, rgba(202, 138, 4, 0.6) 100%);
+  box-shadow: inset 0 0 45px rgba(250, 204, 21, 0.6), inset 0 0 90px rgba(234, 179, 8, 0.4);
+  animation: goldShimmer 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes goldShimmer {
+  0% { opacity: 0.75; filter: hue-rotate(0deg); }
+  100% { opacity: 1; filter: hue-rotate(15deg); }
+}
+
+/* 4. Super Sneakers Emerald Bounce Aura */
+.sneakers-bounce-trail {
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(34, 197, 94, 0.2) 75%, rgba(16, 185, 129, 0.45) 100%);
+  box-shadow: inset 0 0 50px rgba(34, 197, 94, 0.5);
+}
+
+/* 5. Hoverboard Cyber-Blue Speed Streaks */
+.hoverboard-cyber-glow {
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.25) 0%, transparent 12%, transparent 88%, rgba(6, 182, 212, 0.25) 100%);
+  box-shadow: inset 0 0 40px rgba(6, 182, 212, 0.4);
+}
+
+/* ============================================================
+   SUBWAY SURFERS CHUNKY GLOSSY HUD
+   ============================================================ */
+.hud-btn-svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.badge-svg-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.coin-gold-svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  animation: coinGleam 2.8s ease-in-out infinite;
+}
+
+@keyframes coinGleam {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08) rotate(5deg); }
+}
+
+.key-gold-svg {
+  width: 20px;
+  height: 20px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.svg-mini-glyph {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+.subway-hud-pause-btn {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+  border: 2px solid #7dd3fc !important;
+  border-radius: 50% !important;
+  width: 44px !important;
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 5px 15px rgba(2, 132, 199, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.4) !important;
+  cursor: pointer !important;
+  transition: transform 0.12s ease !important;
+}
+
+.subway-hud-pause-btn:active {
+  transform: scale(0.92) !important;
+}
+
+.subway-hud-hoverboard-btn {
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 50%, #9d174d 100%) !important;
+  border: 2px solid #f472b6 !important;
+  border-radius: 18px !important;
+  padding: 4px 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  box-shadow: 0 5px 15px rgba(219, 39, 119, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.4) !important;
+  cursor: pointer !important;
+  transition: transform 0.12s ease !important;
+}
+
+.subway-hud-hoverboard-btn:active {
+  transform: scale(0.92) !important;
+}
+
+.subway-hud-hoverboard-btn.board-active {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+  border-color: #67e8f9 !important;
+  animation: boardActivePulse 0.8s ease-in-out infinite alternate !important;
+}
+
+@keyframes boardActivePulse {
+  0% { box-shadow: 0 0 12px rgba(6, 182, 212, 0.6); }
+  100% { box-shadow: 0 0 24px rgba(6, 182, 212, 1), 0 0 8px #fff; }
+}
+
+/* Bold Condensed Display Score Font */
+.score-pill {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 41, 59, 0.95) 100%) !important;
+  border: 2px solid #facc15 !important;
+  border-radius: 20px !important;
+  padding: 5px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 14px rgba(250, 204, 21, 0.3) !important;
+}
+
+.hud-mult-tag {
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+  border: 1.5px solid #fef08a;
+  border-radius: 12px;
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: 'Titan One', 'Fredoka', 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.5);
+}
+
+.svg-mult-star {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.hud-score-digits {
+  font-family: 'Titan One', 'Fredoka', 'Orbitron', Impact, sans-serif !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+  letter-spacing: 1px !important;
+  text-shadow: 
+    -1.5px -1.5px 0 #78350f,  
+     1.5px -1.5px 0 #78350f,
+    -1.5px  1.5px 0 #78350f,
+     1.5px  1.5px 0 #78350f,
+     0 3px 6px rgba(0, 0, 0, 0.8) !important;
+}
+
+.coin-badge {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.25) 0%, rgba(202, 138, 4, 0.45) 100%) !important;
+  border: 2px solid #fde047 !important;
+  border-radius: 20px !important;
+  padding: 4px 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+.hud-coin-digits {
+  font-family: 'Titan One', 'Fredoka', 'Orbitron', sans-serif !important;
+  font-size: 19px !important;
+  font-weight: 900 !important;
+  color: #fef08a !important;
+  text-shadow: 
+    -1px -1px 0 #78350f,  
+     1px -1px 0 #78350f,
+    -1px  1px 0 #78350f,
+     1px  1px 0 #78350f,
+     0 2px 5px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* ============================================================
+   TOP BAR & SIDE RAILS WITH SVG GLYPHS
+   ============================================================ */
+.menu-btn-svg, .top-pill-svg, .side-btn-svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.side-btn-svg {
+  width: 26px;
+  height: 26px;
+  margin-bottom: 2px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.profile-avatar-canvas {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1.5px solid #38bdf8;
+  display: block;
+  flex-shrink: 0;
+}
+
+.svg-edit-pencil {
+  width: 14px;
+  height: 14px;
+  margin-left: 2px;
+}
+
+/* ============================================================
+   WORLD TOUR HORIZONTAL SCROLLABLE CARD CAROUSEL
+   ============================================================ */
+.world-tour-panel {
+  max-width: 440px !important;
+  width: 95% !important;
+}
+
+.world-tour-carousel-hint {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 1.2px;
+  text-align: center;
+  margin-bottom: 8px;
+  animation: hintBlink 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes hintBlink {
+  0% { opacity: 0.6; transform: translateX(-2px); }
+  100% { opacity: 1; transform: translateX(2px); }
+}
+
+.world-tour-carousel-container {
+  display: flex !important;
+  flex-direction: row !important;
+  overflow-x: auto !important;
+  scroll-snap-type: x mandatory !important;
+  gap: 14px !important;
+  padding: 10px 8px 16px 8px !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.world-tour-carousel-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.world-tour-carousel-container::-webkit-scrollbar-thumb {
+  background: #38bdf8;
+  border-radius: 10px;
+}
+
+.world-carousel-card {
+  flex: 0 0 210px !important;
+  scroll-snap-align: center !important;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%) !important;
+  border: 2.5px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  cursor: pointer !important;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+.world-carousel-card:hover {
+  transform: translateY(-4px) !important;
+  border-color: rgba(56, 189, 248, 0.6) !important;
+}
+
+.world-carousel-card.active {
+  border-color: #facc15 !important;
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.55), 0 12px 28px rgba(0, 0, 0, 0.7) !important;
+}
+
+.world-card-banner {
+  height: 100px;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.world-card-icon-art {
+  font-size: 42px;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+  z-index: 2;
+  transition: transform 0.2s ease;
+}
+
+.world-carousel-card:hover .world-card-icon-art {
+  transform: scale(1.15) rotate(-5deg);
+}
+
+.world-card-stamp {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 2px 6px;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 900;
+  color: #facc15;
+  letter-spacing: 0.8px;
+}
+
+.world-card-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.95);
+  flex: 1;
+}
+
+.world-card-name {
+  font-family: 'Titan One', 'Fredoka', sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.world-card-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
+.world-card-select-btn {
+  margin-top: 8px;
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  border: 1.5px solid #7dd3fc;
+  border-radius: 12px;
+  padding: 7px 12px;
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+}
+
+.world-carousel-card.active .world-card-select-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-color: #6ee7b7;
+  color: #ffffff;
+}
+
 /* ============================================================
    UNIVERSAL HIDDEN OVERRIDE
    Must remain at the very end of style.css to guarantee that
