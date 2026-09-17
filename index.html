@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800;900&family=Titan+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=subway3d_v19">
+  <link rel="stylesheet" href="style.css?v=subway3d_v20">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#4cc9f0">
@@ -156,7 +156,7 @@
         <!-- PAGE 1: SUBWAY SURFERS SPLASH & LOADING SCREEN -->
         <section id="splashScreen" class="overlay splash-overlay">
           <div class="splash-art-wrap">
-            <img src="splash.png?v=subway3d_v19" alt="Subway Dash 3D" class="splash-bg-img" id="splashBgImg">
+            <img src="splash.png?v=subway3d_v20" alt="Subway Dash 3D" class="splash-bg-img" id="splashBgImg">
           </div>
           <div class="splash-content-overlay">
             <div class="splash-loader-area">
@@ -574,35 +574,77 @@
               </div>
               <button type="button" id="closeWorldTourBtn" class="close-icon-btn" aria-label="Close">✕</button>
             </div>
-            <div class="world-tour-carousel-hint">SWIPE CARDS TO EXPLORE CITIES ➔</div>
+
+            <!-- Carousel Navigation Controls -->
+            <div class="world-tour-carousel-controls">
+              <button type="button" id="worldTourPrevBtn" class="carousel-nav-arrow-btn prev-btn" aria-label="Previous City">◀ PREV</button>
+              <div class="world-tour-carousel-hint">SWIPE OR CLICK ARROWS ➔</div>
+              <button type="button" id="worldTourNextBtn" class="carousel-nav-arrow-btn next-btn" aria-label="Next City">NEXT ▶</button>
+            </div>
+
             <div class="world-tour-carousel-container" id="worldTourCards">
               <!-- Dynamically populated card carousel -->
+            </div>
+
+            <div class="world-tour-dots-indicator" id="worldTourDots">
+              <!-- Indicators dynamically rendered -->
             </div>
           </div>
         </section>
 
-        <!-- Daily Missions Modal (Subway Surfers Quests & Multiplier Level-Up) -->
+        <!-- Daily Missions Modal (Subway Surfers Quests & Daily Trivia Quiz) -->
         <section id="missionsModal" class="overlay modal-overlay hidden">
           <div class="glass-panel modal-panel missions-panel">
             <div class="modal-header">
               <div class="modal-title-wrap">
-                <span class="modal-tag">MISSIONS &amp; QUESTS</span>
+                <span class="modal-tag">MISSIONS &amp; QUIZ</span>
                 <h2>DAILY CHALLENGES</h2>
               </div>
               <button type="button" id="closeMissionsBtn" class="close-icon-btn" aria-label="Close Missions">✕</button>
             </div>
 
-            <!-- Multiplier Level Banner -->
-            <div class="multiplier-level-banner">
-              <div class="mult-banner-info">
-                <span class="mult-banner-lbl">CURRENT BASE MULTIPLIER</span>
-                <strong id="modalMultiplierVal" class="mult-banner-val">x1 ⭐</strong>
-              </div>
-              <div class="mult-banner-hint">Complete 3 quests to level up your score multiplier!</div>
+            <!-- Dual Tabs: Quests & Daily Quiz -->
+            <div class="modal-nav-tabs">
+              <button type="button" class="tab-btn active" id="tabBtnMissions" data-tab="tabQuestsMissions">🎯 DAILY QUESTS</button>
+              <button type="button" class="tab-btn" id="tabBtnQuiz" data-tab="tabQuestsQuiz">🧠 DAILY QUIZ ⭐</button>
             </div>
 
-            <div class="missions-scroll-list" id="missionsList">
-              <!-- Dynamically populated missions -->
+            <!-- Tab 1: Daily Quests -->
+            <div id="tabQuestsMissions" class="tab-content">
+              <!-- Multiplier Level Banner -->
+              <div class="multiplier-level-banner">
+                <div class="mult-banner-info">
+                  <span class="mult-banner-lbl">CURRENT BASE MULTIPLIER</span>
+                  <strong id="modalMultiplierVal" class="mult-banner-val">x1 ⭐</strong>
+                </div>
+                <div class="mult-banner-hint">Complete quests to level up your score multiplier!</div>
+              </div>
+
+              <div class="missions-scroll-list" id="missionsList">
+                <!-- Dynamically populated missions -->
+              </div>
+            </div>
+
+            <!-- Tab 2: Daily Surfer Trivia Quiz -->
+            <div id="tabQuestsQuiz" class="tab-content hidden">
+              <div class="daily-quiz-card">
+                <div class="quiz-badge-header">
+                  <span class="quiz-pill">DAILY TRIVIA CHALLENGE</span>
+                  <span class="quiz-reward-tag">PRIZE: 🪙 +300 &amp; 🗝️ +1 KEY</span>
+                </div>
+                <div id="quizQuestionBox" class="quiz-question-box">
+                  <div class="quiz-progress-text" id="quizQuestionCount">QUESTION 1 OF 3</div>
+                  <h3 class="quiz-question-title" id="quizQuestionTitle">Which character wears the iconic red snapback cap?</h3>
+                  <div class="quiz-options-grid" id="quizOptionsGrid">
+                    <!-- 4 options dynamically wired -->
+                  </div>
+                </div>
+                <div id="quizCompletedBox" class="quiz-completed-box hidden">
+                  <div class="quiz-trophy-icon">🏆</div>
+                  <h3 class="quiz-completed-title">DAILY QUIZ COMPLETED!</h3>
+                  <p class="quiz-completed-desc">You claimed 🪙 +300 Coins and 🗝️ +1 Key! Come back tomorrow for fresh trivia!</p>
+                </div>
+              </div>
             </div>
 
             <button type="button" id="closeMissionsDoneBtn" class="cyber-btn primary-btn modal-done-btn">BACK TO MENU</button>
@@ -677,9 +719,11 @@
                 <span class="modal-tag">SPECIAL LOOT</span>
                 <h2>MYSTERY BOX</h2>
               </div>
+              <button type="button" id="closeMysteryBoxBtn" class="close-icon-btn" aria-label="Close">✕</button>
             </div>
+            <div id="mysteryBoxesCount" class="mystery-box-count">CRATES TO UNBOX: 1</div>
             <div class="mystery-box-stage">
-              <div class="mystery-crate-wrap" id="mysteryCrateEl">
+              <div class="mystery-crate-wrap" id="mysteryCrateEl" title="Tap Chest to Open!">
                 <div class="crate-box">
                   <span class="crate-mark">?</span>
                 </div>
@@ -687,6 +731,7 @@
               <div id="mysteryRewardReveal" class="mystery-reward-reveal hidden">
                 <div id="mysteryRewardIcon" class="reward-icon-big">🪙</div>
                 <div id="mysteryRewardTitle" class="reward-title-big">+250 COINS</div>
+                <div id="mysteryRewardDesc" class="reward-desc-text">Added straight to your subway bank!</div>
               </div>
             </div>
             <button type="button" id="mysteryBoxOpenBtn" class="cyber-btn primary-btn unbox-btn">TAP TO OPEN 🎁</button>
@@ -741,8 +786,8 @@
     </main>
   </div>
 
-  <script src="audio.js?v=subway3d_v19"></script>
-  <script src="game.js?v=subway3d_v19"></script>
-  <script src="pwa.js?v=subway3d_v19"></script>
+  <script src="audio.js?v=subway3d_v20"></script>
+  <script src="game.js?v=subway3d_v20"></script>
+  <script src="pwa.js?v=subway3d_v20"></script>
 </body>
 </html>

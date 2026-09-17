@@ -3590,6 +3590,95 @@
 
         container.appendChild(card);
       });
+      this.renderDailyQuiz();
+    }
+
+    renderDailyQuiz() {
+      const qBox = document.getElementById('quizQuestionBox');
+      const cBox = document.getElementById('quizCompletedBox');
+      const countEl = document.getElementById('quizQuestionCount');
+      const titleEl = document.getElementById('quizQuestionTitle');
+      const grid = document.getElementById('quizOptionsGrid');
+      if (!qBox || !cBox || !grid) return;
+
+      const todayStr = new Date().toDateString();
+      const isDone = localStorage.getItem('subway_daily_quiz_done') === todayStr;
+
+      if (isDone) {
+        qBox.classList.add('hidden');
+        cBox.classList.remove('hidden');
+        return;
+      }
+
+      qBox.classList.remove('hidden');
+      cBox.classList.add('hidden');
+
+      const quizData = [
+        {
+          q: "Which character rocks the iconic backwards red cap?",
+          options: ["Jake", "Tricky", "Fresh", "Spike"],
+          correct: 0
+        },
+        {
+          q: "What power-up lets you fly high above the tracks with rainbow smoke?",
+          options: ["Super Sneakers", "Jetpack", "Coin Magnet", "Score 2X"],
+          correct: 1
+        },
+        {
+          q: "What gives you crash-immunity & high-speed rail glide?",
+          options: ["Headstart", "Hoverboard", "Mystery Box", "Shield"],
+          correct: 1
+        }
+      ];
+
+      if (typeof this.dailyQuizStep !== 'number' || this.dailyQuizStep >= quizData.length) {
+        this.dailyQuizStep = 0;
+      }
+
+      const item = quizData[this.dailyQuizStep];
+      if (countEl) countEl.textContent = `QUESTION ${this.dailyQuizStep + 1} OF ${quizData.length}`;
+      if (titleEl) titleEl.textContent = item.q;
+
+      grid.innerHTML = '';
+      item.options.forEach((optText, optIdx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'quiz-opt-btn';
+        btn.textContent = optText;
+
+        btn.onclick = () => {
+          if (optIdx === item.correct) {
+            btn.classList.add('correct');
+            try { SoundSystem.powerup(); } catch (e) {}
+            setTimeout(() => {
+              this.dailyQuizStep++;
+              if (this.dailyQuizStep >= quizData.length) {
+                this.bankCoins += 300;
+                this.bankKeys += 1;
+                this.saveBankCoins(this.bankCoins);
+                this.saveBankKeys(this.bankKeys);
+                try {
+                  localStorage.setItem('subway_daily_quiz_done', todayStr);
+                  SoundSystem.missionComplete();
+                } catch (e) {}
+                this.particles.burst(DESIGN_WIDTH / 2, 400, '#facc15', 36, 90, 280);
+                this.updateBankDisplays();
+                this.renderDailyQuiz();
+              } else {
+                this.renderDailyQuiz();
+              }
+            }, 350);
+          } else {
+            btn.classList.add('wrong');
+            try { SoundSystem.crash(); } catch (e) {}
+            setTimeout(() => {
+              btn.classList.remove('wrong');
+            }, 400);
+          }
+        };
+
+        grid.appendChild(btn);
+      });
     }
 
     updateMissionsNotificationBadge() {
@@ -4045,12 +4134,20 @@
 
     renderWorldTourModal() {
       const container = document.getElementById('worldTourCards');
+      const dotsContainer = document.getElementById('worldTourDots');
       if (!container) return;
       container.innerHTML = '';
+      if (dotsContainer) dotsContainer.innerHTML = '';
+
+      let dragDist = 0;
+      let isDragging = false;
+      let startX = 0, scrollStart = 0;
+
       THEMES.forEach((theme, idx) => {
         const isActive = idx === this.selectedBgIndex;
         const card = document.createElement('div');
         card.className = `world-carousel-card ${isActive ? 'active' : ''}`;
+        card.setAttribute('data-theme-idx', idx);
         card.innerHTML = `
           <div class="world-card-banner" style="background: linear-gradient(135deg, ${theme.sky[0]}, ${theme.sky[1] || theme.sky[0]});">
             <span class="world-card-stamp">${isActive ? 'VISITING NOW' : 'WORLD TOUR'}</span>
@@ -4062,17 +4159,97 @@
             <button type="button" class="world-card-select-btn">${isActive ? 'VISITING NOW ✔' : 'TRAVEL HERE ▶'}</button>
           </div>
         `;
-        card.onclick = () => {
+
+        const chooseTheme = () => {
           this.selectBackground(idx);
           try { SoundSystem.equip(); } catch (e) {}
           this.renderWorldTourModal();
           const modal = document.getElementById('worldTourModal');
           if (modal) {
-            setTimeout(() => modal.classList.add('hidden'), 250);
+            setTimeout(() => modal.classList.add('hidden'), 220);
           }
         };
+
+        const btn = card.querySelector('.world-card-select-btn');
+        if (btn) {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            chooseTheme();
+          });
+        }
+
+        card.addEventListener('click', (e) => {
+          if (dragDist > 10) return; // Ignore clicks if user was swiping/dragging
+          chooseTheme();
+        });
+
         container.appendChild(card);
+
+        // Dot indicator
+        if (dotsContainer) {
+          const dot = document.createElement('div');
+          dot.className = `world-dot ${isActive ? 'active' : ''}`;
+          dot.title = theme.name;
+          dot.addEventListener('click', () => {
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          });
+          dotsContainer.appendChild(dot);
+        }
       });
+
+      // Mouse drag-to-scroll support
+      container.onmousedown = (e) => {
+        isDragging = true;
+        dragDist = 0;
+        startX = e.pageX - container.offsetLeft;
+        scrollStart = container.scrollLeft;
+        container.classList.add('is-dragging');
+      };
+      window.onmousemove = (e) => {
+        if (!isDragging) return;
+        const x = e.pageX - container.offsetLeft;
+        const walk = (x - startX);
+        dragDist = Math.abs(walk);
+        container.scrollLeft = scrollStart - walk * 1.3;
+      };
+      window.onmouseup = () => {
+        if (isDragging) {
+          isDragging = false;
+          container.classList.remove('is-dragging');
+        }
+      };
+
+      // Mouse wheel horizontal scrolling
+      container.onwheel = (e) => {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          container.scrollLeft += e.deltaY * 1.2;
+          e.preventDefault();
+        }
+      };
+
+      // Arrow navigation buttons
+      const prevBtn = document.getElementById('worldTourPrevBtn');
+      const nextBtn = document.getElementById('worldTourNextBtn');
+      if (prevBtn) {
+        prevBtn.onclick = (e) => {
+          e.stopPropagation();
+          container.scrollBy({ left: -230, behavior: 'smooth' });
+        };
+      }
+      if (nextBtn) {
+        nextBtn.onclick = (e) => {
+          e.stopPropagation();
+          container.scrollBy({ left: 230, behavior: 'smooth' });
+        };
+      }
+
+      // Auto-scroll active card into view when opening
+      setTimeout(() => {
+        const activeCard = container.querySelector('.world-carousel-card.active');
+        if (activeCard) {
+          activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }, 50);
     }
 
     resetRun() {
@@ -4191,9 +4368,8 @@
       let lastTrigger = 0;
       const handler = (e) => {
         const now = Date.now();
-        if (now - lastTrigger < 250) return; // Prevent double-trigger from touch+click
+        if (now - lastTrigger < 200) return;
         lastTrigger = now;
-        if (e && e.cancelable && e.type !== 'click') e.preventDefault();
         try {
           callback(e);
         } catch (err) {
@@ -4201,7 +4377,9 @@
         }
       };
       el.addEventListener('click', handler);
-      el.addEventListener('touchend', handler);
+      el.addEventListener('touchend', (e) => {
+        handler(e);
+      }, { passive: true });
     }
 
     flashInsufficientFunds(btn, needed) {
@@ -4788,86 +4966,118 @@
     }
 
     /* ---------------- MYSTERY BOX UNBOXING MODAL ---------------- */
+    /* ---------------- MYSTERY BOX UNBOXING MODAL ---------------- */
     triggerMysteryBoxModal(onComplete) {
-      if (this.pendingMysteryBoxes <= 0) {
-        if (onComplete) onComplete();
-        return;
-      }
+      const modal = document.getElementById('mysteryBoxModal') || this.mysteryBoxModal;
+      if (modal) modal.classList.remove('hidden');
 
-      if (this.mysteryBoxModal) this.mysteryBoxModal.classList.remove('hidden');
+      const crate = document.getElementById('mysteryCrateEl');
+      const openBtn = document.getElementById('mysteryBoxOpenBtn');
+      const countText = document.getElementById('mysteryBoxesCount');
+      const rewardArea = document.getElementById('mysteryRewardReveal');
+      const doneBtn = document.getElementById('mysteryBoxDoneBtn');
+      const closeBtn = document.getElementById('closeMysteryBoxBtn');
 
-      const crate = document.getElementById('mysteryBoxCrate');
-      const countText = document.getElementById('mysteryBoxesRemaining');
-      const rewardArea = document.getElementById('mysteryBoxRewardArea');
-      const claimBtn = document.getElementById('mysteryBoxClaimBtn');
-
-      if (countText) countText.textContent = `CRATES TO UNBOX: ${this.pendingMysteryBoxes}`;
+      const remaining = Math.max(1, this.pendingMysteryBoxes || 1);
+      if (countText) countText.textContent = `CRATES TO UNBOX: ${remaining}`;
       if (rewardArea) rewardArea.classList.add('hidden');
-      if (claimBtn) claimBtn.classList.add('hidden');
+      if (doneBtn) doneBtn.classList.add('hidden');
+
+      const openAction = () => {
+        this.openMysteryBox(onComplete);
+      };
+
       if (crate) {
-        crate.classList.remove('hidden');
-        crate.onclick = () => this.openMysteryBox(onComplete);
+        crate.classList.remove('hidden', 'crate-opening-shake');
+        crate.onclick = openAction;
+      }
+      if (openBtn) {
+        openBtn.classList.remove('hidden');
+        openBtn.disabled = false;
+        openBtn.onclick = openAction;
+      }
+      if (closeBtn) {
+        closeBtn.onclick = () => {
+          if (modal) modal.classList.add('hidden');
+          this.updateBankDisplays();
+          if (onComplete) onComplete();
+        };
       }
     }
 
     openMysteryBox(onComplete) {
-      const crate = document.getElementById('mysteryBoxCrate');
-      const rewardArea = document.getElementById('mysteryBoxRewardArea');
-      const rewardIcon = document.getElementById('mysteryBoxRewardIcon');
-      const rewardTitle = document.getElementById('mysteryBoxRewardTitle');
-      const rewardDesc = document.getElementById('mysteryBoxRewardDesc');
-      const claimBtn = document.getElementById('mysteryBoxClaimBtn');
-      const countText = document.getElementById('mysteryBoxesRemaining');
+      const crate = document.getElementById('mysteryCrateEl');
+      const openBtn = document.getElementById('mysteryBoxOpenBtn');
+      const rewardArea = document.getElementById('mysteryRewardReveal');
+      const rewardIcon = document.getElementById('mysteryRewardIcon');
+      const rewardTitle = document.getElementById('mysteryRewardTitle');
+      const rewardDesc = document.getElementById('mysteryRewardDesc');
+      const doneBtn = document.getElementById('mysteryBoxDoneBtn');
+      const countText = document.getElementById('mysteryBoxesCount');
 
-      this.pendingMysteryBoxes--;
-      if (countText) countText.textContent = `CRATES TO UNBOX: ${this.pendingMysteryBoxes}`;
+      if (openBtn) openBtn.disabled = true;
+      if (crate) crate.classList.add('crate-opening-shake');
 
       try { SoundSystem.mysteryBox(); } catch (e) {}
 
-      // Roll rewards: 55% Coins (200-500), 30% Keys (1-2), 15% Hoverboard (+2)
-      const roll = Math.random();
-      let icon = '🪙', title = '300 COINS', desc = 'Added to your bank!';
+      setTimeout(() => {
+        if (crate) {
+          crate.classList.remove('crate-opening-shake');
+          crate.classList.add('hidden');
+        }
+        if (openBtn) openBtn.classList.add('hidden');
 
-      if (roll < 0.55) {
-        const coins = 200 + Math.floor(Math.random() * 7) * 50;
-        this.bankCoins += coins;
-        this.saveBankCoins(this.bankCoins);
-        icon = '🪙';
-        title = `+${coins} COINS!`;
-        desc = 'Added straight to your subway bank.';
-      } else if (roll < 0.85) {
-        const keys = Math.random() < 0.8 ? 1 : 2;
-        this.bankKeys += keys;
-        this.saveBankKeys(this.bankKeys);
-        icon = '🗝️';
-        title = `+${keys} REVIVE KEY${keys > 1 ? 'S' : ''}!`;
-        desc = 'Use this key to revive immediately after crashing.';
-      } else {
-        this.hoverboardStock = (this.hoverboardStock || 0) + 2;
-        icon = '🛹';
-        title = '+2 HOVERBOARDS!';
-        desc = 'Stocked in your run supply.';
-      }
+        this.pendingMysteryBoxes = Math.max(0, (this.pendingMysteryBoxes || 1) - 1);
+        if (countText) countText.textContent = `CRATES TO UNBOX: ${this.pendingMysteryBoxes}`;
 
-      if (crate) crate.classList.add('hidden');
-      if (rewardIcon) rewardIcon.textContent = icon;
-      if (rewardTitle) rewardTitle.textContent = title;
-      if (rewardDesc) rewardDesc.textContent = desc;
-      if (rewardArea) rewardArea.classList.remove('hidden');
+        // Roll rewards: 60% Coins (250-750), 25% Keys (1-2), 15% Hoverboards (+2)
+        const roll = Math.random();
+        let icon = '🪙', title = '+300 COINS!', desc = 'Added straight to your subway bank!';
 
-      if (claimBtn) {
-        claimBtn.classList.remove('hidden');
-        claimBtn.textContent = (this.pendingMysteryBoxes > 0) ? 'OPEN NEXT CRATE 📦' : 'COLLECT & CONTINUE';
-        claimBtn.onclick = () => {
-          if (this.pendingMysteryBoxes > 0) {
-            this.triggerMysteryBoxModal(onComplete);
-          } else {
-            if (this.mysteryBoxModal) this.mysteryBoxModal.classList.add('hidden');
-            this.updateBankDisplays();
-            if (onComplete) onComplete();
-          }
-        };
-      }
+        if (roll < 0.60) {
+          const coins = 250 + Math.floor(Math.random() * 6) * 100;
+          this.bankCoins += coins;
+          this.saveBankCoins(this.bankCoins);
+          icon = '🪙';
+          title = `+${coins} COINS!`;
+          desc = 'Golden coins banked for outfits & boards.';
+        } else if (roll < 0.85) {
+          const keys = Math.random() < 0.75 ? 1 : 2;
+          this.bankKeys += keys;
+          this.saveBankKeys(this.bankKeys);
+          icon = '🗝️';
+          title = `+${keys} REVIVE KEY${keys > 1 ? 'S' : ''}!`;
+          desc = 'Use keys to resurrect immediately after crashing.';
+        } else {
+          this.hoverboardStock = (this.hoverboardStock || 0) + 2;
+          icon = '🛹';
+          title = '+2 HOVERBOARDS!';
+          desc = 'Stocked in your run supply for crash immunity.';
+        }
+
+        try { SoundSystem.buy(); } catch (e) {}
+        this.particles.burst(DESIGN_WIDTH / 2, 420, '#facc15', 30, 90, 260);
+
+        if (rewardIcon) rewardIcon.textContent = icon;
+        if (rewardTitle) rewardTitle.textContent = title;
+        if (rewardDesc) rewardDesc.textContent = desc;
+        if (rewardArea) rewardArea.classList.remove('hidden');
+
+        if (doneBtn) {
+          doneBtn.classList.remove('hidden');
+          doneBtn.textContent = (this.pendingMysteryBoxes > 0) ? 'OPEN NEXT CRATE 📦' : 'COLLECT & CONTINUE ▶';
+          doneBtn.onclick = () => {
+            if (this.pendingMysteryBoxes > 0) {
+              this.triggerMysteryBoxModal(onComplete);
+            } else {
+              const modal = document.getElementById('mysteryBoxModal') || this.mysteryBoxModal;
+              if (modal) modal.classList.add('hidden');
+              this.updateBankDisplays();
+              if (onComplete) onComplete();
+            }
+          };
+        }
+      }, 420);
     }
 
     /* ---------------- INPUT BUFFERING & ACTION QUEUE ---------------- */
@@ -4932,18 +5142,27 @@
       });
 
       // Settings Modal Open/Close
-      const settingsModal = this.settingsModal;
-      this.attachButtonAction('menuSettingsBtn', () => {
+      const openSettings = () => {
         try { SoundSystem.ensure(); } catch (e) {}
-        this.updateProfileUI();
-        if (settingsModal) settingsModal.classList.remove('hidden');
-      });
-      this.attachButtonAction('closeSettingsBtn', () => {
-        if (settingsModal) settingsModal.classList.add('hidden');
-      });
-      this.attachButtonAction('applySettingsBtn', () => {
-        if (settingsModal) settingsModal.classList.add('hidden');
-      });
+        try { this.updateProfileUI(); } catch (e) {}
+        const sm = document.getElementById('settingsModal') || this.settingsModal;
+        if (sm) sm.classList.remove('hidden');
+      };
+      const closeSettings = () => {
+        const sm = document.getElementById('settingsModal') || this.settingsModal;
+        if (sm) sm.classList.add('hidden');
+      };
+
+      this.attachButtonAction('menuSettingsBtn', openSettings);
+      this.attachButtonAction('closeSettingsBtn', closeSettings);
+      this.attachButtonAction('applySettingsBtn', closeSettings);
+
+      const smOverlay = document.getElementById('settingsModal');
+      if (smOverlay) {
+        smOverlay.addEventListener('click', (e) => {
+          if (e.target === smOverlay) closeSettings();
+        });
+      }
 
       // Dedicated Runner Name Modal (Direct Custom Name Input)
       const nameModal = document.getElementById('nameModal');
@@ -4993,8 +5212,13 @@
       this.attachButtonAction('closeWorldTourBtn', () => {
         if (worldTourModal) worldTourModal.classList.add('hidden');
       });
+      if (worldTourModal) {
+        worldTourModal.addEventListener('click', (e) => {
+          if (e.target === worldTourModal) worldTourModal.classList.add('hidden');
+        });
+      }
 
-      // Side Rail: Missions & Challenges (QUESTS)
+      // Side Rail: Missions & Challenges (QUESTS & DAILY QUIZ)
       const missionsModal = document.getElementById('missionsModal');
       this.attachButtonAction('menuMissionsBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
@@ -5007,6 +5231,33 @@
       this.attachButtonAction('closeMissionsDoneBtn', () => {
         if (missionsModal) missionsModal.classList.add('hidden');
       });
+      if (missionsModal) {
+        missionsModal.addEventListener('click', (e) => {
+          if (e.target === missionsModal) missionsModal.classList.add('hidden');
+        });
+      }
+
+      // Dual Tabs inside Missions & Quests Modal
+      const tabMissions = document.getElementById('tabBtnMissions');
+      const tabQuiz = document.getElementById('tabBtnQuiz');
+      const contentMissions = document.getElementById('tabQuestsMissions');
+      const contentQuiz = document.getElementById('tabQuestsQuiz');
+
+      if (tabMissions && tabQuiz && contentMissions && contentQuiz) {
+        tabMissions.onclick = () => {
+          tabMissions.classList.add('active');
+          tabQuiz.classList.remove('active');
+          contentMissions.classList.remove('hidden');
+          contentQuiz.classList.add('hidden');
+        };
+        tabQuiz.onclick = () => {
+          tabQuiz.classList.add('active');
+          tabMissions.classList.remove('active');
+          contentQuiz.classList.remove('hidden');
+          contentMissions.classList.add('hidden');
+          this.renderDailyQuiz();
+        };
+      }
 
       // Side Rail: Top Run Leaderboard
       const leaderboardModal = document.getElementById('leaderboardModal');
