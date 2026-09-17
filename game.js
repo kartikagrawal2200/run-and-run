@@ -4139,9 +4139,8 @@
       container.innerHTML = '';
       if (dotsContainer) dotsContainer.innerHTML = '';
 
-      let dragDist = 0;
-      let isDragging = false;
-      let startX = 0, scrollStart = 0;
+      const cards = [];
+      const dots = [];
 
       THEMES.forEach((theme, idx) => {
         const isActive = idx === this.selectedBgIndex;
@@ -4179,77 +4178,129 @@
         }
 
         card.addEventListener('click', (e) => {
-          if (dragDist > 10) return; // Ignore clicks if user was swiping/dragging
+          if (movedDist > 10) return; // Ignore click if user was dragging
           chooseTheme();
         });
 
         container.appendChild(card);
+        cards.push(card);
 
         // Dot indicator
         if (dotsContainer) {
           const dot = document.createElement('div');
           dot.className = `world-dot ${isActive ? 'active' : ''}`;
           dot.title = theme.name;
-          dot.addEventListener('click', () => {
+          dot.addEventListener('click', (e) => {
+            e.stopPropagation();
             card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
           });
           dotsContainer.appendChild(dot);
+          dots.push(dot);
         }
       });
 
-      // Mouse drag-to-scroll support
-      container.onmousedown = (e) => {
-        isDragging = true;
-        dragDist = 0;
-        startX = e.pageX - container.offsetLeft;
+      // Calculate which card is closest to container center
+      const getClosestCardIndex = () => {
+        if (!cards.length) return 0;
+        const cRect = container.getBoundingClientRect();
+        const center = cRect.left + cRect.width / 2;
+        let bestIdx = 0;
+        let bestDist = Infinity;
+        cards.forEach((c, i) => {
+          const r = c.getBoundingClientRect();
+          const cardCenter = r.left + r.width / 2;
+          const dist = Math.abs(center - cardCenter);
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestIdx = i;
+          }
+        });
+        return bestIdx;
+      };
+
+      // Real-time dot updates on scroll
+      let scrollRaf = null;
+      container.onscroll = () => {
+        if (scrollRaf) cancelAnimationFrame(scrollRaf);
+        scrollRaf = requestAnimationFrame(() => {
+          const activeIdx = getClosestCardIndex();
+          dots.forEach((d, i) => {
+            if (i === activeIdx) d.classList.add('active');
+            else d.classList.remove('active');
+          });
+        });
+      };
+
+      // Pointer drag support (works for mouse & touch without breaking window listeners)
+      let isPointerDown = false;
+      let startX = 0;
+      let scrollStart = 0;
+      let movedDist = 0;
+
+      container.onpointerdown = (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        isPointerDown = true;
+        movedDist = 0;
+        startX = e.clientX;
         scrollStart = container.scrollLeft;
-        container.classList.add('is-dragging');
       };
-      window.onmousemove = (e) => {
-        if (!isDragging) return;
-        const x = e.pageX - container.offsetLeft;
-        const walk = (x - startX);
-        dragDist = Math.abs(walk);
-        container.scrollLeft = scrollStart - walk * 1.3;
-      };
-      window.onmouseup = () => {
-        if (isDragging) {
-          isDragging = false;
-          container.classList.remove('is-dragging');
+
+      container.onpointermove = (e) => {
+        if (!isPointerDown) return;
+        const deltaX = e.clientX - startX;
+        movedDist = Math.abs(deltaX);
+        if (movedDist > 4) {
+          container.scrollLeft = scrollStart - deltaX;
         }
       };
+
+      const endDrag = () => {
+        if (isPointerDown) {
+          isPointerDown = false;
+        }
+      };
+      container.onpointerup = endDrag;
+      container.onpointercancel = endDrag;
 
       // Mouse wheel horizontal scrolling
       container.onwheel = (e) => {
         if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-          container.scrollLeft += e.deltaY * 1.2;
+          container.scrollLeft += e.deltaY * 0.9;
           e.preventDefault();
         }
       };
 
-      // Arrow navigation buttons
+      // Clean Arrow navigation buttons
       const prevBtn = document.getElementById('worldTourPrevBtn');
       const nextBtn = document.getElementById('worldTourNextBtn');
       if (prevBtn) {
         prevBtn.onclick = (e) => {
           e.stopPropagation();
-          container.scrollBy({ left: -230, behavior: 'smooth' });
+          const curr = getClosestCardIndex();
+          const target = Math.max(0, curr - 1);
+          if (cards[target]) {
+            cards[target].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
         };
       }
       if (nextBtn) {
         nextBtn.onclick = (e) => {
           e.stopPropagation();
-          container.scrollBy({ left: 230, behavior: 'smooth' });
+          const curr = getClosestCardIndex();
+          const target = Math.min(cards.length - 1, curr + 1);
+          if (cards[target]) {
+            cards[target].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
         };
       }
 
       // Auto-scroll active card into view when opening
       setTimeout(() => {
-        const activeCard = container.querySelector('.world-carousel-card.active');
-        if (activeCard) {
-          activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        const target = cards[this.selectedBgIndex] || cards[0];
+        if (target) {
+          target.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
         }
-      }, 50);
+      }, 60);
     }
 
     resetRun() {
@@ -4720,12 +4771,12 @@
 
     /* ---------------- SEASON HUNT (TOKYO SAKURA) MODAL ---------------- */
     renderSeasonModal() {
-      const tokenCountEl = document.getElementById('seasonTokenCount');
-      if (tokenCountEl) tokenCountEl.textContent = this.seasonTokens;
+      const tokenCountEl = document.getElementById('seasonTokensCount') || document.getElementById('seasonTokenCount');
+      if (tokenCountEl) tokenCountEl.textContent = this.seasonTokens || 0;
 
       const fillEl = document.getElementById('seasonProgressFill');
       if (fillEl) {
-        const pct = Math.min(100, (this.seasonTokens / 50) * 100);
+        const pct = Math.min(100, ((this.seasonTokens || 0) / 50) * 100);
         fillEl.style.width = pct + '%';
       }
 
@@ -4734,18 +4785,27 @@
       container.innerHTML = '';
 
       SEASON_TIERS.forEach((tier) => {
-        const isCompleted = this.seasonTokens >= tier.tokens;
+        const isCompleted = (this.seasonTokens || 0) >= tier.tokens;
         const isClaimed = this.seasonClaimed.includes(tier.tier);
+        const progressTokens = Math.min(this.seasonTokens || 0, tier.tokens);
+        const pct = Math.min(100, Math.floor((progressTokens / tier.tokens) * 100));
 
         const card = document.createElement('div');
         card.className = `season-tier-card ${isCompleted ? 'completed' : ''} ${isClaimed ? 'claimed' : ''}`;
 
         card.innerHTML = `
-          <div class="season-tier-badge">TIER ${tier.tier}</div>
-          <div class="season-tier-icon">${tier.icon}</div>
-          <div class="season-tier-info">
-            <span class="season-tier-reward">${tier.rewardText}</span>
-            <small class="season-tier-target">${tier.tokens} 🌸 TOKENS (${Math.min(this.seasonTokens, tier.tokens)}/${tier.tokens})</small>
+          <div class="season-tier-left">
+            <div class="season-tier-badge">TIER ${tier.tier}</div>
+            <div class="season-tier-icon-wrap">
+              <span class="season-tier-icon">${tier.icon}</span>
+            </div>
+            <div class="season-tier-info">
+              <div class="season-tier-reward">${tier.rewardText}</div>
+              <div class="season-tier-progress-track">
+                <div class="season-tier-progress-fill" style="width: ${pct}%"></div>
+              </div>
+              <small class="season-tier-target">🌸 ${progressTokens} / ${tier.tokens} TOKENS (${pct}%)</small>
+            </div>
           </div>
         `;
 
@@ -4759,7 +4819,7 @@
           btn.disabled = true;
         } else if (isCompleted) {
           btn.classList.add('claim-active-btn');
-          btn.textContent = 'CLAIM';
+          btn.textContent = 'CLAIM 🎁';
           this.attachButtonAction(btn, () => this.claimSeasonTier(tier));
         } else {
           btn.classList.add('locked-btn');
@@ -5016,13 +5076,15 @@
       const countText = document.getElementById('mysteryBoxesCount');
 
       if (openBtn) openBtn.disabled = true;
-      if (crate) crate.classList.add('crate-opening-shake');
+      if (crate) {
+        crate.classList.add('crate-opening-shake', 'crate-bursting');
+      }
 
       try { SoundSystem.mysteryBox(); } catch (e) {}
 
       setTimeout(() => {
         if (crate) {
-          crate.classList.remove('crate-opening-shake');
+          crate.classList.remove('crate-opening-shake', 'crate-bursting');
           crate.classList.add('hidden');
         }
         if (openBtn) openBtn.classList.add('hidden');
@@ -5056,7 +5118,9 @@
         }
 
         try { SoundSystem.buy(); } catch (e) {}
-        this.particles.burst(DESIGN_WIDTH / 2, 420, '#facc15', 30, 90, 260);
+        this.particles.burst(DESIGN_WIDTH / 2, 400, '#facc15', 30, 90, 280);
+        this.particles.burst(DESIGN_WIDTH / 2 - 35, 390, '#ec4899', 18, 70, 230);
+        this.particles.burst(DESIGN_WIDTH / 2 + 35, 390, '#38bdf8', 18, 70, 230);
 
         if (rewardIcon) rewardIcon.textContent = icon;
         if (rewardTitle) rewardTitle.textContent = title;
@@ -5077,7 +5141,7 @@
             }
           };
         }
-      }, 420);
+      }, 580);
     }
 
     /* ---------------- INPUT BUFFERING & ACTION QUEUE ---------------- */

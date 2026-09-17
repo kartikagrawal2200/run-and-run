@@ -3721,63 +3721,341 @@ canvas {
 }
 
 /* ============================================================
-   MYSTERY BOX MODAL
+   MYSTERY BOX MODAL — AUTHENTIC SUBWAY SURFERS 3D LOOT CRATE
    ============================================================ */
 .mystery-box-panel {
-  max-width: 320px !important;
+  max-width: 340px !important;
   text-align: center;
-  background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%) !important;
-  border: 3px solid #facc15 !important;
-  box-shadow: 0 0 35px rgba(250, 204, 21, 0.5) !important;
+  background: radial-gradient(circle at 50% 30%, #312e81 0%, #1e1b4b 60%, #090d16 100%) !important;
+  border: 3.5px solid #facc15 !important;
+  border-radius: 28px !important;
+  box-shadow: 0 0 50px rgba(250, 204, 21, 0.45), 0 20px 50px rgba(0, 0, 0, 0.8) !important;
+  padding: 24px 20px !important;
+}
+
+.mystery-box-count {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 1.5px;
+  background: rgba(15, 23, 42, 0.7);
+  padding: 4px 12px;
+  border-radius: 999px;
+  display: inline-block;
+  margin: 0 auto 10px auto;
+  border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
 .mystery-box-stage {
-  padding: 24px 0;
-  min-height: 140px;
+  position: relative;
+  width: 100%;
+  height: 220px;
+  min-height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 8px 0 16px 0;
+  overflow: visible;
 }
 
-.crate-box {
-  width: 90px;
-  height: 90px;
-  background: linear-gradient(135deg, #b45309 0%, #78350f 100%);
-  border: 4px solid #facc15;
-  border-radius: 16px;
+/* Spinning Celestial Sunburst Godrays */
+.mystery-sunburst-rays {
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(250, 204, 21, 0.16) 0deg 15deg, transparent 15deg 30deg);
+  animation: sunburstSpin 18s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes sunburstSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Glowing Golden Pedestal Ring */
+.mystery-pedestal-ring {
+  position: absolute;
+  bottom: 18px;
+  width: 150px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(250, 204, 21, 0.6) 0%, rgba(234, 179, 8, 0.25) 55%, transparent 80%);
+  filter: blur(3px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mystery-crate-wrap {
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  perspective: 600px;
+  transform-style: preserve-3d;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mystery-crate-wrap:hover {
+  transform: scale(1.06) translateY(-4px);
+}
+
+/* 3D Subway Surfers Crate Construction */
+.subway-loot-crate {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(180deg, #9a3412 0%, #78350f 45%, #451a03 100%);
+  border: 3.5px solid #ca8a04;
+  border-radius: 22px;
+  box-shadow: 
+    inset 0 4px 8px rgba(254, 240, 138, 0.35),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.7),
+    0 16px 30px rgba(0, 0, 0, 0.7),
+    0 0 25px rgba(250, 204, 21, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-  animation: crateWobble 1.6s infinite ease-in-out;
+  animation: crateGentleFloat 2.4s ease-in-out infinite alternate;
+  transform-origin: center bottom;
 }
 
-.crate-mark {
+@keyframes crateGentleFloat {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(-1.5deg); }
+  100% { transform: translateY(-2px) rotate(1.5deg); }
+}
+
+/* Wood Planks Lines */
+.crate-planks-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.plank-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(30, 10, 2, 0.65);
+  box-shadow: 0 1px 0 rgba(254, 215, 170, 0.18);
+}
+.plank-line.p1 { top: 32%; }
+.plank-line.p2 { top: 68%; }
+
+/* Golden Corner Brackets with Rivets */
+.crate-gold-bracket {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #fef08a 0%, #eab308 45%, #a16207 100%);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.5);
+  z-index: 3;
+}
+
+.corner-tl { top: -2px; left: -2px; border-top-left-radius: 18px; border-bottom-right-radius: 8px; }
+.corner-tr { top: -2px; right: -2px; border-top-right-radius: 18px; border-bottom-left-radius: 8px; }
+.corner-bl { bottom: -2px; left: -2px; border-bottom-left-radius: 18px; border-top-right-radius: 8px; }
+.corner-br { bottom: -2px; right: -2px; border-bottom-right-radius: 18px; border-top-left-radius: 8px; }
+
+.bracket-rivet {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #451a03;
+  box-shadow: 0 1px 0 rgba(254, 240, 138, 0.8);
+}
+.corner-tl .bracket-rivet { top: 6px; left: 6px; }
+.corner-tr .bracket-rivet { top: 6px; right: 6px; }
+.corner-bl .bracket-rivet { bottom: 6px; left: 6px; }
+.corner-br .bracket-rivet { bottom: 6px; right: 6px; }
+
+/* Golden Metal Center Band */
+.crate-gold-band {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(90deg, #ca8a04 0%, #fde047 50%, #a16207 100%);
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+  z-index: 2;
+}
+
+.band-stud {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #78350f;
+  box-shadow: 0 1px 0 rgba(254, 240, 138, 0.7);
+}
+.band-stud.s-top { top: 12px; }
+.band-stud.s-bot { bottom: 12px; }
+
+/* 3D Padlock Latch & Keyhole */
+.crate-lock-plate {
+  position: absolute;
+  width: 28px;
+  height: 24px;
+  background: linear-gradient(180deg, #fef08a 0%, #eab308 60%, #854d0e 100%);
+  border-radius: 6px;
+  border: 1.5px solid #fef08a;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  bottom: 16px;
+}
+
+.crate-keyhole {
+  width: 5px;
+  height: 8px;
+  background: #271005;
+  border-radius: 3px 3px 1px 1px;
+}
+
+/* 3D Cartoon Question Mark */
+.crate-question-mark {
+  position: relative;
+  z-index: 5;
   font-family: var(--font-display);
-  font-size: 48px;
+  font-size: 58px;
   font-weight: 900;
+  line-height: 1;
   color: #facc15;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  background: linear-gradient(180deg, #ffffff 0%, #fef08a 35%, #f59e0b 80%, #b45309 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 0 #78350f) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.8));
+  user-select: none;
+  margin-top: -6px;
 }
 
-@keyframes crateWobble {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-6deg) scale(1.04); }
-  75% { transform: rotate(6deg) scale(1.04); }
+/* Ambient Sparkles */
+.crate-sparkle {
+  position: absolute;
+  font-size: 18px;
+  z-index: 6;
+  pointer-events: none;
+  animation: sparkleTwinkle 1.8s ease-in-out infinite alternate;
+}
+.crate-sparkle.sp-1 { top: -8px; right: -8px; animation-delay: 0s; }
+.crate-sparkle.sp-2 { bottom: 6px; left: -10px; animation-delay: 0.9s; }
+
+@keyframes sparkleTwinkle {
+  0% { transform: scale(0.8) rotate(0deg); opacity: 0.5; }
+  100% { transform: scale(1.25) rotate(20deg); opacity: 1; filter: drop-shadow(0 0 6px #facc15); }
+}
+
+/* Opening Shake & Burst States */
+.crate-opening-shake {
+  animation: crateIntenseWobble 0.12s linear infinite !important;
+}
+
+@keyframes crateIntenseWobble {
+  0% { transform: rotate(0deg) scale(1.08); }
+  25% { transform: rotate(-7deg) scale(1.12); }
+  75% { transform: rotate(7deg) scale(1.12); }
+  100% { transform: rotate(0deg) scale(1.08); }
+}
+
+.crate-bursting {
+  box-shadow: 0 0 70px #facc15, 0 0 100px #ec4899 !important;
+}
+
+/* Reward Reveal Presentation */
+.mystery-reward-reveal {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: rewardBounceUp 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes rewardBounceUp {
+  0% { transform: scale(0.3) translateY(40px); opacity: 0; }
+  70% { transform: scale(1.12) translateY(-8px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.reward-halo-rays {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(250, 204, 21, 0.4) 0%, transparent 70%);
+  animation: sunburstSpin 8s linear infinite;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .reward-icon-big {
-  font-size: 56px;
-  margin-bottom: 8px;
-  animation: comboPop 0.35s ease;
+  font-size: 68px;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.6));
+  margin-bottom: 6px;
+  animation: iconPulse 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes iconPulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
 }
 
 .reward-title-big {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 900;
   color: #facc15;
   letter-spacing: 1px;
+  text-shadow: 0 3px 0 #78350f, 0 0 20px rgba(250, 204, 21, 0.8);
+}
+
+.reward-desc-text {
+  font-size: 12px;
+  color: #e2e8f0;
+  margin-top: 4px;
+}
+
+/* Subway Surfers 3D Chunky Action Button */
+.unbox-btn {
+  width: 100% !important;
+  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%) !important;
+  border: 2.5px solid #fef08a !important;
+  border-radius: 20px !important;
+  box-shadow: 0 6px 0 #92400e, 0 10px 20px rgba(0, 0, 0, 0.5) !important;
+  font-family: var(--font-display) !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  color: #1e1b4b !important;
+  letter-spacing: 1px !important;
+  padding: 14px 20px !important;
+  transition: transform 0.12s ease, box-shadow 0.12s ease !important;
+}
+
+.unbox-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 0 #92400e, 0 14px 24px rgba(0, 0, 0, 0.6) !important;
+}
+
+.unbox-btn:active {
+  transform: translateY(4px) !important;
+  box-shadow: 0 2px 0 #92400e, 0 6px 12px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* ============================================================
@@ -3888,73 +4166,401 @@ canvas {
   line-height: 1.4;
 }
 
+.season-panel {
+  background: radial-gradient(circle at 50% 10%, rgba(236, 72, 153, 0.3) 0%, transparent 65%), linear-gradient(180deg, #2e1065 0%, #1a082e 60%, #0c0517 100%) !important;
+  border: 3.5px solid #ec4899 !important;
+  box-shadow: 0 0 45px rgba(236, 72, 153, 0.45), 0 20px 50px rgba(0, 0, 0, 0.8) !important;
+}
+
+.season-banner {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.22) 0%, rgba(168, 85, 247, 0.22) 100%) !important;
+  border: 2px solid rgba(244, 114, 182, 0.6) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(236, 72, 153, 0.2) !important;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
 .season-tiers-list, .achievements-scroll-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 360px;
+  max-height: 340px;
   overflow-y: auto;
   padding-right: 4px;
 }
 
-.season-tier-card, .achievement-item-card {
-  background: rgba(30, 41, 59, 0.85);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+/* Season Tier Card — Clean Horizontal Game Row */
+.season-tier-card {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  background: linear-gradient(135deg, rgba(46, 16, 101, 0.88) 0%, rgba(26, 11, 46, 0.95) 100%) !important;
+  border: 2px solid rgba(236, 72, 153, 0.35) !important;
+  border-radius: 18px !important;
+  padding: 12px 14px !important;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
 }
 
-.season-tier-card.unlocked, .achievement-item-card.completed {
-  border-color: #facc15;
-  background: rgba(250, 204, 21, 0.12);
+.season-tier-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(244, 114, 182, 0.7) !important;
 }
 
-.tier-left, .achieve-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.season-tier-card.completed {
+  border-color: #facc15 !important;
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.16) 0%, rgba(46, 16, 101, 0.95) 100%) !important;
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.35) !important;
 }
 
-.tier-badge, .achieve-badge {
-  font-size: 26px;
+.season-tier-left {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
 }
 
-.tier-title, .achieve-title {
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 800;
-  color: #ffffff;
-  display: block;
+.season-tier-badge {
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%) !important;
+  border: 1.5px solid #f472b6 !important;
+  border-radius: 10px !important;
+  padding: 4px 8px !important;
+  font-family: var(--font-display) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+  letter-spacing: 0.5px !important;
+  white-space: nowrap !important;
+  box-shadow: 0 3px 8px rgba(236, 72, 153, 0.4) !important;
 }
 
-.tier-progress, .achieve-progress {
-  font-size: 11px;
-  color: #94a3b8;
-  display: block;
-  margin-top: 2px;
+.season-tier-icon-wrap {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  border-radius: 12px !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 22px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
 }
 
-.tier-claim-btn, .achieve-claim-btn {
-  background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
-  border: 1.5px solid #fef08a;
-  border-radius: 12px;
-  padding: 7px 14px;
-  color: #0f172a;
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 900;
-  cursor: pointer;
+.season-tier-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  text-align: left !important;
 }
 
-.tier-claimed-tag, .achieve-claimed-tag {
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 800;
-  color: #10b981;
+.season-tier-reward {
+  font-family: var(--font-display) !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  text-align: left !important;
+  line-height: 1.25 !important;
+}
+
+.season-tier-progress-track {
+  width: 100% !important;
+  height: 7px !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  overflow: hidden !important;
+}
+
+.season-tier-progress-fill {
+  height: 100% !important;
+  background: linear-gradient(90deg, #ec4899 0%, #f43f5e 100%) !important;
+  border-radius: 999px !important;
+  transition: width 0.3s ease !important;
+}
+
+.season-tier-target {
+  font-family: var(--font-display) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: #f472b6 !important;
+  text-align: left !important;
+}
+
+.season-claim-btn {
+  border-radius: 12px !important;
+  font-family: var(--font-display) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  padding: 7px 12px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  transition: transform 0.12s ease !important;
+}
+
+.season-claim-btn.claim-active-btn {
+  background: linear-gradient(180deg, #facc15 0%, #eab308 100%) !important;
+  border: 2px solid #fef08a !important;
+  box-shadow: 0 4px 0 #b45309 !important;
+  color: #0f172a !important;
+  animation: pulseGlow 1.4s infinite alternate !important;
+}
+
+.season-claim-btn.claim-active-btn:hover {
+  transform: scale(1.06);
+}
+
+.season-claim-btn.claimed-btn {
+  background: rgba(16, 185, 129, 0.18) !important;
+  border: 1.5px solid #10b981 !important;
+  color: #34d399 !important;
+  cursor: default !important;
+}
+
+.season-claim-btn.locked-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+}
+
+/* ============================================================
+   DAILY CHALLENGES & MISSIONS MODAL — VIBRANT ARCADE UI
+   ============================================================ */
+.missions-panel {
+  background: radial-gradient(circle at 50% 10%, rgba(56, 189, 248, 0.22) 0%, transparent 65%), linear-gradient(180deg, #1e1b4b 0%, #0f172a 60%, #030712 100%) !important;
+  border: 3.5px solid #38bdf8 !important;
+  border-radius: 28px !important;
+  box-shadow: 0 0 45px rgba(56, 189, 248, 0.4), 0 20px 50px rgba(0, 0, 0, 0.8) !important;
+}
+
+.modal-nav-tabs {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  border: 2px solid rgba(56, 189, 248, 0.3) !important;
+  border-radius: 999px !important;
+  padding: 4px !important;
+  margin-bottom: 12px !important;
+  width: 100% !important;
+}
+
+.modal-nav-tabs .tab-btn {
+  flex: 1 !important;
+  border-radius: 999px !important;
+  font-family: var(--font-display) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  padding: 8px 12px !important;
+  color: #94a3b8 !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+}
+
+.modal-nav-tabs .tab-btn.active {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 12px rgba(56, 189, 248, 0.45) !important;
+}
+
+.multiplier-level-banner {
+  background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%) !important;
+  border: 2.5px solid #facc15 !important;
+  border-radius: 18px !important;
+  padding: 10px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 12px !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), 0 0 16px rgba(250, 204, 21, 0.25) !important;
+}
+
+.mult-banner-info {
+  display: flex !important;
+  flex-direction: column !important;
+  text-align: left !important;
+  gap: 2px !important;
+}
+
+.mult-banner-lbl {
+  font-family: var(--font-display) !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  color: #38bdf8 !important;
+  letter-spacing: 1.5px !important;
+}
+
+.mult-banner-val {
+  font-family: var(--font-display) !important;
+  font-size: 26px !important;
+  font-weight: 900 !important;
+  color: #facc15 !important;
+  text-shadow: 0 0 12px rgba(250, 204, 21, 0.8) !important;
+  line-height: 1 !important;
+}
+
+.mult-banner-hint {
+  font-size: 10.5px !important;
+  color: #cbd5e1 !important;
+  font-weight: 600 !important;
+}
+
+.missions-scroll-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  max-height: 330px !important;
+  overflow-y: auto !important;
+  padding-right: 4px !important;
+}
+
+/* Mission Item Card — Clean Horizontal Layout */
+.mission-item-card {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
+  border: 2px solid rgba(56, 189, 248, 0.25) !important;
+  border-radius: 18px !important;
+  padding: 10px 14px !important;
+  transition: transform 0.15s ease, border-color 0.15s ease !important;
+}
+
+.mission-item-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.6) !important;
+}
+
+.mission-item-card.completed {
+  border-color: #facc15 !important;
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.14) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.3) !important;
+}
+
+.mission-info-left {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  text-align: left !important;
+}
+
+.mission-icon-box {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  border: 2px solid #38bdf8 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 22px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+  flex-shrink: 0 !important;
+}
+
+.mission-text {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  text-align: left !important;
+}
+
+.mission-title {
+  font-family: var(--font-display) !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  text-align: left !important;
+  line-height: 1.25 !important;
+}
+
+.mission-progress-bar-wrap {
+  width: 100% !important;
+  height: 7px !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  overflow: hidden !important;
+}
+
+.mission-progress-bar-fill {
+  height: 100% !important;
+  background: linear-gradient(90deg, #38bdf8 0%, #06b6d4 100%) !important;
+  border-radius: 999px !important;
+  transition: width 0.3s ease !important;
+}
+
+.mission-progress-num {
+  font-family: var(--font-display) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: #94a3b8 !important;
+  text-align: left !important;
+}
+
+.mission-action-right {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-shrink: 0 !important;
+}
+
+.mission-claim-btn {
+  background: linear-gradient(180deg, #facc15 0%, #eab308 100%) !important;
+  border: 2px solid #fef08a !important;
+  box-shadow: 0 4px 0 #b45309 !important;
+  border-radius: 12px !important;
+  padding: 7px 12px !important;
+  font-family: var(--font-display) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  color: #0f172a !important;
+  cursor: pointer !important;
+  animation: pulseGlow 1.5s infinite alternate !important;
+}
+
+.mission-claimed-btn {
+  background: rgba(16, 185, 129, 0.18) !important;
+  border: 1.5px solid #10b981 !important;
+  color: #34d399 !important;
+  font-family: var(--font-display) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  border-radius: 10px !important;
+  padding: 6px 10px !important;
+  cursor: default !important;
+}
+
+.mission-reward-tag {
+  background: rgba(250, 204, 21, 0.15) !important;
+  border: 1.5px solid rgba(250, 204, 21, 0.35) !important;
+  color: #facc15 !important;
+  font-family: var(--font-display) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  border-radius: 10px !important;
+  padding: 6px 10px !important;
+  white-space: nowrap !important;
 }
 
 
@@ -4234,6 +4840,7 @@ canvas {
 .world-tour-panel {
   max-width: 440px !important;
   width: 95% !important;
+  padding: 20px 16px !important;
 }
 
 .world-tour-carousel-hint {
@@ -4243,7 +4850,7 @@ canvas {
   color: #38bdf8;
   letter-spacing: 1.2px;
   text-align: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   animation: hintBlink 1.4s ease-in-out infinite alternate;
 }
 
@@ -4258,8 +4865,12 @@ canvas {
   overflow-x: auto !important;
   scroll-snap-type: x mandatory !important;
   gap: 14px !important;
-  padding: 10px 8px 16px 8px !important;
+  padding: 8px 6px 14px 6px !important;
   -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-x !important;
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin;
+  scrollbar-color: #38bdf8 rgba(15, 23, 42, 0.5);
 }
 
 .world-tour-carousel-container::-webkit-scrollbar {
@@ -4272,8 +4883,9 @@ canvas {
 }
 
 .world-carousel-card {
-  flex: 0 0 210px !important;
+  flex: 0 0 215px !important;
   scroll-snap-align: center !important;
+  scroll-snap-stop: normal !important;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%) !important;
   border: 2.5px solid rgba(255, 255, 255, 0.18) !important;
   border-radius: 18px !important;
@@ -4306,7 +4918,7 @@ canvas {
 }
 
 .world-card-icon-art {
-  font-size: 42px;
+  font-size: 44px;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
   z-index: 2;
   transition: transform 0.2s ease;
@@ -4341,8 +4953,8 @@ canvas {
 }
 
 .world-card-name {
-  font-family: 'Titan One', 'Fredoka', sans-serif;
-  font-size: 15px;
+  font-family: var(--font-display);
+  font-size: 14px;
   font-weight: 900;
   color: #ffffff;
   letter-spacing: 0.5px;
@@ -4351,7 +4963,7 @@ canvas {
 .world-card-desc {
   font-size: 11px;
   color: #94a3b8;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .world-card-select-btn {
@@ -4367,6 +4979,11 @@ canvas {
   text-align: center;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+  transition: transform 0.12s ease;
+}
+
+.world-card-select-btn:hover {
+  transform: scale(1.03);
 }
 
 .world-carousel-card.active .world-card-select-btn {
@@ -4375,15 +4992,15 @@ canvas {
   color: #ffffff;
 }
 
-/* World Tour Carousel Navigation Controls */
-.world-tour-carousel-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-bottom: 8px;
-  padding: 0 4px;
-  box-sizing: border-box;
+/* World Tour Unified Bottom Navigation Bar (Arrows + Center Dots) */
+.world-tour-nav-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  margin-top: 10px !important;
+  padding: 0 4px !important;
+  box-sizing: border-box !important;
 }
 
 .carousel-nav-arrow-btn {
@@ -4394,11 +5011,12 @@ canvas {
   font-family: var(--font-display);
   font-size: 11px;
   font-weight: 900;
-  padding: 6px 14px;
+  padding: 7px 16px;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(2, 132, 199, 0.45);
   transition: transform 0.15s ease, background 0.15s ease;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .carousel-nav-arrow-btn:hover {
@@ -4410,25 +5028,12 @@ canvas {
   transform: scale(0.95);
 }
 
-.world-tour-carousel-container {
-  touch-action: pan-x !important;
-  cursor: grab !important;
-  scroll-behavior: smooth !important;
-}
-
-.world-tour-carousel-container.is-dragging {
-  cursor: grabbing !important;
-  scroll-snap-type: none !important;
-  user-select: none !important;
-}
-
 .world-tour-dots-indicator {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
-  width: 100%;
+  flex: 1;
 }
 
 .world-dot {
@@ -4442,8 +5047,8 @@ canvas {
 
 .world-dot.active {
   background: #facc15;
-  box-shadow: 0 0 8px #facc15;
-  transform: scale(1.3);
+  box-shadow: 0 0 10px #facc15;
+  transform: scale(1.35);
 }
 
 /* ---------------- DAILY SURFER QUIZ & TRIVIA ---------------- */

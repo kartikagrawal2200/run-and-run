@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800;900&family=Titan+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=subway3d_v20">
+  <link rel="stylesheet" href="style.css?v=subway3d_v21">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#4cc9f0">
@@ -564,30 +564,29 @@
           </div>
         </section>
 
-        <!-- World Tour City Selector Modal (8 City Themes) -->
+        <!-- World Tour Destination City Modal -->
         <section id="worldTourModal" class="overlay modal-overlay hidden">
-          <div class="glass-panel world-tour-panel">
+          <div class="glass-panel modal-panel world-tour-panel">
             <div class="modal-header">
               <div class="modal-title-wrap">
-                <span class="modal-tag">SUBWAY SURFERS WORLD TOUR</span>
-                <h2>SELECT DESTINATION CITY</h2>
+                <span class="modal-tag">WORLD TOUR</span>
+                <h2>DESTINATION CITY</h2>
               </div>
-              <button type="button" id="closeWorldTourBtn" class="close-icon-btn" aria-label="Close">✕</button>
+              <button type="button" id="closeWorldTourBtn" class="close-icon-btn" aria-label="Close World Tour">✕</button>
             </div>
 
-            <!-- Carousel Navigation Controls -->
-            <div class="world-tour-carousel-controls">
-              <button type="button" id="worldTourPrevBtn" class="carousel-nav-arrow-btn prev-btn" aria-label="Previous City">◀ PREV</button>
-              <div class="world-tour-carousel-hint">SWIPE OR CLICK ARROWS ➔</div>
-              <button type="button" id="worldTourNextBtn" class="carousel-nav-arrow-btn next-btn" aria-label="Next City">NEXT ▶</button>
-            </div>
+            <div class="world-tour-carousel-hint">SWIPE OR CLICK TO TRAVEL ✈️</div>
 
             <div class="world-tour-carousel-container" id="worldTourCards">
               <!-- Dynamically populated card carousel -->
             </div>
 
-            <div class="world-tour-dots-indicator" id="worldTourDots">
-              <!-- Indicators dynamically rendered -->
+            <div class="world-tour-nav-bar">
+              <button type="button" id="worldTourPrevBtn" class="carousel-nav-arrow-btn prev-btn" aria-label="Previous City">◀ PREV</button>
+              <div class="world-tour-dots-indicator" id="worldTourDots">
+                <!-- Indicators dynamically rendered -->
+              </div>
+              <button type="button" id="worldTourNextBtn" class="carousel-nav-arrow-btn next-btn" aria-label="Next City">NEXT ▶</button>
             </div>
           </div>
         </section>
@@ -723,12 +722,45 @@
             </div>
             <div id="mysteryBoxesCount" class="mystery-box-count">CRATES TO UNBOX: 1</div>
             <div class="mystery-box-stage">
+              <!-- Radial spinning sunburst godrays -->
+              <div class="mystery-sunburst-rays"></div>
+              <!-- Glowing neon stage pedestal -->
+              <div class="mystery-pedestal-ring"></div>
+
+              <!-- 3D Subway Surfers Crate -->
               <div class="mystery-crate-wrap" id="mysteryCrateEl" title="Tap Chest to Open!">
-                <div class="crate-box">
-                  <span class="crate-mark">?</span>
+                <div class="subway-loot-crate">
+                  <!-- Crate Wood Planks Layer -->
+                  <div class="crate-planks-layer">
+                    <span class="plank-line p1"></span>
+                    <span class="plank-line p2"></span>
+                    <span class="plank-line p3"></span>
+                  </div>
+                  <!-- Golden Reinforced Corner Brackets with Rivets -->
+                  <div class="crate-gold-bracket corner-tl"><span class="bracket-rivet"></span></div>
+                  <div class="crate-gold-bracket corner-tr"><span class="bracket-rivet"></span></div>
+                  <div class="crate-gold-bracket corner-bl"><span class="bracket-rivet"></span></div>
+                  <div class="crate-gold-bracket corner-br"><span class="bracket-rivet"></span></div>
+                  <!-- Center Golden Band -->
+                  <div class="crate-gold-band">
+                    <span class="band-stud s-top"></span>
+                    <span class="band-stud s-bot"></span>
+                  </div>
+                  <!-- 3D Golden Padlock Latch & Keyhole -->
+                  <div class="crate-lock-plate">
+                    <div class="crate-keyhole"></div>
+                  </div>
+                  <!-- Glossy 3D Question Mark Badge -->
+                  <div class="crate-question-mark">?</div>
+                  <!-- Ambient Sparkles -->
+                  <div class="crate-sparkle sp-1">✨</div>
+                  <div class="crate-sparkle sp-2">⭐</div>
                 </div>
               </div>
+
+              <!-- Mystery Reward Reveal (Bouncy Upward Animation) -->
               <div id="mysteryRewardReveal" class="mystery-reward-reveal hidden">
+                <div class="reward-halo-rays"></div>
                 <div id="mysteryRewardIcon" class="reward-icon-big">🪙</div>
                 <div id="mysteryRewardTitle" class="reward-title-big">+250 COINS</div>
                 <div id="mysteryRewardDesc" class="reward-desc-text">Added straight to your subway bank!</div>
@@ -786,8 +818,8 @@
     </main>
   </div>
 
-  <script src="audio.js?v=subway3d_v20"></script>
-  <script src="game.js?v=subway3d_v20"></script>
-  <script src="pwa.js?v=subway3d_v20"></script>
+  <script src="audio.js?v=subway3d_v21"></script>
+  <script src="game.js?v=subway3d_v21"></script>
+  <script src="pwa.js?v=subway3d_v21"></script>
 </body>
 </html>
