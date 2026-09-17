@@ -887,135 +887,145 @@
      ============================================================ */
   function drawCharacterPortrait(pctx, costumeId, size = 34) {
     if (!pctx) return;
-    const c = COSTUMES[costumeId] || COSTUMES.jake;
-    const half = size / 2;
-    pctx.save();
-    pctx.clearRect(0, 0, size, size);
+    try {
+      const c = COSTUMES[costumeId] || COSTUMES.jake;
+      const half = size / 2;
+      pctx.save();
+      pctx.clearRect(0, 0, size, size);
 
-    // Circular background badge with gradient
-    pctx.beginPath();
-    pctx.arc(half, half, half - 1, 0, Math.PI * 2);
-    pctx.clip();
-
-    const bgGrad = pctx.createLinearGradient(0, 0, size, size);
-    bgGrad.addColorStop(0, '#1e293b');
-    bgGrad.addColorStop(1, '#0f172a');
-    pctx.fillStyle = bgGrad;
-    pctx.fillRect(0, 0, size, size);
-
-    // Character bust position
-    pctx.translate(half, half + 7);
-    const s = size / 48; // scale factor
-    pctx.scale(s, s);
-
-    // Neck & Hoodie collar
-    pctx.fillStyle = c.skin || '#fed7aa';
-    pctx.fillRect(-4, -16, 8, 8);
-
-    pctx.fillStyle = c.hoodie || '#ffffff';
-    pctx.beginPath();
-    pctx.roundRect(-14, -10, 28, 16, [6, 6, 2, 2]);
-    pctx.fill();
-
-    // Denim vest collar
-    pctx.fillStyle = c.vest || '#2563eb';
-    pctx.fillRect(-11, -8, 7, 14);
-    pctx.fillRect(4, -8, 7, 14);
-
-    // Chibi Head
-    pctx.fillStyle = c.skin || '#fed7aa';
-    pctx.beginPath();
-    pctx.arc(0, -22, 13, 0, Math.PI * 2);
-    pctx.fill();
-
-    // Cute Cartoon Eyes
-    pctx.fillStyle = '#ffffff';
-    pctx.beginPath();
-    pctx.ellipse(-5, -22, 3.5, 4.5, 0, 0, Math.PI * 2);
-    pctx.ellipse(5, -22, 3.5, 4.5, 0, 0, Math.PI * 2);
-    pctx.fill();
-
-    pctx.fillStyle = '#0f172a';
-    pctx.beginPath();
-    pctx.arc(-4.5, -22, 2.2, 0, Math.PI * 2);
-    pctx.arc(5.5, -22, 2.2, 0, Math.PI * 2);
-    pctx.fill();
-
-    // Eye catchlights
-    pctx.fillStyle = '#ffffff';
-    pctx.beginPath();
-    pctx.arc(-5.2, -23.2, 0.9, 0, Math.PI * 2);
-    pctx.arc(4.8, -23.2, 0.9, 0, Math.PI * 2);
-    pctx.fill();
-
-    // Friendly smirk
-    pctx.strokeStyle = '#c2410c';
-    pctx.lineWidth = 1.2;
-    pctx.beginPath();
-    pctx.arc(0, -17, 3.5, 0.2, Math.PI - 0.2);
-    pctx.stroke();
-
-    // Character Headwear / Hair
-    if (c.character === 'tricky') {
-      // Blue knit beanie
-      pctx.fillStyle = c.cap || '#0284c7';
+      // Circular background badge with gradient
       pctx.beginPath();
-      pctx.arc(0, -26, 13.5, Math.PI, Math.PI * 2);
-      pctx.fill();
-      // Blonde pigtails
-      pctx.fillStyle = '#facc15';
+      pctx.arc(half, half, half - 1, 0, Math.PI * 2);
+      pctx.clip();
+
+      const bgGrad = pctx.createLinearGradient(0, 0, size, size);
+      bgGrad.addColorStop(0, '#1e293b');
+      bgGrad.addColorStop(1, '#0f172a');
+      pctx.fillStyle = bgGrad;
+      pctx.fillRect(0, 0, size, size);
+
+      // Character bust position
+      pctx.translate(half, half + 7);
+      const s = size / 48; // scale factor
+      pctx.scale(s, s);
+
+      // Neck & Hoodie collar
+      pctx.fillStyle = c.skin || '#fed7aa';
+      pctx.fillRect(-4, -16, 8, 8);
+
+      pctx.fillStyle = c.hoodie || '#ffffff';
       pctx.beginPath();
-      pctx.ellipse(-14, -20, 4, 7, -0.3, 0, Math.PI * 2);
-      pctx.ellipse(14, -20, 4, 7, 0.3, 0, Math.PI * 2);
+      if (typeof pctx.roundRect === 'function') {
+        pctx.roundRect(-14, -10, 28, 16, 4);
+      } else {
+        pctx.rect(-14, -10, 28, 16);
+      }
       pctx.fill();
-    } else if (c.character === 'fresh') {
-      // Hi-top fade dark hair
-      pctx.fillStyle = '#0f172a';
-      pctx.fillRect(-9, -38, 18, 12);
-      // Yellow retro sunglasses
-      pctx.fillStyle = '#facc15';
-      pctx.fillRect(-9, -24, 8, 4);
-      pctx.fillRect(1, -24, 8, 4);
-      pctx.fillRect(-2, -23, 4, 1.5);
-    } else if (c.character === 'spike') {
-      // Red punk mohawk
-      pctx.fillStyle = '#ef4444';
+
+      // Denim vest collar
+      pctx.fillStyle = c.vest || '#2563eb';
+      pctx.fillRect(-11, -8, 7, 14);
+      pctx.fillRect(4, -8, 7, 14);
+
+      // Chibi Head
+      pctx.fillStyle = c.skin || '#fed7aa';
       pctx.beginPath();
-      pctx.moveTo(-3, -34); pctx.lineTo(0, -44); pctx.lineTo(3, -34);
-      pctx.closePath();
+      pctx.arc(0, -22, 13, 0, Math.PI * 2);
       pctx.fill();
-    } else if (c.character === 'yutani') {
-      // Alien green mascot hood
-      pctx.fillStyle = '#22c55e';
-      pctx.beginPath();
-      pctx.arc(0, -24, 14, Math.PI, Math.PI * 2);
-      pctx.fill();
-      // Antennae
-      pctx.fillRect(-7, -42, 2, 8);
-      pctx.fillRect(5, -42, 2, 8);
-      pctx.fillStyle = '#facc15';
-      pctx.beginPath();
-      pctx.arc(-6, -42, 2.5, 0, Math.PI * 2);
-      pctx.arc(6, -42, 2.5, 0, Math.PI * 2);
-      pctx.fill();
-    } else {
-      // Jake's Red Snapback Cap
-      pctx.fillStyle = c.cap || '#ef4444';
-      pctx.beginPath();
-      pctx.arc(0, -27, 13, Math.PI * 0.95, Math.PI * 2.05);
-      pctx.fill();
-      // Cap Visor pointing backward
-      pctx.beginPath();
-      pctx.roundRect(-10, -20, 20, 4, [2, 2, 2, 2]);
-      pctx.fill();
-      // White top cap button
+
+      // Cute Cartoon Eyes
       pctx.fillStyle = '#ffffff';
       pctx.beginPath();
-      pctx.arc(0, -36, 1.8, 0, Math.PI * 2);
+      if (typeof pctx.ellipse === 'function') {
+        pctx.ellipse(-5, -22, 3.5, 4.5, 0, 0, Math.PI * 2);
+        pctx.ellipse(5, -22, 3.5, 4.5, 0, 0, Math.PI * 2);
+      } else {
+        pctx.arc(-5, -22, 3.5, 0, Math.PI * 2);
+        pctx.arc(5, -22, 3.5, 0, Math.PI * 2);
+      }
       pctx.fill();
-    }
 
-    pctx.restore();
+      pctx.fillStyle = '#0f172a';
+      pctx.beginPath();
+      pctx.arc(-4.5, -22, 2.2, 0, Math.PI * 2);
+      pctx.arc(5.5, -22, 2.2, 0, Math.PI * 2);
+      pctx.fill();
+
+      // Eye catchlights
+      pctx.fillStyle = '#ffffff';
+      pctx.beginPath();
+      pctx.arc(-5.2, -23.2, 0.9, 0, Math.PI * 2);
+      pctx.arc(4.8, -23.2, 0.9, 0, Math.PI * 2);
+      pctx.fill();
+
+      // Friendly smirk
+      pctx.strokeStyle = '#c2410c';
+      pctx.lineWidth = 1.2;
+      pctx.beginPath();
+      pctx.arc(0, -17, 3.5, 0.2, Math.PI - 0.2);
+      pctx.stroke();
+
+      // Character Headwear / Hair
+      if (c.character === 'tricky') {
+        pctx.fillStyle = c.cap || '#0284c7';
+        pctx.beginPath();
+        pctx.arc(0, -26, 13.5, Math.PI, Math.PI * 2);
+        pctx.fill();
+        pctx.fillStyle = '#facc15';
+        pctx.beginPath();
+        if (typeof pctx.ellipse === 'function') {
+          pctx.ellipse(-14, -20, 4, 7, -0.3, 0, Math.PI * 2);
+          pctx.ellipse(14, -20, 4, 7, 0.3, 0, Math.PI * 2);
+        }
+        pctx.fill();
+      } else if (c.character === 'fresh') {
+        pctx.fillStyle = '#0f172a';
+        pctx.fillRect(-9, -38, 18, 12);
+        pctx.fillStyle = '#facc15';
+        pctx.fillRect(-9, -24, 8, 4);
+        pctx.fillRect(1, -24, 8, 4);
+        pctx.fillRect(-2, -23, 4, 1.5);
+      } else if (c.character === 'spike') {
+        pctx.fillStyle = '#ef4444';
+        pctx.beginPath();
+        pctx.moveTo(-3, -34); pctx.lineTo(0, -44); pctx.lineTo(3, -34);
+        pctx.closePath();
+        pctx.fill();
+      } else if (c.character === 'yutani') {
+        pctx.fillStyle = '#22c55e';
+        pctx.beginPath();
+        pctx.arc(0, -24, 14, Math.PI, Math.PI * 2);
+        pctx.fill();
+        pctx.fillRect(-7, -42, 2, 8);
+        pctx.fillRect(5, -42, 2, 8);
+        pctx.fillStyle = '#facc15';
+        pctx.beginPath();
+        pctx.arc(-6, -42, 2.5, 0, Math.PI * 2);
+        pctx.arc(6, -42, 2.5, 0, Math.PI * 2);
+        pctx.fill();
+      } else {
+        pctx.fillStyle = c.cap || '#ef4444';
+        pctx.beginPath();
+        pctx.arc(0, -27, 13, Math.PI * 0.95, Math.PI * 2.05);
+        pctx.fill();
+        pctx.beginPath();
+        if (typeof pctx.roundRect === 'function') {
+          pctx.roundRect(-10, -20, 20, 4, 2);
+        } else {
+          pctx.rect(-10, -20, 20, 4);
+        }
+        pctx.fill();
+        pctx.fillStyle = '#ffffff';
+        pctx.beginPath();
+        pctx.arc(0, -36, 1.8, 0, Math.PI * 2);
+        pctx.fill();
+      }
+
+      pctx.restore();
+    } catch (e) {
+      console.warn('drawCharacterPortrait fallback:', e);
+      try { pctx.restore(); } catch (_) {}
+    }
   }
 
   /* ============================================================
@@ -3292,8 +3302,25 @@
           }
         };
         this.splashScreen.addEventListener('click', tapToSkip);
-        this.splashScreen.addEventListener('touchend', tapToSkip);
+        this.splashScreen.addEventListener('touchstart', tapToSkip, { passive: true });
+        this.splashScreen.addEventListener('touchend', tapToSkip, { passive: true });
       }
+
+      // Universal tap or click to immediately transition past splash screen
+      const globalDismiss = () => {
+        if (this.state === GameStates.SPLASH) {
+          this.dismissSplash();
+        }
+      };
+      window.addEventListener('click', globalDismiss, { once: true });
+      window.addEventListener('touchstart', globalDismiss, { once: true, passive: true });
+
+      // Bulletproof failsafe: splash will never be stuck even if animations or fonts lag
+      setTimeout(() => {
+        if (this.state === GameStates.SPLASH) {
+          this.dismissSplash();
+        }
+      }, 2100);
 
       this.bestScore = this.loadBest();
 
@@ -3901,66 +3928,71 @@
     }
 
     updateProfileUI() {
-      const callsign = (this.profile && this.profile.callsign) ? this.profile.callsign : 'RUNNER 1';
-      const rankInfo = this.getProfileRank(this.bestScore);
+      try {
+        const callsign = (this.profile && this.profile.callsign) ? this.profile.callsign : 'RUNNER 1';
+        const avatar = (this.profile && this.profile.avatar) ? this.profile.avatar : '🏃';
+        const rankInfo = this.getProfileRank(this.bestScore);
 
-      // Top bar profile button: Render 3D Chibi Character Portrait Canvas
-      const avatarCanvas = document.getElementById('profileAvatarCanvas');
-      if (avatarCanvas) {
-        const pctx = avatarCanvas.getContext('2d');
-        drawCharacterPortrait(pctx, this.equippedCostume, 34);
-      }
-      const callsignPill = document.getElementById('profileCallsignPill');
-      if (callsignPill) callsignPill.textContent = callsign;
-
-      // Settings Modal Profile Tab
-      const bigAvatar = document.getElementById('profileBigAvatar');
-      const rankBadge = document.getElementById('profileRankBadge');
-      const input = document.getElementById('profileCallsignInput');
-      const statBest = document.getElementById('profileStatBest');
-      const statBank = document.getElementById('profileStatBank');
-      const statTier = document.getElementById('profileStatTier');
-
-      if (bigAvatar) bigAvatar.textContent = avatar;
-      if (rankBadge) rankBadge.textContent = rankInfo.title;
-      if (input && document.activeElement !== input) input.value = callsign;
-      if (statBest) statBest.textContent = this.bestScore;
-      if (statBank) statBank.textContent = this.bankCoins;
-      if (statTier) statTier.textContent = rankInfo.tier;
-
-      // Dedicated Name Modal input
-      const nameModalInput = document.getElementById('playerNameInput');
-      if (nameModalInput && document.activeElement !== nameModalInput) {
-        nameModalInput.value = (callsign === 'RUNNER 1' || callsign === 'SET NAME') ? '' : callsign;
-      }
-
-      // Highlight active avatar in pickers
-      document.querySelectorAll('.avatar-chip, .avatar-choice-btn').forEach(chip => {
-        const val = chip.getAttribute('data-avatar') || chip.getAttribute('data-av');
-        if (val === avatar) {
-          chip.classList.add('active');
-        } else {
-          chip.classList.remove('active');
+        // Top bar profile button: Render 3D Chibi Character Portrait Canvas
+        const avatarCanvas = document.getElementById('profileAvatarCanvas');
+        if (avatarCanvas) {
+          const pctx = avatarCanvas.getContext('2d');
+          drawCharacterPortrait(pctx, this.equippedCostume, 34);
         }
-      });
+        const callsignPill = document.getElementById('profileCallsignPill');
+        if (callsignPill) callsignPill.textContent = callsign;
 
-      // Game Over debrief
-      const goAvatar = document.getElementById('gameoverAvatar');
-      const goCallsign = document.getElementById('gameoverCallsign');
-      if (goAvatar) goAvatar.textContent = avatar;
-      if (goCallsign) goCallsign.textContent = callsign;
+        // Settings Modal Profile Tab
+        const bigAvatar = document.getElementById('profileBigAvatar');
+        const rankBadge = document.getElementById('profileRankBadge');
+        const input = document.getElementById('profileCallsignInput');
+        const statBest = document.getElementById('profileStatBest');
+        const statBank = document.getElementById('profileStatBank');
+        const statTier = document.getElementById('profileStatTier');
 
-      // Sync active world button in Settings > Worlds tab
-      for (let i = 0; i < THEMES.length; i++) {
-        const btn = document.getElementById(`bgBtn${i}`);
-        if (btn) {
-          if (i === this.selectedBgIndex) btn.classList.add('active');
-          else btn.classList.remove('active');
+        if (bigAvatar) bigAvatar.textContent = avatar;
+        if (rankBadge) rankBadge.textContent = rankInfo.title;
+        if (input && document.activeElement !== input) input.value = callsign;
+        if (statBest) statBest.textContent = this.bestScore;
+        if (statBank) statBank.textContent = this.bankCoins;
+        if (statTier) statTier.textContent = rankInfo.tier;
+
+        // Dedicated Name Modal input
+        const nameModalInput = document.getElementById('playerNameInput');
+        if (nameModalInput && document.activeElement !== nameModalInput) {
+          nameModalInput.value = (callsign === 'RUNNER 1' || callsign === 'SET NAME') ? '' : callsign;
         }
-      }
-      const bgNameEl = document.getElementById('bgSelectedName');
-      if (bgNameEl && THEMES[this.selectedBgIndex]) {
-        bgNameEl.textContent = THEMES[this.selectedBgIndex].name;
+
+        // Highlight active avatar in pickers
+        document.querySelectorAll('.avatar-chip, .avatar-choice-btn').forEach(chip => {
+          const val = chip.getAttribute('data-avatar') || chip.getAttribute('data-av');
+          if (val === avatar) {
+            chip.classList.add('active');
+          } else {
+            chip.classList.remove('active');
+          }
+        });
+
+        // Game Over debrief
+        const goAvatar = document.getElementById('gameoverAvatar');
+        const goCallsign = document.getElementById('gameoverCallsign');
+        if (goAvatar) goAvatar.textContent = avatar;
+        if (goCallsign) goCallsign.textContent = callsign;
+
+        // Sync active world button in Settings > Worlds tab
+        for (let i = 0; i < THEMES.length; i++) {
+          const btn = document.getElementById(`bgBtn${i}`);
+          if (btn) {
+            if (i === this.selectedBgIndex) btn.classList.add('active');
+            else btn.classList.remove('active');
+          }
+        }
+        const bgNameEl = document.getElementById('bgSelectedName');
+        if (bgNameEl && THEMES[this.selectedBgIndex]) {
+          bgNameEl.textContent = THEMES[this.selectedBgIndex].name;
+        }
+      } catch (err) {
+        console.error('Error in updateProfileUI:', err);
       }
     }
 
