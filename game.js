@@ -361,7 +361,7 @@
         const a = clamp(ft.life / ft.maxLife, 0, 1);
         ctx.save();
         ctx.globalAlpha = a;
-        ctx.font = '900 16px "Titan One", "Fredoka", "Orbitron", sans-serif';
+        ctx.font = '900 16px "Fredoka", "Orbitron", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillStyle = ft.color;
         ctx.strokeStyle = '#0f172a';
@@ -651,7 +651,7 @@
           if (b.neonSign && b.w > 32) {
             ctx.save();
             ctx.globalAlpha = 0.95;
-            ctx.font = '900 11px "Titan One", "Noto Sans JP", sans-serif';
+            ctx.font = '900 11px "Fredoka", "Noto Sans JP", sans-serif';
             ctx.textAlign = 'center';
             ctx.fillStyle = b.signColor || '#facc15';
             ctx.fillText(b.neonSign, bx + b.w / 2, baseY - b.h + 24);
@@ -1191,7 +1191,7 @@
         ctx.stroke();
         // Deck graffiti star
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 10px "Titan One", sans-serif';
+        ctx.font = 'bold 10px "Fredoka", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('★', 0, -2);
         // Trucks and wheels
@@ -1398,7 +1398,7 @@
         ctx.arc(0, -48, 3.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = '#ef4444';
-        ctx.font = 'bold 5px "Titan One", sans-serif';
+        ctx.font = 'bold 6px "Fredoka", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('S', 0, -46);
 
@@ -1495,7 +1495,7 @@
         ctx.roundRect(-9, -15, 18, 13, [3, 3, 3, 3]);
         ctx.fill();
         ctx.fillStyle = '#facc15';
-        ctx.font = '900 6px "Titan One", sans-serif';
+        ctx.font = '900 7px "Fredoka", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('SUB', 0, -8);
         ctx.fillStyle = '#06b6d4';
@@ -1630,11 +1630,11 @@
         ctx.stroke();
 
         ctx.fillStyle = '#facc15';
-        ctx.font = '900 7px "Titan One", sans-serif';
+        ctx.font = '900 7.5px "Fredoka", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('SUB', 0, -9);
         ctx.fillStyle = '#06b6d4';
-        ctx.font = '900 6.5px "Titan One", sans-serif';
+        ctx.font = '900 7px "Fredoka", sans-serif';
         ctx.fillText('SURF', 0, -3);
 
         // Folded white hood collar resting on neck

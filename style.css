@@ -20,8 +20,8 @@
   --neon-orange: #f97316;
   --neon-green: #10b981;
   --neon-red: #f43f5e;
-  --font-display: 'Titan One', 'Fredoka', cursive, sans-serif;
-  --font-body: 'Fredoka', cursive, sans-serif;
+  --font-display: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 * {
@@ -718,34 +718,36 @@ canvas {
 .high-score-pill {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
-  border: 2.5px solid #fed7aa;
+  border: 2px solid #fed7aa;
   border-radius: 999px;
-  padding: 6px 12px;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 900;
+  padding: 5px 12px;
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
   color: #ffffff;
-  box-shadow: 0 4px 0 #9a3412, 0 6px 15px rgba(249, 115, 22, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.65);
-  text-shadow: 0 2px 0 #7c2d12;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 10px rgba(249, 115, 22, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
   white-space: nowrap;
 }
 
 .coin-bank-pill {
   display: flex;
   align-items: center;
-  gap: 5px;
-  background: linear-gradient(180deg, #facc15 0%, #eab308 100%);
-  border: 2.5px solid #fef08a;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 2px solid #facc15;
   border-radius: 999px;
-  padding: 6px 12px;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 900;
-  color: #78350f;
-  box-shadow: 0 4px 0 #a16207, 0 6px 15px rgba(250, 204, 21, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.7);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  padding: 5px 12px;
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #fde047;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 12px rgba(250, 204, 21, 0.3);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
   white-space: nowrap;
 }
 
@@ -979,10 +981,10 @@ canvas {
     font-size: 11px;
     max-width: 110px;
   }
-  .high-score-pill, .coin-bank-pill {
-    padding: 4px 7px;
-    font-size: 11px;
-    gap: 3px;
+  .high-score-pill, .coin-bank-pill, .key-bank-pill {
+    padding: 4px 8px;
+    font-size: 13.5px;
+    gap: 5px;
   }
   .nav-cyber-btn {
     padding: 4px 8px;
@@ -1476,22 +1478,23 @@ canvas {
 }
 
 .coin-bank-pill {
-  background: rgba(25, 20, 10, 0.85);
-  border: 1px solid rgba(255, 210, 63, 0.45);
-  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 2px solid #facc15;
+  border-radius: 999px;
   padding: 5px 12px;
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--neon-yellow);
-  font-family: var(--font-display);
-  font-size: 13px;
+  color: #fde047;
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
   font-weight: 800;
-  box-shadow: 0 0 10px rgba(255, 210, 63, 0.25);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 12px rgba(250, 204, 21, 0.3);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
 }
 
 .coin-bank-pill .bank-count {
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
 }
 
 /* Avatar Cyber Pedestal */
@@ -3517,18 +3520,19 @@ canvas {
    SUBWAY SURFERS KEYS & COIN COMBO HUD
    ============================================================ */
 .key-bank-pill {
-  background: rgba(20, 24, 38, 0.85);
-  border: 1.5px solid #38bdf8;
-  border-radius: 20px;
-  padding: 4px 10px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 2px solid #38bdf8;
+  border-radius: 999px;
+  padding: 5px 12px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   color: #38bdf8;
-  font-family: var(--font-display);
-  font-size: 13px;
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
   font-weight: 800;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 12px rgba(56, 189, 248, 0.3);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
 }
 
 .key-badge {
@@ -4753,12 +4757,12 @@ canvas {
   padding: 2px 6px;
   display: flex;
   align-items: center;
-  gap: 3px;
-  font-family: 'Titan One', 'Fredoka', 'Orbitron', sans-serif;
-  font-size: 11px;
-  font-weight: 900;
+  gap: 4px;
+  font-family: 'Fredoka', 'Orbitron', -apple-system, sans-serif;
+  font-size: 11.5px;
+  font-weight: 800;
   color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
   box-shadow: 0 2px 6px rgba(234, 88, 12, 0.5);
 }
 
@@ -4769,17 +4773,13 @@ canvas {
 }
 
 .hud-score-digits {
-  font-family: 'Titan One', 'Fredoka', 'Orbitron', Impact, sans-serif !important;
-  font-size: 24px !important;
-  font-weight: 900 !important;
+  font-family: 'Fredoka', 'Orbitron', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 26px !important;
+  font-weight: 800 !important;
   color: #ffffff !important;
-  letter-spacing: 1px !important;
-  text-shadow: 
-    -1.5px -1.5px 0 #78350f,  
-     1.5px -1.5px 0 #78350f,
-    -1.5px  1.5px 0 #78350f,
-     1.5px  1.5px 0 #78350f,
-     0 3px 6px rgba(0, 0, 0, 0.8) !important;
+  letter-spacing: 1.5px !important;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.85) !important;
+  -webkit-text-stroke: 0 !important;
 }
 
 .coin-badge {
@@ -4794,16 +4794,13 @@ canvas {
 }
 
 .hud-coin-digits {
-  font-family: 'Titan One', 'Fredoka', 'Orbitron', sans-serif !important;
-  font-size: 19px !important;
-  font-weight: 900 !important;
+  font-family: 'Fredoka', 'Orbitron', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
   color: #fef08a !important;
-  text-shadow: 
-    -1px -1px 0 #78350f,  
-     1px -1px 0 #78350f,
-    -1px  1px 0 #78350f,
-     1px  1px 0 #78350f,
-     0 2px 5px rgba(0, 0, 0, 0.7) !important;
+  letter-spacing: 1px !important;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.85) !important;
+  -webkit-text-stroke: 0 !important;
 }
 
 /* ============================================================
@@ -6126,6 +6123,617 @@ canvas {
   25% { transform: translateX(-6px); }
   50% { transform: translateX(6px); }
   75% { transform: translateX(-4px); }
+}
+
+
+/* ============================================================
+   CRYSTAL-CLEAR TYPOGRAPHY & HIGH-CONTRAST LEGIBILITY SUITE
+   Ensures all headings, body text, badges, buttons, and numeric
+   counters are sharp, open, readable, and visually stunning.
+   ============================================================ */
+
+/* 1. Global Font Normalization: Remove chunky/collapsed fonts & strokes */
+h1, h2, h3, h4, h5, h6,
+.subway-main-title,
+.modal-header h2,
+.modal-title-wrap h2,
+.glass-panel h2,
+.modal-panel h2,
+.quiz-completed-title,
+.league-name,
+.upgrade-name,
+.achievement-title,
+.cyber-btn,
+.primary-btn,
+.modal-done-btn,
+.tab-btn,
+.bank-count,
+.lb-score,
+.hud-score-digits,
+.hud-coin-digits {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  -webkit-text-stroke: 0 !important;
+  text-rendering: optimizeLegibility !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* 2. Top HUD Navigation Pills (Screenshot 5: Trophy 31412, Coin 958, Key 8) */
+.menu-top-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+
+.high-score-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  background: linear-gradient(180deg, #ea580c 0%, #c2410c 100%) !important;
+  border: 2px solid #fed7aa !important;
+  border-radius: 999px !important;
+  padding: 5px 12px !important;
+  min-height: 34px !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 10px rgba(249, 115, 22, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+.high-score-pill .top-pill-svg {
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0 !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5)) !important;
+}
+
+.high-score-pill .bank-count,
+#menuBestScore {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+  line-height: 1 !important;
+}
+
+.coin-bank-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  background: rgba(15, 23, 42, 0.94) !important;
+  border: 2px solid #facc15 !important;
+  border-radius: 999px !important;
+  padding: 5px 12px !important;
+  min-height: 34px !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 12px rgba(250, 204, 21, 0.35) !important;
+}
+
+.coin-bank-pill .top-pill-svg,
+.coin-bank-pill .coin-icon {
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0 !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5)) !important;
+}
+
+.coin-bank-pill .bank-count,
+#menuCoinBank,
+#shopCoinBank {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  color: #fde047 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95) !important;
+  line-height: 1 !important;
+}
+
+.key-bank-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  background: rgba(15, 23, 42, 0.94) !important;
+  border: 2px solid #38bdf8 !important;
+  border-radius: 999px !important;
+  padding: 5px 12px !important;
+  min-height: 34px !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 12px rgba(56, 189, 248, 0.35) !important;
+}
+
+.key-bank-pill .top-pill-svg,
+.key-bank-pill .key-icon {
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0 !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5)) !important;
+}
+
+.key-bank-pill .bank-count,
+#menuKeyBank,
+#shopKeyBank {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  color: #38bdf8 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95) !important;
+  line-height: 1 !important;
+}
+
+/* 3. Modal Titles & Subtitles (Screenshots 1, 2, 3, 4) */
+.modal-tag,
+.sub-header-tag {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #38bdf8 !important;
+  letter-spacing: 1.5px !important;
+  text-transform: uppercase !important;
+  display: block !important;
+  margin-bottom: 3px !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+.modal-header h2,
+.modal-title-wrap h2,
+.glass-panel h2,
+.modal-panel h2 {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1.2px !important;
+  color: #ffffff !important;
+  line-height: 1.2 !important;
+  text-transform: uppercase !important;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8), 0 0 12px rgba(56, 189, 248, 0.3) !important;
+  -webkit-text-stroke: 0 !important;
+  margin: 0 !important;
+}
+
+/* Modal Navigation Tabs */
+.modal-nav-tabs .tab-btn,
+.tab-btn {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.8px !important;
+  color: #cbd5e1 !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 12px !important;
+  padding: 8px 8px !important;
+  transition: all 0.15s ease !important;
+}
+
+.modal-nav-tabs .tab-btn.active,
+.tab-btn.active {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.45) !important;
+}
+
+/* 4. Screenshot 1: Daily Challenges & Daily Quiz */
+.quiz-badge-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 12px !important;
+  gap: 8px !important;
+}
+
+.quiz-pill {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  color: #facc15 !important;
+  background: rgba(250, 204, 21, 0.15) !important;
+  border: 1.5px solid #facc15 !important;
+  padding: 4px 12px !important;
+  border-radius: 999px !important;
+}
+
+.quiz-reward-tag {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  border: 1.5px solid #34d399 !important;
+  padding: 4px 12px !important;
+  border-radius: 999px !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4) !important;
+}
+
+.quiz-completed-box {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  padding: 16px 12px !important;
+  gap: 10px !important;
+}
+
+.quiz-completed-title {
+  margin: 0 !important;
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 18.5px !important;
+  font-weight: 800 !important;
+  color: #facc15 !important;
+  letter-spacing: 0.8px !important;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85) !important;
+}
+
+.quiz-completed-desc {
+  margin: 0 !important;
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 14.5px !important;
+  font-weight: 600 !important;
+  color: #f8fafc !important;
+  max-width: 320px !important;
+  line-height: 1.55 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Quests Multiplier Banner */
+.multiplier-level-banner {
+  background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%) !important;
+  border: 2px solid #facc15 !important;
+  border-radius: 16px !important;
+  padding: 10px 14px !important;
+  margin-bottom: 12px !important;
+}
+
+.mult-banner-lbl {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #38bdf8 !important;
+  letter-spacing: 1px !important;
+}
+
+.mult-banner-val {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  color: #facc15 !important;
+}
+
+.mult-banner-hint {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #e2e8f0 !important;
+}
+
+/* Daily Quests Item Cards */
+.mission-item-card {
+  background: rgba(30, 41, 59, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 14px !important;
+  padding: 10px 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin-bottom: 8px !important;
+}
+
+.mission-card-title {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+}
+
+.mission-card-desc {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #cbd5e1 !important;
+}
+
+.mission-reward {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: #facc15 !important;
+}
+
+/* 5. Screenshot 2: Top Run Leaderboard */
+.leaderboard-league-banner {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.22) 0%, rgba(249, 115, 22, 0.22) 100%) !important;
+  border: 2px solid #facc15 !important;
+  border-radius: 16px !important;
+  padding: 10px 14px !important;
+  margin-bottom: 12px !important;
+}
+
+.league-name {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  color: #fef08a !important;
+  letter-spacing: 0.8px !important;
+}
+
+.league-rank-pos {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 12px !important;
+  color: #fed7aa !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.leaderboard-item-card {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  background: rgba(30, 41, 59, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 14px !important;
+  padding: 8px 12px !important;
+}
+
+.leaderboard-item-card.my-rank {
+  background: rgba(2, 132, 199, 0.25) !important;
+  border: 2px solid #facc15 !important;
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.35) !important;
+}
+
+.lb-rank-num {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #94a3b8 !important;
+  width: 28px !important;
+  text-align: center !important;
+}
+
+.lb-name {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  letter-spacing: 0.4px !important;
+}
+
+.lb-me-tag {
+  background: #facc15 !important;
+  color: #78350f !important;
+  font-family: 'Fredoka', sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.6px !important;
+  padding: 1px 6px !important;
+  border-radius: 4px !important;
+}
+
+.lb-league-badge {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  color: #38bdf8 !important;
+  letter-spacing: 0.8px !important;
+}
+
+.lb-score {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #facc15 !important;
+  letter-spacing: 0.8px !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+  white-space: nowrap !important;
+}
+
+/* 6. Screenshot 3: Subway Crew & Upgrades */
+.upgrade-item-card {
+  background: rgba(15, 23, 42, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin-bottom: 8px !important;
+}
+
+.upgrade-name {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  letter-spacing: 0.4px !important;
+}
+
+.upgrade-desc {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #e2e8f0 !important;
+  line-height: 1.35 !important;
+}
+
+.upgrade-btn {
+  background: linear-gradient(135deg, #ffd23f, #ff7b00) !important;
+  color: #0b0f19 !important;
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+  padding: 8px 14px !important;
+  border-radius: 999px !important;
+  border: none !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 3px 8px rgba(249, 115, 22, 0.4) !important;
+}
+
+.upgrade-btn:disabled,
+.upgrade-btn.maxed {
+  background: rgba(16, 185, 129, 0.2) !important;
+  border: 1.5px solid #10b981 !important;
+  color: #34d399 !important;
+  font-weight: 800 !important;
+  font-size: 12.5px !important;
+  letter-spacing: 0.8px !important;
+  cursor: default !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+  box-shadow: none !important;
+}
+
+/* 7. Screenshot 4: Awards & Achievements */
+.ach-summary-banner {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.22) 0%, rgba(249, 115, 22, 0.22) 100%) !important;
+  border: 2px solid #facc15 !important;
+  border-radius: 16px !important;
+  padding: 10px 14px !important;
+  margin-bottom: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.ach-summary-label {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.2px !important;
+  color: #facc15 !important;
+  text-transform: uppercase !important;
+}
+
+.ach-summary-count {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.8px !important;
+  color: #ffffff !important;
+}
+
+.achievement-item-card {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.92) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 14px !important;
+  padding: 10px 14px !important;
+  margin-bottom: 8px !important;
+}
+
+.achievement-item-card.completed {
+  border-color: #facc15 !important;
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.35) !important;
+}
+
+.achievement-item-card.claimed {
+  opacity: 0.82 !important;
+  border-color: #10b981 !important;
+}
+
+.achievement-title {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  letter-spacing: 0.4px !important;
+}
+
+.achievement-category-badge {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.8px !important;
+  color: #facc15 !important;
+  background: rgba(250, 204, 21, 0.15) !important;
+  border: 1px solid rgba(250, 204, 21, 0.35) !important;
+  border-radius: 6px !important;
+  padding: 1px 6px !important;
+}
+
+.achievement-desc {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #f1f5f9 !important;
+  margin-top: 2px !important;
+  line-height: 1.35 !important;
+}
+
+.achievement-count {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: #38bdf8 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.achievement-claim-btn {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+  border-radius: 999px !important;
+  padding: 8px 14px !important;
+}
+
+.achievement-claim-btn.claimed-btn {
+  background: rgba(16, 185, 129, 0.18) !important;
+  border: 1.5px solid #10b981 !important;
+  color: #34d399 !important;
+}
+
+.achievement-claim-btn:not(.claimed-btn):not(.claim-active-btn) {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border: 1.5px solid #475569 !important;
+  color: #94a3b8 !important;
+}
+
+/* 8. Bottom Action Buttons: "BACK TO MENU" across all Modals */
+.cyber-btn.primary-btn,
+.modal-done-btn,
+.subway-play-again-btn {
+  font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.5px !important;
+  color: #0f172a !important;
+  background: linear-gradient(135deg, #facc15 0%, #ea580c 100%) !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 12px 24px !important;
+  box-shadow: 0 4px 0 #9a3412, 0 8px 20px rgba(249, 115, 22, 0.45) !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  text-transform: uppercase !important;
+}
+
+.cyber-btn.primary-btn:hover,
+.modal-done-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 0 #9a3412, 0 12px 24px rgba(249, 115, 22, 0.6) !important;
+}
+
+.cyber-btn.primary-btn:active,
+.modal-done-btn:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 2px 0 #9a3412 !important;
 }
 
 /* ============================================================
