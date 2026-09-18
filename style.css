@@ -4864,32 +4864,32 @@ canvas {
 }
 
 .world-tour-carousel-container {
+  width: 100% !important;
+  overflow: hidden !important;
+  position: relative !important;
+  padding: 10px 0 16px 0 !important;
+  touch-action: pan-y !important;
+  cursor: grab !important;
+  user-select: none !important;
+}
+
+.world-tour-carousel-container:active {
+  cursor: grabbing !important;
+}
+
+.world-tour-carousel-track {
   display: flex !important;
   flex-direction: row !important;
-  overflow-x: auto !important;
-  scroll-snap-type: x proximity !important;
   gap: 14px !important;
-  padding: 8px 6px 14px 6px !important;
-  -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-x !important;
-  scroll-behavior: smooth !important;
-  scrollbar-width: thin;
-  scrollbar-color: #38bdf8 rgba(15, 23, 42, 0.5);
-}
-
-.world-tour-carousel-container::-webkit-scrollbar {
-  height: 6px;
-}
-
-.world-tour-carousel-container::-webkit-scrollbar-thumb {
-  background: #38bdf8;
-  border-radius: 10px;
+  width: max-content !important;
+  will-change: transform !important;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.25, 1) !important;
 }
 
 .world-carousel-card {
-  flex: 0 0 215px !important;
-  scroll-snap-align: center !important;
-  scroll-snap-stop: normal !important;
+  flex: 0 0 220px !important;
+  width: 220px !important;
+  max-width: 220px !important;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%) !important;
   border: 2.5px solid rgba(255, 255, 255, 0.18) !important;
   border-radius: 18px !important;
@@ -4898,17 +4898,21 @@ canvas {
   display: flex !important;
   flex-direction: column !important;
   cursor: pointer !important;
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease !important;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease !important;
+  opacity: 0.75;
 }
 
 .world-carousel-card:hover {
   transform: translateY(-4px) !important;
   border-color: rgba(56, 189, 248, 0.6) !important;
+  opacity: 0.95;
 }
 
 .world-carousel-card.active {
   border-color: #facc15 !important;
-  box-shadow: 0 0 20px rgba(250, 204, 21, 0.55), 0 12px 28px rgba(0, 0, 0, 0.7) !important;
+  box-shadow: 0 0 22px rgba(250, 204, 21, 0.6), 0 12px 28px rgba(0, 0, 0, 0.7) !important;
+  opacity: 1 !important;
+  transform: scale(1.02) !important;
 }
 
 .world-card-banner {
@@ -5057,6 +5061,69 @@ canvas {
   background: #facc15;
   box-shadow: 0 0 10px #facc15;
   transform: scale(1.35);
+}
+
+.carousel-nav-arrow-btn:disabled,
+.carousel-nav-arrow-btn[disabled],
+.carousel-nav-arrow-btn.disabled {
+  opacity: 0.38 !important;
+  cursor: default !important;
+  pointer-events: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Secondary Actions Footer Strip (Other Games & Install App) */
+.subway-secondary-footer-strip {
+  width: 100% !important;
+  max-width: 340px !important;
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-top: 3px !important;
+}
+
+.footer-strip-cta-btn {
+  flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 8px 10px !important;
+  border-radius: 12px !important;
+  font-family: 'Fredoka', sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.3px !important;
+  text-decoration: none !important;
+  transition: transform 0.12s ease, filter 0.12s ease !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.footer-strip-cta-btn:hover {
+  transform: translateY(-1px) scale(1.02) !important;
+  filter: brightness(1.1) !important;
+}
+
+.footer-strip-cta-btn:active {
+  transform: scale(0.96) !important;
+}
+
+.game-strip-cta {
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.9) 0%, rgba(219, 39, 119, 0.9) 100%) !important;
+  border: 1.5px solid #f472b6 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(219, 39, 119, 0.35) !important;
+}
+
+.install-strip-cta {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.92) 0%, rgba(15, 23, 42, 0.98) 100%) !important;
+  border: 1.5px solid #38bdf8 !important;
+  color: #38bdf8 !important;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25) !important;
 }
 
 /* ---------------- DAILY SURFER QUIZ & TRIVIA ---------------- */

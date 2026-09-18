@@ -11,7 +11,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="style.css?v=subway3d_v27">
+  <link rel="stylesheet" href="style.css?v=subway3d_v28">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#4cc9f0">
@@ -212,7 +212,7 @@
 
           <!-- Top Brand Banner: Subway Surfers Graffiti Logo -->
           <div class="subway-title-wrap" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 2px; pointer-events: none;">
-            <div class="subway-tag-pill">🚇 3D RAILWAY SURF • TOKYO FOOD &amp; WILD WEST 🚇</div>
+            <div class="subway-tag-pill"><span role="img" aria-label="Metro train">🚇</span> 3D RAILWAY SURF • TOKYO FOOD &amp; WILD WEST <span role="img" aria-label="Metro train">🚇</span></div>
             <h1 class="subway-main-title">SUBWAY <span class="pop-accent">DASH</span> <span class="v3d-badge">3D</span></h1>
           </div>
 
@@ -272,20 +272,22 @@
               <span>RUNNER: <strong id="equippedCostumeName">JAKE</strong></span>
             </div>
 
-            <button type="button" id="playBtn" class="subway-run-btn" aria-label="Tap to Play" style="width: 100%; max-width: 340px; background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%); border: 2.5px solid #6ee7b7; border-radius: 20px; color: #ffffff; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px 18px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.6); text-decoration: none;">
+            <button type="button" id="playBtn" class="subway-run-btn" aria-label="Tap to Play Subway Surf 3D" style="width: 100%; max-width: 340px; background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%); border: 2.5px solid #6ee7b7; border-radius: 20px; color: #ffffff; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px 18px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.6); text-decoration: none;">
               <span class="btn-text" style="font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 900; letter-spacing: 1.5px; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">TAP TO PLAY ▶</span>
               <small class="run-hint" style="font-size: 10px; font-weight: 700; letter-spacing: 0.8px; color: #d1fae5; margin-top: 3px; text-transform: uppercase;">SWIPE ◀ ▶ MOVE • ▲ CLIMB TRAIN • ▼ SLIDE</small>
             </button>
 
-            <!-- New Game Mode Launcher: Gravity Flip 3D -->
-            <a href="gravity-flip.html" class="gravity-flip-banner-link" style="width: 100%; max-width: 340px; background: linear-gradient(135deg, #9333ea 0%, #db2777 50%, #f43f5e 100%); border: 2px solid #f472b6; border-radius: 16px; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px 14px; box-shadow: 0 6px 18px rgba(219, 39, 119, 0.5); text-decoration: none; font-family: 'Fredoka', sans-serif; font-size: 13.5px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; transition: transform 0.15s ease;">
-              <span style="font-size: 20px; filter: drop-shadow(0 0 6px #ffffff);">🌀</span>
-              <span>PLAY GRAVITY FLIP 3D (NEW) ▶</span>
-            </a>
-
-            <button type="button" id="installAppBtn" class="cyber-btn secondary-btn install-btn">
-              <span class="btn-text">📲 INSTALL APP (OFFLINE PLAY)</span>
-            </button>
+            <!-- Secondary CTAs: Small Footer Strip (Other Games & Install App) -->
+            <div class="subway-secondary-footer-strip">
+              <a href="gravity-flip.html" class="footer-strip-cta-btn game-strip-cta" aria-label="Play Gravity Flip 3D Endless Runner">
+                <span role="img" aria-label="Cyberpunk swirl">🌀</span>
+                <span>GRAVITY FLIP 3D</span>
+              </a>
+              <button type="button" id="installAppBtn" class="footer-strip-cta-btn install-strip-cta" aria-label="Install App for Offline Play">
+                <span role="img" aria-label="Mobile phone">📲</span>
+                <span>INSTALL APP</span>
+              </button>
+            </div>
           </footer>
         </section>
 
@@ -311,9 +313,9 @@
             <div id="tabProfile" class="tab-content">
               <div class="profile-card modal-card">
                 <div class="profile-header-row">
-                  <div class="profile-avatar-big" id="profileBigAvatar">🏃</div>
+                  <div class="profile-avatar-big" id="profileBigAvatar" role="img" aria-label="Runner avatar">🏃</div>
                   <div class="profile-meta-info">
-                    <div class="profile-rank-badge" id="profileRankBadge">⚡ TOP SURFER</div>
+                    <div class="profile-rank-badge" id="profileRankBadge"><span role="img" aria-label="Lightning">⚡</span> TOP SURFER</div>
                     <span class="profile-sub-label">RUNNER PROFILE</span>
                   </div>
                 </div>
@@ -329,14 +331,14 @@
                 <div class="profile-avatar-picker">
                   <span class="profile-section-title">SELECT RUNNER AVATAR</span>
                   <div class="avatar-chips-grid" id="avatarChipsGrid">
-                    <button type="button" class="avatar-chip active" data-avatar="🏃"><span>🏃</span></button>
-                    <button type="button" class="avatar-chip" data-avatar="🛹"><span>🛹</span></button>
-                    <button type="button" class="avatar-chip" data-avatar="⚡"><span>⚡</span></button>
-                    <button type="button" class="avatar-chip" data-avatar="👑"><span>👑</span></button>
-                    <button type="button" class="avatar-chip" data-avatar="🔥"><span>🔥</span></button>
-                    <button type="button" class="avatar-chip" data-avatar="⭐"><span>⭐</span></button>
-                    <button type="button" class="avatar-chip" data-avatar="🌟"><span>🌟</span></button>
-                    <button type="button" class="avatar-chip" data-avatar="🎧"><span>🎧</span></button>
+                    <button type="button" class="avatar-chip active" data-avatar="🏃" aria-label="Runner avatar"><span role="img" aria-label="Runner">🏃</span></button>
+                    <button type="button" class="avatar-chip" data-avatar="🛹" aria-label="Skateboard avatar"><span role="img" aria-label="Skateboard">🛹</span></button>
+                    <button type="button" class="avatar-chip" data-avatar="⚡" aria-label="Lightning avatar"><span role="img" aria-label="Lightning">⚡</span></button>
+                    <button type="button" class="avatar-chip" data-avatar="👑" aria-label="Crown avatar"><span role="img" aria-label="Crown">👑</span></button>
+                    <button type="button" class="avatar-chip" data-avatar="🔥" aria-label="Fire avatar"><span role="img" aria-label="Fire">🔥</span></button>
+                    <button type="button" class="avatar-chip" data-avatar="⭐" aria-label="Star avatar"><span role="img" aria-label="Star">⭐</span></button>
+                    <button type="button" class="avatar-chip" data-avatar="🌟" aria-label="Glowing star avatar"><span role="img" aria-label="Glowing star">🌟</span></button>
+                    <button type="button" class="avatar-chip" data-avatar="🎧" aria-label="Headphones avatar"><span role="img" aria-label="Headphones">🎧</span></button>
                   </div>
                 </div>
 
@@ -515,7 +517,7 @@
 
             <!-- Runner Identity Pill -->
             <div class="gameover-runner-tag">
-              <span id="gameoverAvatar" class="gameover-avatar-emoji">🏃</span>
+              <span id="gameoverAvatar" class="gameover-avatar-emoji" role="img" aria-label="Runner avatar">🏃</span>
               <span class="gameover-runner-lbl">RUN BY:</span>
               <strong id="gameoverCallsign" class="gameover-runner-name">RUNNER 1</strong>
             </div>
@@ -527,12 +529,12 @@
                 <div class="score-number-row">
                   <span id="finalScore" class="score-big-digits">0</span>
                 </div>
-                <div id="newBestBadge" class="new-best-ribbon hidden">🏆 NEW RECORD! 🏆</div>
+                <div id="newBestBadge" class="new-best-ribbon hidden"><span role="img" aria-label="Trophy">🏆</span> NEW RECORD! <span role="img" aria-label="Trophy">🏆</span></div>
               </div>
 
               <div class="score-stats-grid">
                 <div class="mini-stat-card coin-card">
-                  <span class="mini-stat-icon">🪙</span>
+                  <span class="mini-stat-icon" role="img" aria-label="Coins collected">🪙</span>
                   <div class="mini-stat-info">
                     <small>COINS RUN</small>
                     <strong id="finalCoins">0</strong>
@@ -540,7 +542,7 @@
                 </div>
 
                 <div class="mini-stat-card record-card">
-                  <span class="mini-stat-icon">🏆</span>
+                  <span class="mini-stat-icon" role="img" aria-label="High score trophy">🏆</span>
                   <div class="mini-stat-info">
                     <small>HIGH SCORE</small>
                     <strong id="bestScore">0</strong>
@@ -548,7 +550,7 @@
                 </div>
 
                 <div class="mini-stat-card bank-card">
-                  <span class="mini-stat-icon">💰</span>
+                  <span class="mini-stat-icon" role="img" aria-label="Money bag bank">💰</span>
                   <div class="mini-stat-info">
                     <small>TOTAL BANK</small>
                     <strong id="gameoverBankTotal">0</strong>
@@ -566,11 +568,11 @@
 
               <div class="gameover-sub-buttons">
                 <button type="button" id="menuBtn" class="subway-sub-btn home-btn" aria-label="Back to Home Screen">
-                  <span class="sub-btn-icon">🏠</span>
+                  <span class="sub-btn-icon" role="img" aria-label="Home">🏠</span>
                   <span>HOME</span>
                 </button>
                 <button type="button" id="gameoverShopBtn" class="subway-sub-btn shop-btn" aria-label="Open Shop">
-                  <span class="sub-btn-icon">🛍️</span>
+                  <span class="sub-btn-icon" role="img" aria-label="Shopping bags">🛍️</span>
                   <span>SHOP</span>
                 </button>
               </div>
@@ -625,7 +627,7 @@
               <button type="button" id="closeWorldTourBtn" class="close-icon-btn" aria-label="Close World Tour">✕</button>
             </div>
 
-            <div class="world-tour-carousel-hint">SWIPE OR CLICK TO TRAVEL ✈️</div>
+            <div class="world-tour-carousel-hint">SWIPE OR CLICK TO TRAVEL <span role="img" aria-label="Airplane travel">✈️</span></div>
 
             <div class="world-tour-carousel-container" id="worldTourCards">
               <!-- Dynamically populated card carousel -->
@@ -654,8 +656,8 @@
 
             <!-- Dual Tabs: Quests & Daily Quiz -->
             <div class="modal-nav-tabs">
-              <button type="button" class="tab-btn active" id="tabBtnMissions" data-tab="tabQuestsMissions">🎯 DAILY QUESTS</button>
-              <button type="button" class="tab-btn" id="tabBtnQuiz" data-tab="tabQuestsQuiz">🧠 DAILY QUIZ ⭐</button>
+              <button type="button" class="tab-btn active" id="tabBtnMissions" data-tab="tabQuestsMissions"><span role="img" aria-label="Target bullseye">🎯</span> DAILY QUESTS</button>
+              <button type="button" class="tab-btn" id="tabBtnQuiz" data-tab="tabQuestsQuiz"><span role="img" aria-label="Brain quiz">🧠</span> DAILY QUIZ <span role="img" aria-label="Star reward">⭐</span></button>
             </div>
 
             <!-- Tab 1: Daily Quests -->
@@ -664,7 +666,7 @@
               <div class="multiplier-level-banner">
                 <div class="mult-banner-info">
                   <span class="mult-banner-lbl">CURRENT BASE MULTIPLIER</span>
-                  <strong id="modalMultiplierVal" class="mult-banner-val">x1 ⭐</strong>
+                  <strong id="modalMultiplierVal" class="mult-banner-val">x1 <span role="img" aria-label="Star multiplier">⭐</span></strong>
                 </div>
                 <div class="mult-banner-hint">Complete quests to level up your score multiplier!</div>
               </div>
@@ -679,7 +681,7 @@
               <div class="daily-quiz-card">
                 <div class="quiz-badge-header">
                   <span class="quiz-pill">DAILY TRIVIA CHALLENGE</span>
-                  <span class="quiz-reward-tag">PRIZE: 🪙 +300 &amp; 🗝️ +1 KEY</span>
+                  <span class="quiz-reward-tag">PRIZE: <span role="img" aria-label="Coins">🪙</span> +300 &amp; <span role="img" aria-label="Key">🗝️</span> +1 KEY</span>
                 </div>
                 <div id="quizQuestionBox" class="quiz-question-box">
                   <div class="quiz-progress-text" id="quizQuestionCount">QUESTION 1 OF 3</div>
@@ -689,9 +691,9 @@
                   </div>
                 </div>
                 <div id="quizCompletedBox" class="quiz-completed-box hidden">
-                  <div class="quiz-trophy-icon">🏆</div>
+                  <div class="quiz-trophy-icon" role="img" aria-label="Quiz completion trophy">🏆</div>
                   <h3 class="quiz-completed-title">DAILY QUIZ COMPLETED!</h3>
-                  <p class="quiz-completed-desc">You claimed 🪙 +300 Coins and 🗝️ +1 Key! Come back tomorrow for fresh trivia!</p>
+                  <p class="quiz-completed-desc">You claimed <span role="img" aria-label="Coins">🪙</span> +300 Coins and <span role="img" aria-label="Key">🗝️</span> +1 Key! Come back tomorrow for fresh trivia!</p>
                 </div>
               </div>
             </div>
@@ -811,14 +813,14 @@
               <!-- Mystery Reward Reveal (Bouncy Upward Animation) -->
               <div id="mysteryRewardReveal" class="mystery-reward-reveal hidden">
                 <div class="reward-halo-rays"></div>
-                <div id="mysteryRewardIcon" class="reward-icon-big">🪙</div>
+                <div id="mysteryRewardIcon" class="reward-icon-big" role="img" aria-label="Coins reward">🪙</div>
                 <div id="mysteryRewardTitle" class="reward-title-big">+250 COINS</div>
                 <div id="mysteryRewardDesc" class="reward-desc-text">Added straight to your subway bank!</div>
               </div>
             </div>
-            <button type="button" id="mysteryBoxOpenBtn" class="cyber-btn primary-btn unbox-btn">TAP TO OPEN 🎁</button>
-            <button type="button" id="mysteryBoxBuyBtn" class="subway-buy-crate-btn hidden">
-              <span class="btn-icon">🪙</span>
+            <button type="button" id="mysteryBoxOpenBtn" class="cyber-btn primary-btn unbox-btn" aria-label="Open Mystery Box">TAP TO OPEN <span role="img" aria-label="Gift box">🎁</span></button>
+            <button type="button" id="mysteryBoxBuyBtn" class="subway-buy-crate-btn hidden" aria-label="Buy and open crate for 500 coins">
+              <span class="btn-icon" role="img" aria-label="Coins">🪙</span>
               <span>BUY &amp; OPEN CRATE (500 COINS)</span>
             </button>
             <button type="button" id="mysteryBoxDoneBtn" class="cyber-btn primary-btn modal-done-btn hidden">COLLECT &amp; CONTINUE ▶</button>
@@ -831,13 +833,13 @@
             <div class="modal-header">
               <div class="modal-title-wrap">
                 <span class="modal-tag">SEASON HUNT</span>
-                <h2>WORLD TOUR SEASON 🌸</h2>
+                <h2>WORLD TOUR SEASON <span role="img" aria-label="Cherry blossom">🌸</span></h2>
               </div>
               <button type="button" id="closeSeasonBtn" class="close-icon-btn" aria-label="Close Season">✕</button>
             </div>
             <div class="season-banner">
               <div class="season-token-summary">
-                <span class="season-token-icon">🌸</span>
+                <span class="season-token-icon" role="img" aria-label="Sakura token">🌸</span>
                 <div class="season-token-text">
                   <span class="season-token-lbl">COLLECTED TOKENS</span>
                   <strong id="seasonTokensCount">0</strong>
@@ -865,7 +867,7 @@
 
             <!-- Authentic Subway Surfers Trophy Progress Ribbon -->
             <div class="achievements-summary-banner">
-              <div class="ach-trophy-big">🏆</div>
+              <div class="ach-trophy-big" role="img" aria-label="Gold trophy">🏆</div>
               <div class="ach-summary-info">
                 <span class="ach-summary-label">COLLECTED TROPHIES</span>
                 <strong id="achievementsUnlockedCount" class="ach-summary-count">0 / 6 COMPLETED</strong>
@@ -882,8 +884,8 @@
     </main>
   </div>
 
-  <script src="audio.js?v=subway3d_v27"></script>
-  <script src="game.js?v=subway3d_v27"></script>
-  <script src="pwa.js?v=subway3d_v27"></script>
+  <script src="audio.js?v=subway3d_v28"></script>
+  <script src="game.js?v=subway3d_v28"></script>
+  <script src="pwa.js?v=subway3d_v28"></script>
 </body>
 </html>

@@ -4212,34 +4212,52 @@
     renderWorldTourModal() {
       const container = document.getElementById('worldTourCards');
       const dotsContainer = document.getElementById('worldTourDots');
+      const prevBtn = document.getElementById('worldTourPrevBtn');
+      const nextBtn = document.getElementById('worldTourNextBtn');
       if (!container) return;
-      container.innerHTML = '';
+
+      container.innerHTML = '<div class="world-tour-carousel-track" id="worldTourTrack"></div>';
+      const track = document.getElementById('worldTourTrack');
       if (dotsContainer) dotsContainer.innerHTML = '';
 
       const cards = [];
       const dots = [];
-      let movedDist = 0;
-      let currentCarouselIdx = this.selectedBgIndex || 0;
+      let currentCarouselIdx = clamp(this.selectedBgIndex || 0, 0, THEMES.length - 1);
+      let isDragging = false;
+      let startX = 0;
+      let dragDeltaX = 0;
 
-      const updateDots = (idx) => {
+      const updateNavAndDots = (idx) => {
         dots.forEach((d, i) => {
           if (i === idx) d.classList.add('active');
           else d.classList.remove('active');
         });
+        cards.forEach((c, i) => {
+          if (i === idx) c.classList.add('active');
+          else c.classList.remove('active');
+        });
+        if (prevBtn) {
+          prevBtn.disabled = (idx <= 0);
+          prevBtn.classList.toggle('disabled', idx <= 0);
+        }
+        if (nextBtn) {
+          nextBtn.disabled = (idx >= cards.length - 1);
+          nextBtn.classList.toggle('disabled', idx >= cards.length - 1);
+        }
       };
 
-      const scrollToCard = (idx, smooth = true) => {
-        if (!cards[idx]) return;
-        currentCarouselIdx = clamp(idx, 0, cards.length - 1);
-        const card = cards[currentCarouselIdx];
-        const containerW = container.clientWidth || 380;
-        const cardW = card.offsetWidth || 215;
-        const targetScrollLeft = card.offsetLeft - (containerW - cardW) / 2;
-        container.scrollTo({
-          left: Math.max(0, targetScrollLeft),
-          behavior: smooth ? 'smooth' : 'auto'
-        });
-        updateDots(currentCarouselIdx);
+      const slideToCard = (idx, animate = true) => {
+        currentCarouselIdx = clamp(idx, 0, THEMES.length - 1);
+        const containerW = container.clientWidth || 390;
+        const cardW = (cards[currentCarouselIdx] && cards[currentCarouselIdx].offsetWidth) || 220;
+        const cardGap = 14;
+        const cardStep = cardW + cardGap;
+        const translateX = (containerW - cardW) / 2 - (currentCarouselIdx * cardStep);
+
+        track.style.transition = animate ? 'transform 0.35s cubic-bezier(0.2, 0.8, 0.25, 1)' : 'none';
+        track.style.transform = `translateX(${translateX}px)`;
+
+        updateNavAndDots(currentCarouselIdx);
       };
 
       THEMES.forEach((theme, idx) => {
@@ -4250,12 +4268,12 @@
         card.innerHTML = `
           <div class="world-card-banner" style="background: linear-gradient(135deg, ${theme.sky[0]}, ${theme.sky[1] || theme.sky[0]});">
             <span class="world-card-stamp">${isActive ? 'VISITING NOW' : 'WORLD TOUR'}</span>
-            <div class="world-card-icon-art">${theme.flag || '🚇'}</div>
+            <div class="world-card-icon-art" role="img" aria-label="${theme.name} iconic landmark">${theme.flag || '🚇'}</div>
           </div>
           <div class="world-card-body">
             <span class="world-card-name">${theme.name}</span>
             <p class="world-card-desc">${theme.desc || 'Vibrant 3D railway tracks with unique obstacles & custom city scenery!'}</p>
-            <button type="button" class="world-card-select-btn">${isActive ? 'VISITING NOW ✔' : 'TRAVEL HERE ▶'}</button>
+            <button type="button" class="world-card-select-btn" aria-label="${isActive ? 'Currently visiting ' + theme.name : 'Travel to ' + theme.name}">${isActive ? 'VISITING NOW ✔' : 'TRAVEL HERE ▶'}</button>
           </div>
         `;
 
@@ -4278,12 +4296,16 @@
           });
         }
 
-        card.addEventListener('click', (e) => {
-          if (movedDist > 10) return; // Ignore click if user was dragging
-          chooseTheme();
+        card.addEventListener('click', () => {
+          if (Math.abs(dragDeltaX) > 10) return;
+          if (currentCarouselIdx !== idx) {
+            slideToCard(idx, true);
+          } else {
+            chooseTheme();
+          }
         });
 
-        container.appendChild(card);
+        track.appendChild(card);
         cards.push(card);
       });
 
@@ -4291,110 +4313,95 @@
       THEMES.forEach((theme, idx) => {
         if (dotsContainer) {
           const dot = document.createElement('div');
-          dot.className = `world-dot ${idx === this.selectedBgIndex ? 'active' : ''}`;
+          dot.className = `world-dot ${idx === currentCarouselIdx ? 'active' : ''}`;
+          dot.setAttribute('role', 'button');
+          dot.setAttribute('aria-label', `Navigate to ${theme.name}`);
           dot.title = theme.name;
           dot.addEventListener('click', (e) => {
             e.stopPropagation();
-            scrollToCard(idx, true);
+            slideToCard(idx, true);
           });
           dotsContainer.appendChild(dot);
           dots.push(dot);
         }
       });
 
-      // Calculate which card is closest to container center
-      const getClosestCardIndex = () => {
-        if (!cards.length) return 0;
-        const scrollCenter = container.scrollLeft + (container.clientWidth / 2);
-        let bestIdx = 0;
-        let bestDist = Infinity;
-        cards.forEach((c, i) => {
-          const cardCenter = c.offsetLeft + (c.offsetWidth / 2);
-          const dist = Math.abs(scrollCenter - cardCenter);
-          if (dist < bestDist) {
-            bestDist = dist;
-            bestIdx = i;
-          }
-        });
-        return bestIdx;
+      // Swipe / Drag Gestures (Touch + Mouse)
+      const onStart = (clientX) => {
+        isDragging = true;
+        startX = clientX;
+        dragDeltaX = 0;
+        track.style.transition = 'none';
       };
 
-      // Real-time dot updates on scroll
-      let scrollRaf = null;
-      container.onscroll = () => {
-        if (scrollRaf) cancelAnimationFrame(scrollRaf);
-        scrollRaf = requestAnimationFrame(() => {
-          const activeIdx = getClosestCardIndex();
-          currentCarouselIdx = activeIdx;
-          updateDots(activeIdx);
-        });
+      const onMove = (clientX) => {
+        if (!isDragging) return;
+        dragDeltaX = clientX - startX;
+        const containerW = container.clientWidth || 390;
+        const cardW = (cards[currentCarouselIdx] && cards[currentCarouselIdx].offsetWidth) || 220;
+        const cardStep = cardW + 14;
+        const baseTranslateX = (containerW - cardW) / 2 - (currentCarouselIdx * cardStep);
+        track.style.transform = `translateX(${baseTranslateX + dragDeltaX}px)`;
       };
 
-      // Pointer drag support
-      let isPointerDown = false;
-      let startX = 0;
-      let scrollStart = 0;
-
-      container.onpointerdown = (e) => {
-        if (e.pointerType === 'mouse' && e.button !== 0) return;
-        isPointerDown = true;
-        movedDist = 0;
-        startX = e.clientX;
-        scrollStart = container.scrollLeft;
-      };
-
-      container.onpointermove = (e) => {
-        if (!isPointerDown) return;
-        const deltaX = e.clientX - startX;
-        movedDist = Math.abs(deltaX);
-        if (movedDist > 4) {
-          container.scrollLeft = scrollStart - deltaX;
+      const onEnd = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        if (dragDeltaX < -38) {
+          slideToCard(currentCarouselIdx + 1, true);
+        } else if (dragDeltaX > 38) {
+          slideToCard(currentCarouselIdx - 1, true);
+        } else {
+          slideToCard(currentCarouselIdx, true);
         }
+        setTimeout(() => { dragDeltaX = 0; }, 50);
       };
 
-      const endDrag = () => {
-        if (isPointerDown) {
-          isPointerDown = false;
-        }
+      container.ontouchstart = (e) => {
+        if (e.touches.length === 1) onStart(e.touches[0].clientX);
       };
-      container.onpointerup = endDrag;
-      container.onpointercancel = endDrag;
+      container.ontouchmove = (e) => {
+        if (e.touches.length === 1) onMove(e.touches[0].clientX);
+      };
+      container.ontouchend = () => onEnd();
+      container.ontouchcancel = () => onEnd();
 
-      // Mouse wheel horizontal scrolling
-      container.onwheel = (e) => {
-        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-          container.scrollLeft += e.deltaY * 0.9;
-          e.preventDefault();
-        }
+      container.onmousedown = (e) => {
+        if (e.button !== 0) return;
+        onStart(e.clientX);
       };
 
-      // Arrow navigation buttons - Smooth & reliable scroll to Prev / Next card
-      const prevBtn = document.getElementById('worldTourPrevBtn');
-      const nextBtn = document.getElementById('worldTourNextBtn');
+      if (this._boundCarouselMouseMove) {
+        window.removeEventListener('mousemove', this._boundCarouselMouseMove);
+      }
+      if (this._boundCarouselMouseUp) {
+        window.removeEventListener('mouseup', this._boundCarouselMouseUp);
+      }
+      this._boundCarouselMouseMove = (e) => { if (isDragging) onMove(e.clientX); };
+      this._boundCarouselMouseUp = () => { if (isDragging) onEnd(); };
+      window.addEventListener('mousemove', this._boundCarouselMouseMove);
+      window.addEventListener('mouseup', this._boundCarouselMouseUp);
+
+      // Prev & Next navigation buttons
       if (prevBtn) {
         prevBtn.onclick = (e) => {
-          if (e) {
-            try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
-          }
-          scrollToCard(currentCarouselIdx - 1, true);
+          if (e) { e.preventDefault(); e.stopPropagation(); }
+          slideToCard(currentCarouselIdx - 1, true);
         };
       }
       if (nextBtn) {
         nextBtn.onclick = (e) => {
-          if (e) {
-            try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
-          }
-          scrollToCard(currentCarouselIdx + 1, true);
+          if (e) { e.preventDefault(); e.stopPropagation(); }
+          slideToCard(currentCarouselIdx + 1, true);
         };
       }
 
-      // Auto-scroll active card into view when opening (dual-phase for layout rendering)
-      setTimeout(() => {
-        scrollToCard(this.selectedBgIndex || 0, false);
-      }, 50);
-      setTimeout(() => {
-        scrollToCard(this.selectedBgIndex || 0, false);
-      }, 160);
+      // Initial alignment
+      requestAnimationFrame(() => {
+        slideToCard(currentCarouselIdx, false);
+        setTimeout(() => slideToCard(currentCarouselIdx, false), 50);
+        setTimeout(() => slideToCard(currentCarouselIdx, false), 150);
+      });
     }
 
     resetRun() {
