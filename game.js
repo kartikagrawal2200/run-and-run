@@ -77,9 +77,9 @@
     parent.style.height = Math.floor(targetH) + 'px';
 
     // Ultra-smooth mobile optimization:
-    // Clamp DPR to 1.35x on mobile (prevents 9x pixel fill-rate lag and WebGL/canvas OOM crashes)
+    // Cap DPR to 1.0 on mobile devices to prevent excessive fill-rate lag on high-DPI screens
     const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (winW < 650);
-    const maxDpr = isMobile ? 1.35 : 1.75;
+    const maxDpr = isMobile ? 1.0 : 1.5;
     const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
     canvas.width = Math.round(DESIGN_WIDTH * dpr);
     canvas.height = Math.round(DESIGN_HEIGHT * dpr);
@@ -4218,6 +4218,29 @@
 
       const cards = [];
       const dots = [];
+      let movedDist = 0;
+      let currentCarouselIdx = this.selectedBgIndex || 0;
+
+      const updateDots = (idx) => {
+        dots.forEach((d, i) => {
+          if (i === idx) d.classList.add('active');
+          else d.classList.remove('active');
+        });
+      };
+
+      const scrollToCard = (idx, smooth = true) => {
+        if (!cards[idx]) return;
+        currentCarouselIdx = clamp(idx, 0, cards.length - 1);
+        const card = cards[currentCarouselIdx];
+        const containerW = container.clientWidth || 380;
+        const cardW = card.offsetWidth || 215;
+        const targetScrollLeft = card.offsetLeft - (containerW - cardW) / 2;
+        container.scrollTo({
+          left: Math.max(0, targetScrollLeft),
+          behavior: smooth ? 'smooth' : 'auto'
+        });
+        updateDots(currentCarouselIdx);
+      };
 
       THEMES.forEach((theme, idx) => {
         const isActive = idx === this.selectedBgIndex;
@@ -4264,22 +4287,6 @@
         cards.push(card);
       });
 
-      // Active carousel index tracker
-      let currentCarouselIdx = this.selectedBgIndex || 0;
-      const updateDots = (idx) => {
-        dots.forEach((d, i) => {
-          if (i === idx) d.classList.add('active');
-          else d.classList.remove('active');
-        });
-      };
-
-      const scrollToCard = (idx, smooth = true) => {
-        if (!cards[idx]) return;
-        currentCarouselIdx = idx;
-        cards[idx].scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', inline: 'center', block: 'nearest' });
-        updateDots(idx);
-      };
-
       // Dot indicators
       THEMES.forEach((theme, idx) => {
         if (dotsContainer) {
@@ -4288,7 +4295,7 @@
           dot.title = theme.name;
           dot.addEventListener('click', (e) => {
             e.stopPropagation();
-            scrollToCard(idx);
+            scrollToCard(idx, true);
           });
           dotsContainer.appendChild(dot);
           dots.push(dot);
@@ -4298,14 +4305,12 @@
       // Calculate which card is closest to container center
       const getClosestCardIndex = () => {
         if (!cards.length) return 0;
-        const cRect = container.getBoundingClientRect();
-        const center = cRect.left + cRect.width / 2;
+        const scrollCenter = container.scrollLeft + (container.clientWidth / 2);
         let bestIdx = 0;
         let bestDist = Infinity;
         cards.forEach((c, i) => {
-          const r = c.getBoundingClientRect();
-          const cardCenter = r.left + r.width / 2;
-          const dist = Math.abs(center - cardCenter);
+          const cardCenter = c.offsetLeft + (c.offsetWidth / 2);
+          const dist = Math.abs(scrollCenter - cardCenter);
           if (dist < bestDist) {
             bestDist = dist;
             bestIdx = i;
@@ -4329,7 +4334,6 @@
       let isPointerDown = false;
       let startX = 0;
       let scrollStart = 0;
-      let movedDist = 0;
 
       container.onpointerdown = (e) => {
         if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -4364,7 +4368,7 @@
         }
       };
 
-      // Clean Arrow navigation buttons - Smooth & reliable scroll to Prev / Next card
+      // Arrow navigation buttons - Smooth & reliable scroll to Prev / Next card
       const prevBtn = document.getElementById('worldTourPrevBtn');
       const nextBtn = document.getElementById('worldTourNextBtn');
       if (prevBtn) {
@@ -4372,8 +4376,7 @@
           if (e) {
             try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
           }
-          const target = Math.max(0, currentCarouselIdx - 1);
-          scrollToCard(target);
+          scrollToCard(currentCarouselIdx - 1, true);
         };
       }
       if (nextBtn) {
@@ -4381,15 +4384,17 @@
           if (e) {
             try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
           }
-          const target = Math.min(cards.length - 1, currentCarouselIdx + 1);
-          scrollToCard(target);
+          scrollToCard(currentCarouselIdx + 1, true);
         };
       }
 
-      // Auto-scroll active card into view when opening
+      // Auto-scroll active card into view when opening (dual-phase for layout rendering)
       setTimeout(() => {
         scrollToCard(this.selectedBgIndex || 0, false);
-      }, 70);
+      }, 50);
+      setTimeout(() => {
+        scrollToCard(this.selectedBgIndex || 0, false);
+      }, 160);
     }
 
     resetRun() {
@@ -5462,8 +5467,8 @@
       // World Tour Destination Modal Open/Close
       this.attachButtonAction('menuWorldBtn', () => {
         try { SoundSystem.ensure(); } catch (e) {}
-        this.renderWorldTourModal();
         registerModalOpen(worldTourModal);
+        this.renderWorldTourModal();
       });
 
       this.attachButtonAction('closeWorldTourBtn', () => {

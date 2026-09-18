@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gravity Flip 3D | Cyberpunk Neon Tube Endless Runner</title>
+  <meta name="description" content="Futuristic 3D endless runner inside a neon tube. Flip gravity across Floor, Walls, and Ceiling to dodge laser gates and collect Neon Energy Cores!">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #05020c;
+      font-family: 'Orbitron', -apple-system, sans-serif;
+      color: #ffffff;
+    }
+
+    #canvasContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* Cyberpunk HUD Overlay */
+    #uiOverlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px 20px;
+    }
+
+    .hud-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    .hud-card {
+      background: rgba(10, 5, 25, 0.75);
+      border: 1.5px solid rgba(0, 240, 255, 0.4);
+      border-radius: 14px;
+      padding: 8px 14px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+      pointer-events: auto;
+    }
+
+    .hud-left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .hud-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hud-badge {
+      background: linear-gradient(135deg, #ff007f 0%, #7928ca 100%);
+      font-size: 10px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+    }
+
+    .hud-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: #00f0ff;
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+    }
+
+    .hud-stats-row {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .stat-lbl {
+      color: #a855f7;
+      font-size: 10px;
+      margin-right: 4px;
+    }
+
+    .stat-val {
+      color: #ffffff;
+    }
+
+    .hud-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .score-banner {
+      border-color: rgba(255, 0, 127, 0.5);
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.25);
+      text-align: right;
+    }
+
+    .score-num {
+      font-size: 26px;
+      font-weight: 900;
+      color: #ff007f;
+      text-shadow: 0 0 12px rgba(255, 0, 127, 0.8);
+      line-height: 1;
+    }
+
+    .cores-count {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #00f0ff;
+    }
+
+    .core-icon {
+      color: #ffd700;
+      font-size: 16px;
+      filter: drop-shadow(0 0 6px #ffd700);
+      animation: coreSpin 2s linear infinite;
+    }
+
+    @keyframes coreSpin {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+
+    /* Compass / Surface Indicator */
+    .hud-surface-indicator {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 5, 25, 0.85);
+      border: 1.5px solid rgba(168, 85, 247, 0.6);
+      border-radius: 999px;
+      padding: 6px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.35);
+    }
+
+    .surface-name {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      color: #facc15;
+    }
+
+    /* Mobile Quick Flip Touch Controls */
+    .hud-mobile-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 100%;
+      pointer-events: none;
+      margin-bottom: 8px;
+    }
+
+    .dpad-container {
+      display: grid;
+      grid-template-columns: repeat(3, 56px);
+      grid-template-rows: repeat(3, 56px);
+      gap: 6px;
+      pointer-events: auto;
+    }
+
+    .dpad-btn {
+      background: rgba(20, 10, 45, 0.85);
+      border: 2px solid #00f0ff;
+      border-radius: 14px;
+      color: #ffffff;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+      transition: transform 0.1s, background 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .dpad-btn:active {
+      transform: scale(0.9);
+      background: rgba(0, 240, 255, 0.4);
+    }
+
+    .dpad-up { grid-column: 2; grid-row: 1; }
+    .dpad-left { grid-column: 1; grid-row: 2; }
+    .dpad-center {
+      grid-column: 2; grid-row: 2;
+      border-color: #ff007f;
+      font-size: 10px;
+      font-weight: 900;
+      color: #ff007f;
+      text-align: center;
+      line-height: 1.1;
+    }
+    .dpad-right { grid-column: 3; grid-row: 2; }
+    .dpad-down { grid-column: 2; grid-row: 3; }
+
+    .hud-action-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    .quick-hop-btn {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff007f 0%, #9333ea 100%);
+      border: 3px solid #f472b6;
+      color: #ffffff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 900;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 0, 127, 0.6);
+      transition: transform 0.1s;
+    }
+
+    .quick-hop-btn:active {
+      transform: scale(0.9);
+    }
+
+    /* Modals (Start Menu, Game Over) */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(5, 2, 15, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      transition: opacity 0.3s;
+    }
+
+    .modal-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .cyber-modal {
+      width: 100%;
+      max-width: 440px;
+      background: linear-gradient(180deg, rgba(25, 12, 50, 0.95) 0%, rgba(10, 5, 25, 0.98) 100%);
+      border: 3px solid #00f0ff;
+      border-radius: 24px;
+      padding: 28px 24px;
+      text-align: center;
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: modalFloat 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes modalFloat {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-6px); }
+    }
+
+    .cyber-modal h1 {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #00f0ff 0%, #ff007f 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.6));
+    }
+
+    .cyber-modal p {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 14.5px;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    .keys-tutorial-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: left;
+    }
+
+    .key-tut-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+
+    .key-tag {
+      background: #1e293b;
+      border: 1px solid #64748b;
+      border-radius: 6px;
+      padding: 3px 6px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #ffffff;
+    }
+
+    .cyber-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%);
+      border: 2px solid #7dd3fc;
+      border-radius: 16px;
+      padding: 14px 20px;
+      color: #ffffff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+      transition: transform 0.15s, filter 0.15s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .cyber-btn:hover {
+      transform: scale(1.03);
+      filter: brightness(1.15);
+    }
+
+    .cyber-btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #7928ca 0%, #4c1d95 100%);
+      border-color: #c084fc;
+      box-shadow: 0 0 15px rgba(121, 40, 202, 0.4);
+      font-size: 13px;
+      padding: 10px 16px;
+    }
+
+    /* Screen Shake Flash Effect */
+    #flashScreen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 0, 127, 0.35);
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+  </style>
+</head>
+<body>
+  <!-- 3D WebGL Canvas Layer -->
+  <div id="canvasContainer"></div>
+  <div id="flashScreen"></div>
+
+  <!-- HUD Interface Layer -->
+  <div id="uiOverlay">
+    <!-- Top Row -->
+    <div class="hud-top">
+      <div class="hud-left">
+        <div class="hud-brand hud-card">
+          <span class="hud-badge">CYBERPUNK</span>
+          <span class="hud-title">GRAVITY FLIP</span>
+        </div>
+        <div class="hud-stats-row hud-card">
+          <div><span class="stat-lbl">DIST</span><span id="distVal" class="stat-val">0m</span></div>
+          <div><span class="stat-lbl">SPD</span><span id="speedVal" class="stat-val">1.0x</span></div>
+        </div>
+      </div>
+
+      <!-- Surface Compass Indicator -->
+      <div class="hud-surface-indicator">
+        <span style="font-size: 14px;">🧲</span>
+        <span id="activeSurfaceLbl" class="surface-name">FLOOR</span>
+      </div>
+
+      <div class="hud-right">
+        <div class="hud-card score-banner">
+          <div style="font-size: 10px; color: #f472b6; font-weight: 800; letter-spacing: 1px;">TOTAL SCORE</div>
+          <div id="scoreVal" class="score-num">0</div>
+        </div>
+        <div class="hud-card cores-count">
+          <span class="core-icon">💎</span>
+          <span id="coresVal">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Mobile Controls (Touch & D-Pad) -->
+    <div class="hud-mobile-controls">
+      <div class="dpad-container">
+        <button type="button" class="dpad-btn dpad-up" id="btnFlipCeiling" aria-label="Flip to Ceiling">▲</button>
+        <button type="button" class="dpad-btn dpad-left" id="btnFlipLeft" aria-label="Flip to Left Wall">◀</button>
+        <div class="dpad-btn dpad-center">FLIP<br>SURFACE</div>
+        <button type="button" class="dpad-btn dpad-right" id="btnFlipRight" aria-label="Flip to Right Wall">▶</button>
+        <button type="button" class="dpad-btn dpad-down" id="btnFlipFloor" aria-label="Flip to Floor">▼</button>
+      </div>
+
+      <div class="hud-action-col">
+        <button type="button" class="quick-hop-btn" id="btnHop" aria-label="Quick Hop">
+          <span>HOP</span>
+          <small style="font-size: 8px; opacity: 0.8;">[SPACE]</small>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Menu Modal -->
+  <div id="startModal" class="modal-overlay">
+    <div class="cyber-modal">
+      <h1>GRAVITY FLIP 3D</h1>
+      <p>Sprint inside an infinite neon cyber-tunnel. Shift your gravity across <strong>Floor, Walls, and Ceiling</strong> to dodge laser gates and collect luminous Energy Cores!</p>
+
+      <div class="keys-tutorial-grid">
+        <div class="key-tut-item"><span class="key-tag">A / ◀</span> Flip Left Wall</div>
+        <div class="key-tut-item"><span class="key-tag">D / ▶</span> Flip Right Wall</div>
+        <div class="key-tut-item"><span class="key-tag">W / ▲</span> Flip to Ceiling</div>
+        <div class="key-tut-item"><span class="key-tag">S / ▼</span> Flip to Floor</div>
+      </div>
+
+      <button type="button" id="startBtn" class="cyber-btn">LAUNCH MISSION ▶</button>
+      <a href="index.html" class="cyber-btn btn-secondary">🚇 RETURN TO SUBWAY SURF 3D</a>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div id="gameOverModal" class="modal-overlay hidden">
+    <div class="cyber-modal">
+      <h1 style="background: linear-gradient(90deg, #ff007f 0%, #f43f5e 100%); -webkit-background-clip: text;">SYSTEM CRASH</h1>
+      <p id="crashReason">Laser barrier impact detected!</p>
+
+      <div style="display: flex; justify-content: space-around; background: rgba(0,0,0,0.5); padding: 14px; border-radius: 16px; border: 1.5px solid rgba(0,240,255,0.3);">
+        <div>
+          <div style="font-size: 10px; color: #a855f7;">DISTANCE</div>
+          <strong id="finalDist" style="font-size: 18px; color: #ffffff;">0m</strong>
+        </div>
+        <div>
+          <div style="font-size: 10px; color: #38bdf8;">ENERGY CORES</div>
+          <strong id="finalCores" style="font-size: 18px; color: #00f0ff;">0</strong>
+        </div>
+        <div>
+          <div style="font-size: 10px; color: #f472b6;">HIGH SCORE</div>
+          <strong id="finalHigh" style="font-size: 18px; color: #facc15;">0</strong>
+        </div>
+      </div>
+
+      <button type="button" id="restartBtn" class="cyber-btn">REBOOT &amp; RETRY ⚡</button>
+      <a href="index.html" class="cyber-btn btn-secondary">🚇 SUBWAY SURF 3D MENU</a>
+    </div>
+  </div>
+
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Procedural Web Audio Synth Engine -->
+  <script>
+    class CyberSynth {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+        this.isPlayingMusic = false;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+        if (!this.isPlayingMusic) {
+          this.startMusicLoop();
+        }
+      }
+
+      playFlip() {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.18);
+
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      }
+
+      playCorePickup() {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        [587.33, 880, 1174.66].forEach((f, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now + i * 0.04);
+          gain.gain.setValueAtTime(0.25, now + i * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.04 + 0.18);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.04);
+          osc.stop(now + i * 0.04 + 0.2);
+        });
+      }
+
+      playCrash() {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const bufferSize = this.ctx.sampleRate * 0.4;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(800, now);
+        filter.frequency.exponentialRampToValueAtTime(60, now + 0.4);
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.8, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start(now);
+      }
+
+      startMusicLoop() {
+        this.isPlayingMusic = true;
+        const notes = [130.81, 146.83, 164.81, 196.00, 220.00];
+        let step = 0;
+        const tick = () => {
+          if (!this.isPlayingMusic) return;
+          if (!this.muted && this.ctx && this.ctx.state === 'running') {
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            const f = notes[step % notes.length];
+            osc.frequency.setValueAtTime(f * (step % 2 === 0 ? 0.5 : 1), now);
+
+            gain.gain.setValueAtTime(0.06, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.18);
+          }
+          step++;
+          setTimeout(tick, 160);
+        };
+        tick();
+      }
+    }
+
+    const sound = new CyberSynth();
+
+    /* ============================================================
+       3D GRAVITY-FLIP CORE ENGINE
+       ============================================================ */
+    const TUBE_RADIUS = 6.2;
+    const SEGMENT_LENGTH = 40;
+    const SEGMENT_COUNT = 12;
+    const SURFACES = [
+      { id: 0, name: 'FLOOR', angle: 0 },
+      { id: 1, name: 'RIGHT WALL', angle: Math.PI / 2 },
+      { id: 2, name: 'CEILING', angle: Math.PI },
+      { id: 3, name: 'LEFT WALL', angle: -Math.PI / 2 }
+    ];
+
+    class GravityFlipGame {
+      constructor() {
+        this.state = 'MENU'; // MENU, PLAYING, GAMEOVER
+        this.currentSurfaceIdx = 0; // 0=Floor, 1=Right, 2=Ceiling, 3=Left
+        this.playerAngle = 0;
+        this.targetAngle = 0;
+        this.cameraAngle = 0;
+        this.hopOffset = 0;
+        this.hopVelocity = 0;
+
+        this.distance = 0;
+        this.cores = 0;
+        this.score = 0;
+        this.highScore = parseInt(localStorage.getItem('gravity_flip_high') || '0', 10);
+        this.speed = 36;
+        this.baseSpeed = 36;
+        this.maxSpeed = 95;
+
+        this.obstacles = [];
+        this.energyCores = [];
+        this.particles = [];
+
+        this.initThree();
+        this.buildTube();
+        this.buildPlayer();
+        this.setupControls();
+        this.setupUI();
+
+        this.lastTime = performance.now();
+        requestAnimationFrame(t => this.animate(t));
+      }
+
+      initThree() {
+        const container = document.getElementById('canvasContainer');
+        this.scene = new THREE.Scene();
+        this.scene.fog = new THREE.FogExp2(0x05020c, 0.015);
+
+        this.camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 800);
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+        this.renderer.setClearColor(0x05020c, 1);
+        container.appendChild(this.renderer.domElement);
+
+        // Cyber Lighting
+        const ambientLight = new THREE.AmbientLight(0x221133, 1.5);
+        this.scene.add(ambientLight);
+
+        this.playerLight = new THREE.PointLight(0x00f0ff, 3, 25);
+        this.scene.add(this.playerLight);
+
+        window.addEventListener('resize', () => this.onWindowResize());
+      }
+
+      onWindowResize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      /* 4-Sided Neon Tube Construction */
+      buildTube() {
+        this.tubeSegments = [];
+        const segGeo = new THREE.BoxGeometry(TUBE_RADIUS * 2, TUBE_RADIUS * 2, SEGMENT_LENGTH);
+        const wireGeo = new THREE.EdgesGeometry(segGeo);
+
+        // Segment Rings and Surface Panels
+        for (let i = 0; i < SEGMENT_COUNT; i++) {
+          const group = new THREE.Group();
+
+          // Cyber wireframe edges
+          const lineMat = new THREE.LineBasicMaterial({
+            color: i % 2 === 0 ? 0x00f0ff : 0xff007f,
+            linewidth: 2,
+            transparent: true,
+            opacity: 0.8
+          });
+          const wire = new THREE.LineSegments(wireGeo, lineMat);
+          group.add(wire);
+
+          // Glowing cross-rings
+          const ringGeo = new THREE.TorusGeometry(TUBE_RADIUS * 0.98, 0.08, 4, 4);
+          const ringMat = new THREE.MeshBasicMaterial({ color: 0x7928ca, wireframe: true });
+          const ring = new THREE.Mesh(ringGeo, ringMat);
+          ring.rotation.z = Math.PI / 4;
+          group.add(ring);
+
+          // Subtle dark synthwave walls
+          const wallMat = new THREE.MeshStandardMaterial({
+            color: 0x0b0416,
+            roughness: 0.7,
+            metalness: 0.3,
+            side: THREE.BackSide
+          });
+          const wallMesh = new THREE.Mesh(segGeo, wallMat);
+          group.add(wallMesh);
+
+          group.position.z = i * SEGMENT_LENGTH;
+          this.scene.add(group);
+          this.tubeSegments.push(group);
+        }
+      }
+
+      /* Sleek Cyberpunk Hover-Droid Character */
+      buildPlayer() {
+        this.playerGroup = new THREE.Group();
+
+        // Central Fuselage / Cockpit
+        const bodyGeo = new THREE.ConeGeometry(0.55, 1.4, 5);
+        const bodyMat = new THREE.MeshStandardMaterial({
+          color: 0x111827,
+          roughness: 0.2,
+          metalness: 0.9,
+          emissive: 0x00f0ff,
+          emissiveIntensity: 0.25
+        });
+        this.droidBody = new THREE.Mesh(bodyGeo, bodyMat);
+        this.droidBody.rotation.x = Math.PI / 2;
+        this.playerGroup.add(this.droidBody);
+
+        // Glowing Cyan Optical Visor
+        const visorGeo = new THREE.BoxGeometry(0.5, 0.16, 0.5);
+        const visorMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+        const visor = new THREE.Mesh(visorGeo, visorMat);
+        visor.position.set(0, 0.2, 0.15);
+        this.playerGroup.add(visor);
+
+        // Aerodynamic Wings / Magnetic Skids
+        const wingGeo = new THREE.BoxGeometry(1.5, 0.08, 0.6);
+        const wingMat = new THREE.MeshStandardMaterial({ color: 0xff007f, metalness: 0.8, roughness: 0.3 });
+        const wings = new THREE.Mesh(wingGeo, wingMat);
+        wings.position.set(0, -0.05, -0.15);
+        this.playerGroup.add(wings);
+
+        // Twin Ion Thrusters
+        const thrusterGeo = new THREE.CylinderGeometry(0.12, 0.16, 0.4, 8);
+        const thrusterMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+        const leftThruster = new THREE.Mesh(thrusterGeo, thrusterMat);
+        leftThruster.position.set(-0.45, 0, -0.7);
+        leftThruster.rotation.x = Math.PI / 2;
+        const rightThruster = leftThruster.clone();
+        rightThruster.position.x = 0.45;
+        this.playerGroup.add(leftThruster);
+        this.playerGroup.add(rightThruster);
+
+        this.scene.add(this.playerGroup);
+      }
+
+      /* Controls Setup: Keyboard, Touch D-Pad, Swipes */
+      setupControls() {
+        window.addEventListener('keydown', (e) => {
+          sound.init();
+          if (this.state !== 'PLAYING') return;
+
+          switch (e.code) {
+            case 'ArrowLeft':
+            case 'KeyA':
+              this.flipSurface((this.currentSurfaceIdx + 3) % 4);
+              break;
+            case 'ArrowRight':
+            case 'KeyD':
+              this.flipSurface((this.currentSurfaceIdx + 1) % 4);
+              break;
+            case 'ArrowUp':
+            case 'KeyW':
+              this.flipSurface(2); // Ceiling
+              break;
+            case 'ArrowDown':
+            case 'KeyS':
+              this.flipSurface(0); // Floor
+              break;
+            case 'Space':
+              this.hop();
+              break;
+          }
+        });
+
+        // Touch D-Pad buttons
+        document.getElementById('btnFlipCeiling').onclick = () => { sound.init(); this.flipSurface(2); };
+        document.getElementById('btnFlipLeft').onclick = () => { sound.init(); this.flipSurface((this.currentSurfaceIdx + 3) % 4); };
+        document.getElementById('btnFlipRight').onclick = () => { sound.init(); this.flipSurface((this.currentSurfaceIdx + 1) % 4); };
+        document.getElementById('btnFlipFloor').onclick = () => { sound.init(); this.flipSurface(0); };
+        document.getElementById('btnHop').onclick = () => { sound.init(); this.hop(); };
+
+        // Touch swipe detection on screen
+        let touchStartX = 0;
+        let touchStartY = 0;
+        window.addEventListener('touchstart', (e) => {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        window.addEventListener('touchend', (e) => {
+          sound.init();
+          if (this.state !== 'PLAYING') return;
+          const deltaX = e.changedTouches[0].clientX - touchStartX;
+          const deltaY = e.changedTouches[0].clientY - touchStartY;
+          const absX = Math.abs(deltaX);
+          const absY = Math.abs(deltaY);
+
+          if (Math.max(absX, absY) > 30) {
+            if (absX > absY) {
+              if (deltaX > 0) this.flipSurface((this.currentSurfaceIdx + 1) % 4);
+              else this.flipSurface((this.currentSurfaceIdx + 3) % 4);
+            } else {
+              if (deltaY < 0) this.flipSurface(2);
+              else this.flipSurface(0);
+            }
+          }
+        }, { passive: true });
+      }
+
+      setupUI() {
+        document.getElementById('startBtn').onclick = () => {
+          sound.init();
+          document.getElementById('startModal').classList.add('hidden');
+          this.startGame();
+        };
+
+        document.getElementById('restartBtn').onclick = () => {
+          sound.init();
+          document.getElementById('gameOverModal').classList.add('hidden');
+          this.startGame();
+        };
+      }
+
+      startGame() {
+        this.state = 'PLAYING';
+        this.distance = 0;
+        this.cores = 0;
+        this.score = 0;
+        this.speed = this.baseSpeed;
+        this.currentSurfaceIdx = 0;
+        this.targetAngle = 0;
+        this.playerAngle = 0;
+        this.cameraAngle = 0;
+        this.hopOffset = 0;
+        this.hopVelocity = 0;
+
+        // Clear existing obstacles and cores
+        for (const o of this.obstacles) this.scene.remove(o.mesh);
+        for (const c of this.energyCores) this.scene.remove(c.mesh);
+        this.obstacles = [];
+        this.energyCores = [];
+
+        this.spawnAhead(120, 360);
+      }
+
+      flipSurface(newSurfaceIdx) {
+        if (this.currentSurfaceIdx === newSurfaceIdx) return;
+        this.currentSurfaceIdx = newSurfaceIdx;
+        this.targetAngle = SURFACES[newSurfaceIdx].angle;
+        sound.playFlip();
+
+        const sName = SURFACES[newSurfaceIdx].name;
+        document.getElementById('activeSurfaceLbl').textContent = sName;
+      }
+
+      hop() {
+        if (this.hopOffset < 0.2) {
+          this.hopVelocity = 14;
+          sound.playFlip();
+        }
+      }
+
+      /* Spawn Obstacles (Laser Gates, Plasma Crates) & Energy Cores */
+      spawnAhead(startZ, endZ) {
+        let z = startZ;
+        while (z < endZ) {
+          const rand = Math.random();
+          // Spawn Laser Gate blocking 1 or 2 surfaces
+          if (rand < 0.6) {
+            const blockedSurface = Math.floor(Math.random() * 4);
+            this.createLaserGate(z, blockedSurface);
+          } else {
+            // Plasma Crate on one surface
+            const crateSurface = Math.floor(Math.random() * 4);
+            this.createPlasmaCrate(z, crateSurface);
+          }
+
+          // Spawn collectible Energy Cores on clear surfaces
+          const coreSurface = (Math.floor(Math.random() * 3) + 1) % 4;
+          for (let k = 0; k < 3; k++) {
+            this.createEnergyCore(z + 10 + k * 4, coreSurface);
+          }
+
+          z += Math.max(28, 55 - (this.speed * 0.2));
+        }
+      }
+
+      createLaserGate(z, blockedSurfaceIdx) {
+        const angle = SURFACES[blockedSurfaceIdx].angle;
+        const gateGroup = new THREE.Group();
+
+        // Dual laser pylons
+        const pylonGeo = new THREE.CylinderGeometry(0.2, 0.2, 2.2, 8);
+        const pylonMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 });
+        const leftPylon = new THREE.Mesh(pylonGeo, pylonMat);
+        const rightPylon = leftPylon.clone();
+        leftPylon.position.set(-1.8, 0, 0);
+        rightPylon.position.set(1.8, 0, 0);
+        gateGroup.add(leftPylon);
+        gateGroup.add(rightPylon);
+
+        // Electric Neon Beam
+        const beamGeo = new THREE.CylinderGeometry(0.12, 0.12, 3.6, 8);
+        const beamMat = new THREE.MeshBasicMaterial({ color: 0xff007f });
+        const beam = new THREE.Mesh(beamGeo, beamMat);
+        beam.rotation.z = Math.PI / 2;
+        beam.position.y = 0.5;
+        gateGroup.add(beam);
+
+        // Positioning along the tube surface
+        const dist = TUBE_RADIUS - 1.2;
+        gateGroup.position.set(
+          Math.sin(angle) * dist,
+          -Math.cos(angle) * dist,
+          z
+        );
+        gateGroup.rotation.z = angle;
+
+        this.scene.add(gateGroup);
+        this.obstacles.push({
+          mesh: gateGroup,
+          z: z,
+          surfaceIdx: blockedSurfaceIdx,
+          type: 'LASER'
+        });
+      }
+
+      createPlasmaCrate(z, surfaceIdx) {
+        const angle = SURFACES[surfaceIdx].angle;
+        const crateGeo = new THREE.BoxGeometry(2.2, 1.4, 2.2);
+        const crateMat = new THREE.MeshStandardMaterial({
+          color: 0x1e1b4b,
+          emissive: 0x00f0ff,
+          emissiveIntensity: 0.6,
+          metalness: 0.8,
+          roughness: 0.2
+        });
+        const crate = new THREE.Mesh(crateGeo, crateMat);
+
+        const dist = TUBE_RADIUS - 0.7;
+        crate.position.set(
+          Math.sin(angle) * dist,
+          -Math.cos(angle) * dist,
+          z
+        );
+        crate.rotation.z = angle;
+
+        this.scene.add(crate);
+        this.obstacles.push({
+          mesh: crate,
+          z: z,
+          surfaceIdx: surfaceIdx,
+          type: 'CRATE'
+        });
+      }
+
+      createEnergyCore(z, surfaceIdx) {
+        const angle = SURFACES[surfaceIdx].angle;
+        const coreGeo = new THREE.OctahedronGeometry(0.42, 0);
+        const coreMat = new THREE.MeshBasicMaterial({ color: 0xffd700, wireframe: false });
+        const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+
+        // Orbit ring around core
+        const ringGeo = new THREE.TorusGeometry(0.65, 0.04, 6, 16);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        coreMesh.add(ring);
+
+        const dist = TUBE_RADIUS - 1.2;
+        coreMesh.position.set(
+          Math.sin(angle) * dist,
+          -Math.cos(angle) * dist,
+          z
+        );
+
+        this.scene.add(coreMesh);
+        this.energyCores.push({
+          mesh: coreMesh,
+          z: z,
+          surfaceIdx: surfaceIdx,
+          collected: false
+        });
+      }
+
+      /* Game Loop & Physics Update */
+      animate(timestamp) {
+        const dt = Math.min((timestamp - this.lastTime) / 1000, 0.05);
+        this.lastTime = timestamp;
+
+        if (this.state === 'PLAYING') {
+          this.update(dt);
+        }
+
+        this.renderer.render(this.scene, this.camera);
+        requestAnimationFrame(t => this.animate(t));
+      }
+
+      update(dt) {
+        // 1. Advance distance and speed
+        const deltaDist = this.speed * dt;
+        this.distance += deltaDist;
+        this.speed = Math.min(this.maxSpeed, this.baseSpeed + (this.distance * 0.015));
+        this.score = Math.floor(this.distance * 10) + this.cores * 50;
+
+        // Update HUD
+        document.getElementById('distVal').textContent = `${Math.floor(this.distance)}m`;
+        document.getElementById('speedVal').textContent = `${(this.speed / this.baseSpeed).toFixed(1)}x`;
+        document.getElementById('scoreVal').textContent = this.score;
+        document.getElementById('coresVal').textContent = this.cores;
+
+        // 2. Smooth Gravity-Flip Rotation (Angle Interpolation)
+        // Handle wrap-around shortest path for angles
+        let diff = this.targetAngle - this.playerAngle;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        this.playerAngle += diff * Math.min(1, 14 * dt);
+
+        // 3. Hop physics (jumping off surface)
+        if (this.hopOffset > 0 || this.hopVelocity !== 0) {
+          this.hopOffset += this.hopVelocity * dt;
+          this.hopVelocity -= 45 * dt; // Gravity pull back to surface
+          if (this.hopOffset <= 0) {
+            this.hopOffset = 0;
+            this.hopVelocity = 0;
+          }
+        }
+
+        // 4. Player 3D positioning
+        const playerR = TUBE_RADIUS - 0.8 - this.hopOffset;
+        const px = Math.sin(this.playerAngle) * playerR;
+        const py = -Math.cos(this.playerAngle) * playerR;
+        const pz = this.distance;
+
+        this.playerGroup.position.set(px, py, pz);
+        this.playerGroup.rotation.z = this.playerAngle;
+
+        // Droid banking tilt
+        this.playerGroup.rotation.y = -diff * 0.8;
+        this.playerLight.position.set(px, py, pz + 2);
+
+        // 5. Smooth Camera Follow & Rotation
+        // Camera stays behind player and smoothly tilts so active surface is always down
+        let camDiff = this.targetAngle - this.cameraAngle;
+        while (camDiff < -Math.PI) camDiff += Math.PI * 2;
+        while (camDiff > Math.PI) camDiff -= Math.PI * 2;
+        this.cameraAngle += camDiff * Math.min(1, 10 * dt);
+
+        const camDistBehind = 8.5;
+        const camHoverR = TUBE_RADIUS - 2.8;
+        const cx = Math.sin(this.cameraAngle) * camHoverR;
+        const cy = -Math.cos(this.cameraAngle) * camHoverR;
+        const cz = pz - camDistBehind;
+
+        this.camera.position.set(cx, cy, cz);
+        this.camera.lookAt(px, py, pz + 18);
+
+        // Crucial: Set Camera UP vector so the player's surface is always the bottom of the screen!
+        this.camera.up.set(-Math.sin(this.cameraAngle), Math.cos(this.cameraAngle), 0);
+
+        // 6. Infinite Tube Scrolling
+        for (const seg of this.tubeSegments) {
+          if (seg.position.z < pz - SEGMENT_LENGTH) {
+            seg.position.z += SEGMENT_COUNT * SEGMENT_LENGTH;
+          }
+        }
+
+        // 7. Energy Cores Collection & Rotation
+        for (let i = this.energyCores.length - 1; i >= 0; i--) {
+          const core = this.energyCores[i];
+          core.mesh.rotation.x += 2 * dt;
+          core.mesh.rotation.y += 3 * dt;
+
+          // Check pickup
+          const dz = Math.abs(core.z - pz);
+          if (!core.collected && dz < 2.0 && core.surfaceIdx === this.currentSurfaceIdx) {
+            core.collected = true;
+            this.cores++;
+            sound.playCorePickup();
+            this.scene.remove(core.mesh);
+            this.energyCores.splice(i, 1);
+            continue;
+          }
+
+          // Cull passed cores
+          if (core.z < pz - 20) {
+            this.scene.remove(core.mesh);
+            this.energyCores.splice(i, 1);
+          }
+        }
+
+        // 8. Obstacles Collision & Recycling
+        for (let i = this.obstacles.length - 1; i >= 0; i--) {
+          const obs = this.obstacles[i];
+          const dz = obs.z - pz;
+
+          // Check Collision
+          if (Math.abs(dz) < 1.4 && obs.surfaceIdx === this.currentSurfaceIdx) {
+            // If player hopped high enough over a plasma crate, they clear it
+            if (obs.type === 'CRATE' && this.hopOffset > 1.2) {
+              // Hopped over successfully!
+            } else {
+              this.crash(obs.type === 'LASER' ? 'Vaporized by Laser Gate!' : 'Crashed into Plasma Crate!');
+              return;
+            }
+          }
+
+          // Cull passed obstacles
+          if (obs.z < pz - 20) {
+            this.scene.remove(obs.mesh);
+            this.obstacles.splice(i, 1);
+          }
+        }
+
+        // 9. Continuous dynamic spawning ahead
+        const lastObstacleZ = this.obstacles.length > 0 ? this.obstacles[this.obstacles.length - 1].z : pz + 40;
+        if (lastObstacleZ < pz + 280) {
+          this.spawnAhead(lastObstacleZ + 35, pz + 360);
+        }
+      }
+
+      crash(reason) {
+        this.state = 'GAMEOVER';
+        sound.playCrash();
+
+        // Screen Flash
+        const flash = document.getElementById('flashScreen');
+        flash.style.opacity = '1';
+        setTimeout(() => { flash.style.opacity = '0'; }, 180);
+
+        if (this.score > this.highScore) {
+          this.highScore = this.score;
+          localStorage.setItem('gravity_flip_high', this.highScore.toString());
+        }
+
+        document.getElementById('crashReason').textContent = reason;
+        document.getElementById('finalDist').textContent = `${Math.floor(this.distance)}m`;
+        document.getElementById('finalCores').textContent = this.cores;
+        document.getElementById('finalHigh').textContent = this.highScore;
+        document.getElementById('gameOverModal').classList.remove('hidden');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      new GravityFlipGame();
+    });
+  </script>
+</body>
+</html>
