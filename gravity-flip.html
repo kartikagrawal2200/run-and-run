@@ -472,7 +472,7 @@
       </div>
 
       <button type="button" id="startBtn" class="cyber-btn">LAUNCH MISSION ▶</button>
-      <a href="index.html" class="cyber-btn btn-secondary">🚇 RETURN TO SUBWAY SURF 3D</a>
+      <a href="index.html" class="cyber-btn btn-secondary">🌿 RETURN TO JUNGLE DASH 3D</a>
     </div>
   </div>
 
@@ -498,12 +498,19 @@
       </div>
 
       <button type="button" id="restartBtn" class="cyber-btn">REBOOT &amp; RETRY ⚡</button>
-      <a href="index.html" class="cyber-btn btn-secondary">🚇 SUBWAY SURF 3D MENU</a>
+      <a href="index.html" class="cyber-btn btn-secondary">🌿 JUNGLE DASH 3D MENU</a>
     </div>
   </div>
 
   <!-- Three.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (typeof THREE === 'undefined') {
+        document.body.innerHTML = '<div style="font-family:sans-serif;color:#fff;background:#070913;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px">3D engine failed to load. Check your internet connection and reload the page.</div>';
+      }
+    });
+  </script>
 
   <!-- Procedural Web Audio Synth Engine -->
   <script>

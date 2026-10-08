@@ -1,13 +1,13 @@
 {
-  "name": "Run and Run v2: Cyber Endless Arcade",
-  "short_name": "Run & Run v2",
-  "description": "Version 2.0 with 3 selectable backgrounds, enhanced graphics, and ultra-smooth cyber arcade action.",
+  "name": "Jungle Dash 3D: Endless Jungle Run",
+  "short_name": "Jungle Dash",
+  "description": "Run through the neon jungle, swing on vines, and collect coins in this endless runner.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#070913",
-  "theme_color": "#4cc9f0",
+  "background_color": "#0b2414",
+  "theme_color": "#4ade80",
   "categories": [
     "games",
     "arcade"

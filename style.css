@@ -1,22 +1,22 @@
 :root {
-  --bg-dark: #18112c;
+  --bg-dark: #0b2414;
   --panel-bg: rgba(30, 20, 60, 0.92);
-  --panel-border: #38bdf8;
+  --panel-border: #4ade80;
   --subway-pink: #f43f5e;
   --subway-hotpink: #ec4899;
   --subway-cyan: #06b6d4;
-  --subway-sky: #38bdf8;
+  --subway-sky: #4ade80;
   --subway-orange: #f97316;
   --subway-amber: #fb923c;
   --subway-yellow: #facc15;
   --subway-gold: #fde047;
-  --subway-purple: #8b5cf6;
-  --subway-violet: #a855f7;
+  --subway-purple: #84cc16;
+  --subway-violet: #a3e635;
   --subway-green: #10b981;
   --subway-emerald: #059669;
-  --neon-cyan: #06b6d4;
+  --neon-cyan: #2dd4bf;
   --neon-yellow: #facc15;
-  --neon-magenta: #ec4899;
+  --neon-magenta: #fb7185;
   --neon-orange: #f97316;
   --neon-green: #10b981;
   --neon-red: #f43f5e;
@@ -103,19 +103,6 @@ canvas {
   touch-action: none;
 }
 
-/* CRT scanlines */
-.scanlines {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%);
-  background-size: 100% 4px;
-  pointer-events: none;
-  z-index: 5;
-  opacity: 0.6;
-}
 
 /* Subway Surfers Authentic In-Game HUD (Screenshot exact match) */
 #hud {

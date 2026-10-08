@@ -126,92 +126,146 @@
   const THEMES = [
     {
       id: 'subway_classic',
-      name: 'SUBWAY CITY CLASSIC',
-      flag: '🚇',
-      desc: 'Industrial red-brick viaducts, catenary gantries & legendary graffiti train yards!',
+      name: 'AURORA TUNDRA',
+      flag: '❄️',
+      desc: 'Glowing aurora skies over frozen ice tracks, crystal pines & neon snowfields!',
       type: 'classic',
-      sky: ['#0f172a', '#1e3a8a', '#0284c7'],
-      ground: '#1e293b',
-      rails: '#f8fafc',
-      ties: '#334155',
-      ballast: '#64748b',
-      grid: '#38bdf8',
-      building: '#090d16',
-      accent: '#fde047',
-      celestial: 'sun',
-      horizonGlow: 'rgba(56, 189, 248, 0.7)',
+      sky: ['#0c1445', '#2563eb', '#22d3ee'],
+      ground: '#e0f2fe',
+      rails: '#f1f5f9',
+      ties: '#7dd3fc',
+      ballast: '#bae6fd',
+      grid: '#67e8f9',
+      building: '#1e1b4b',
+      accent: '#a5f3fc',
+      celestial: 'moon',
+      horizonGlow: 'rgba(103, 232, 249, 0.85)',
       isBright: true
     },
     {
       id: 'tokyo_food',
-      name: 'TOKYO FOOD STREET',
-      flag: '🏮',
-      desc: 'Glowing Chochin lanterns, neon Torii gates, ramen stalls & drifting sakura petals!',
+      name: 'CANDY METRO',
+      flag: '🍭',
+      desc: 'Pink neon candy towers, glowing lanterns & rainbow sugar-rush streets!',
       type: 'tokyo',
-      sky: ['#1e143b', '#701a75', '#db2777'],
-      ground: '#18112c',
-      rails: '#f8fafc',
-      ties: '#3b0764',
-      ballast: '#475569',
-      grid: '#db2777',
-      building: '#110b20',
-      accent: '#facc15',
+      sky: ['#4c1d95', '#db2777', '#fb923c'],
+      ground: '#7e22ce',
+      rails: '#fde68a',
+      ties: '#f472b6',
+      ballast: '#c084fc',
+      grid: '#f0abfc',
+      building: '#2e1065',
+      accent: '#fde047',
       celestial: 'moon',
-      horizonGlow: 'rgba(219, 39, 119, 0.65)',
+      horizonGlow: 'rgba(249, 168, 212, 0.85)',
       isBright: true
     },
     {
       id: 'wild_west',
-      name: 'WILD WEST CANYON',
-      flag: '🏜️',
-      desc: 'Towering red sandstone canyon mesas, timber trestles & vintage water towers!',
+      name: 'DESERT SUNSET CANYON',
+      flag: '🌅',
+      desc: 'Blazing orange canyon walls, golden dunes & a huge red-hot sunset!',
       type: 'western',
-      sky: ['#431407', '#9a3412', '#fb923c'],
-      ground: '#3a1708',
-      rails: '#fef08a',
-      ties: '#78350f',
-      ballast: '#7c2d12',
-      grid: '#f97316',
-      building: '#271005',
-      accent: '#fde047',
+      sky: ['#7c2d12', '#ea580c', '#fde047'],
+      ground: '#f59e0b',
+      rails: '#fef3c7',
+      ties: '#92400e',
+      ballast: '#d97706',
+      grid: '#fb923c',
+      building: '#7f1d1d',
+      accent: '#fef08a',
       celestial: 'sun',
-      horizonGlow: 'rgba(251, 146, 60, 0.75)',
+      horizonGlow: 'rgba(253, 224, 71, 0.9)',
       isBright: true
     },
     {
       id: 'rio_beach',
-      name: 'RIO CARNIVAL BEACH',
-      flag: '🌴',
-      desc: 'Breezy beachfront palms, carnival feather streamers & Sugarloaf mountain dusk!',
+      name: 'TROPICAL LAGOON',
+      flag: '🏝️',
+      desc: 'Turquoise lagoon waves, pink coral palms & sparkling white sand beaches!',
       type: 'rio',
-      sky: ['#14532d', '#059669', '#34d399'],
-      ground: '#064e3b',
-      rails: '#fef08a',
-      ties: '#065f46',
-      ballast: '#047857',
-      grid: '#10b981',
-      building: '#022c22',
-      accent: '#fbbf24',
+      sky: ['#0e7490', '#06b6d4', '#a7f3d0'],
+      ground: '#fde68a',
+      rails: '#ffffff',
+      ties: '#fb7185',
+      ballast: '#fcd34d',
+      grid: '#2dd4bf',
+      building: '#134e4a',
+      accent: '#fb7185',
       celestial: 'sun',
-      horizonGlow: 'rgba(52, 211, 153, 0.7)',
+      horizonGlow: 'rgba(94, 234, 212, 0.85)',
       isBright: true
     },
     {
       id: 'cairo_pyramids',
-      name: 'CAIRO PYRAMIDS',
-      flag: '🏛️',
-      desc: 'Massive sunlit limestone pyramids, hieroglyphic obelisks & warm desert dunes!',
+      name: 'GOLDEN PYRAMIDS',
+      flag: '🔺',
+      desc: 'Shimmering golden pyramids under a deep blue desert sky, glowing sun discs & ancient obelisks!',
       type: 'cairo',
-      sky: ['#713f12', '#a16207', '#eab308'],
-      ground: '#451a03',
-      rails: '#fef08a',
-      ties: '#78350f',
-      ballast: '#b45309',
-      grid: '#ca8a04',
-      building: '#3b1704',
-      accent: '#facc15',
+      sky: ['#1e3a8a', '#f59e0b', '#fde68a'],
+      ground: '#eab308',
+      rails: '#fef9c3',
+      ties: '#a16207',
+      ballast: '#facc15',
+      grid: '#fbbf24',
+      building: '#78350f',
+      accent: '#fff7ed',
       celestial: 'sun',
-      horizonGlow: 'rgba(234, 179, 8, 0.8)',
+      horizonGlow: 'rgba(253, 230, 138, 0.9)',
+      isBright: true
+    },
+    {
+      id: 'cyber_jungle',
+      name: 'CYBER-JUNGLE RUSH',
+      flag: '🌿',
+      desc: 'Run through glowing jungle lumina, vine-covered monorails & neon bioluminescent flowers!',
+      type: 'rio',
+      sky: ['#0f3d3e', '#14b8a6', '#a7f3d0'],
+      ground: '#166534',
+      rails: '#e2e8f0',
+      ties: '#4d7c0f',
+      ballast: '#365314',
+      grid: '#5eead4',
+      building: '#022c22',
+      accent: '#a3e635',
+      celestial: 'moon',
+      horizonGlow: 'rgba(94, 234, 212, 0.85)',
+      isBright: true
+    },
+    {
+      id: 'neon_city',
+      name: 'NEON CITY JUMP',
+      flag: '🌆',
+      desc: 'Leap over the abyss between glowing skyscrapers, floating platforms & hover-trains!',
+      type: 'classic',
+      sky: ['#1e1b4b', '#7c3aed', '#f0abfc'],
+      ground: '#334155',
+      rails: '#e2e8f0',
+      ties: '#475569',
+      ballast: '#64748b',
+      grid: '#22d3ee',
+      building: '#0f172a',
+      accent: '#f472b6',
+      celestial: 'sun',
+      horizonGlow: 'rgba(232, 121, 249, 0.8)',
+      isBright: true
+    },
+    {
+      id: 'desert_duel',
+      name: 'DESERT DUEL DASH',
+      flag: '🏜️',
+      desc: 'Race through ancient sandstone arches, golden dunes & a racing train across the sand!',
+      type: 'western',
+      sky: ['#7c4a1e', '#d97706', '#fde68a'],
+      ground: '#d6a15b',
+      rails: '#e7e5e4',
+      ties: '#78350f',
+      ballast: '#c08457',
+      grid: '#f59e0b',
+      building: '#78350f',
+      accent: '#fb923c',
+      celestial: 'sun',
+      horizonGlow: 'rgba(253, 230, 138, 0.9)',
       isBright: true
     }
   ];
@@ -442,7 +496,7 @@
     _createLayer(count, minH, maxH) {
       const b = [];
       const colWidth = DESIGN_WIDTH / count;
-      const signs = ['ラーメン', 'すし', 'TOKYO', 'SUBWAY', 'SURF', 'TAKO'];
+      const signs = ['ラーメン', 'すし', 'TOKYO', 'NEON', 'JUNGLE', 'TAKO'];
       for (let i = 0; i < count; i++) {
         b.push({
           x: i * colWidth,
@@ -669,58 +723,58 @@
   const COSTUMES = {
     jake: {
       id: 'jake',
-      name: 'JAKE',
+      name: 'KAI',
       character: 'jake',
       price: 0,
-      desc: 'The legendary Subway Surfer with backwards red cap, white hoodie & graffiti spray can!',
-      cap: '#ef4444',
-      hoodie: '#f8fafc',
-      vest: '#2563eb',
-      jeans: '#3b82f6',
-      shoes: '#dc2626',
-      skin: '#fed7aa',
-      hair: '#78350f',
+      desc: 'Desert racer with spiky blond hair, a goggle cap & a sun-ray hoverboard!',
+      cap: '#c2410c',
+      hoodie: '#d6b48a',
+      vest: '#78350f',
+      jeans: '#92400e',
+      shoes: '#78350f',
+      skin: '#e0a870',
+      hair: '#facc15',
       accessory: 'spraycan',
-      swatch: 'linear-gradient(135deg, #ef4444 0%, #f8fafc 50%, #2563eb 100%)'
+      swatch: 'linear-gradient(135deg, #c2410c 0%, #d6b48a 50%, #78350f 100%)'
     },
     tricky: {
       id: 'tricky',
-      name: 'TRICKY',
+      name: 'LUNA',
       character: 'tricky',
       price: 100,
-      desc: 'Smart skater girl with cute blonde pigtails, sky-blue beanie & green cargo pants!',
-      cap: '#0284c7',
-      hoodie: '#ffffff',
-      vest: '#f43f5e',
-      jeans: '#16a34a',
-      shoes: '#ffffff',
-      skin: '#fed7aa',
-      hair: '#facc15',
+      desc: 'Neon skate star with purple locs, a glowing visor & a jacket lit with cyan stripes!',
+      cap: '#67e8f9',
+      hoodie: '#1e1b4b',
+      vest: '#0f172a',
+      jeans: '#111827',
+      shoes: '#1f2937',
+      skin: '#8d5524',
+      hair: '#7c3aed',
       accessory: 'skateboard',
-      swatch: 'linear-gradient(135deg, #0284c7 0%, #facc15 50%, #16a34a 100%)'
+      swatch: 'linear-gradient(135deg, #67e8f9 0%, #6d28d9 50%, #0f172a 100%)'
     },
     fresh: {
       id: 'fresh',
-      name: 'FRESH',
+      name: 'ORION',
       character: 'fresh',
       price: 200,
-      desc: 'Cool music lover with high-top fade haircut, retro shades & 80s boombox stereo!',
+      desc: 'Cool music lover with a high-top fade, retro shades & a neon boombox!',
       cap: '#1e1b4b',
-      hoodie: '#22c55e',
-      vest: '#eab308',
-      jeans: '#dc2626',
-      shoes: '#ffffff',
-      skin: '#78350f',
+      hoodie: '#f97316',
+      vest: '#fde047',
+      jeans: '#1d4ed8',
+      shoes: '#f8fafc',
+      skin: '#c68642',
       hair: '#0f172a',
       accessory: 'boombox',
-      swatch: 'linear-gradient(135deg, #22c55e 0%, #dc2626 50%, #fde047 100%)'
+      swatch: 'linear-gradient(135deg, #f97316 0%, #1d4ed8 50%, #fde047 100%)'
     },
     spike: {
       id: 'spike',
-      name: 'SPIKE',
+      name: 'BLAZE',
       character: 'spike',
       price: 350,
-      desc: 'Rockstar rebel with bright red punk mohawk, black leather vest & skate kicks!',
+      desc: 'Rockstar rebel with a bold red mohawk, black leather jacket & glowing kicks!',
       cap: '#ef4444',
       hoodie: '#1e293b',
       vest: '#f59e0b',
@@ -733,19 +787,19 @@
     },
     yutani: {
       id: 'yutani',
-      name: 'YUTANI',
-      character: 'yutani',
+      name: 'NOVA',
+      character: 'jake',
       price: 500,
-      desc: 'Genius inventor kid in her iconic green alien mascot suit with cute big eyes!',
-      cap: '#22c55e',
-      hoodie: '#16a34a',
-      vest: '#a855f7',
-      jeans: '#15803d',
-      shoes: '#a855f7',
-      skin: '#86efac',
-      hair: '#22c55e',
+      desc: 'Cyber-jungle runner with wild glowing green hair & neon-tattooed arms!',
+      cap: '#84cc16',
+      hoodie: '#1f2937',
+      vest: '#0f766e',
+      jeans: '#1f2937',
+      shoes: '#374151',
+      skin: '#9a5b2e',
+      hair: '#84cc16',
       accessory: 'gadget',
-      swatch: 'linear-gradient(135deg, #22c55e 0%, #a855f7 50%, #fde047 100%)'
+      swatch: 'linear-gradient(135deg, #84cc16 0%, #1f2937 50%, #22d3ee 100%)'
     }
   };
 
@@ -852,7 +906,7 @@
      ============================================================ */
   const BOARDS = {
     classic: { id: 'classic', name: 'Classic Red', desc: 'Agile street cruiser with clean lateral glide', price: 0, speedBonus: 1.0, swatch: '#ef4444', trail: '#38bdf8', icon: '🛹' },
-    star: { id: 'star', name: 'Star Surfer', desc: 'Cosmic gold board with boosted jump apex', price: 300, speedBonus: 1.1, swatch: '#facc15', trail: '#fde047', icon: '⭐' },
+    star: { id: 'star', name: 'Star Runner', desc: 'Cosmic gold board with boosted jump apex', price: 300, speedBonus: 1.1, swatch: '#facc15', trail: '#fde047', icon: '⭐' },
     cyber: { id: 'cyber', name: 'Cyber Neon', desc: 'Hyper-glide magnetic deck with cyan plasma glow', price: 600, speedBonus: 1.2, swatch: '#06b6d4', trail: '#06b6d4', icon: '⚡' },
     golden: { id: 'golden', name: 'Golden Monarch', desc: 'Pure 24K gold runner board with coin sparks', price: 1200, speedBonus: 1.3, swatch: '#eab308', trail: '#facc15', icon: '👑' },
     monster: { id: 'monster', name: 'Monster Claw', desc: 'Beast edition with super bouncy landing springs', price: 2000, speedBonus: 1.4, swatch: '#84cc16', trail: '#a855f7', icon: '🦖' }
@@ -1031,6 +1085,29 @@
   /* ============================================================
      AUTHENTIC SUBWAY SURFERS 3D CARTOON RUNNER RENDER PIPELINE
      ============================================================ */
+  function shadeHex(hex, amt) {
+    const m = /^#([0-9a-f]{6})$/i.exec(hex || '');
+    if (!m) return hex;
+    const n = parseInt(m[1], 16);
+    let r = (n >> 16) & 255, gg = (n >> 8) & 255, b = n & 255;
+    const t = amt < 0 ? 0 : 255, p = Math.abs(amt);
+    r = Math.round(r + (t - r) * p); gg = Math.round(gg + (t - gg) * p); b = Math.round(b + (t - b) * p);
+    return '#' + [r, gg, b].map(v => v.toString(16).padStart(2, '0')).join('');
+  }
+
+  // Draws a rounded shape with cylinder-style shading (lit left, shadowed right, rim light)
+  function volumeFill(ctx, x, y, w, h, radii, base) {
+    const g = ctx.createLinearGradient(x, 0, x + w, 0);
+    g.addColorStop(0, shadeHex(base, 0.3));
+    g.addColorStop(0.4, base);
+    g.addColorStop(0.85, shadeHex(base, -0.25));
+    g.addColorStop(1, shadeHex(base, -0.45));
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, radii);
+    ctx.fill();
+  }
+
   function drawHumanoidRunner(ctx, cx, groundY, animTime, isJumping, isSliding, jumpHeight, tilt, costume, squash, hasShield, scaleFactor = 1.0, baseHeight = 0, isFrontView = false, activeBuffs = {}) {
     try {
       const c = costume || COSTUMES.jake;
@@ -1079,6 +1156,9 @@
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1.6;
         ctx.stroke();
+        // Gloss highlight along the top of the deck
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+        ctx.fillRect(-21, -3, 42, 2);
         // Hover thruster neon glow
         ctx.fillStyle = boardMeta.trail || 'rgba(56, 189, 248, 0.55)';
         ctx.beginPath();
@@ -1189,6 +1269,11 @@
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
         ctx.stroke();
+        // 3D gloss strip and shaded underside edge
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.fillRect(-5, -38, 3, 68);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+        ctx.fillRect(4, -38, 4, 68);
         // Deck graffiti star
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 10px "Fredoka", sans-serif';
@@ -1208,15 +1293,10 @@
         ctx.restore();
 
         // 1. LEGS (STURDY CARTOON SKATER STANCE)
-        ctx.fillStyle = jeansCol;
         // Left leg
-        ctx.beginPath();
-        ctx.roundRect(-16, 6, 12, 28, [4, 4, 2, 2]);
-        ctx.fill();
+        volumeFill(ctx, -16, 6, 12, 28, [4, 4, 2, 2], jeansCol);
         // Right leg
-        ctx.beginPath();
-        ctx.roundRect(4, 6, 12, 28, [4, 4, 2, 2]);
-        ctx.fill();
+        volumeFill(ctx, 4, 6, 12, 28, [4, 4, 2, 2], jeansCol);
         // Dark denim seam
         ctx.strokeStyle = '#1d4ed8';
         ctx.lineWidth = 1.5;
@@ -1256,10 +1336,7 @@
 
         // 3. TORSO (WHITE HOODIE + BLUE DENIM VEST)
         // White hoodie body
-        ctx.fillStyle = hoodieCol;
-        ctx.beginPath();
-        ctx.roundRect(-16, -22, 32, 30, [6, 6, 4, 4]);
-        ctx.fill();
+        volumeFill(ctx, -16, -22, 32, 30, [6, 6, 4, 4], hoodieCol);
         // Inner tee shirt visible at neckline
         ctx.fillStyle = '#facc15';
         ctx.beginPath();
@@ -1497,9 +1574,9 @@
         ctx.fillStyle = '#facc15';
         ctx.font = '900 7px "Fredoka", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('SUB', 0, -8);
+        ctx.fillText('NEON', 0, -8);
         ctx.fillStyle = '#06b6d4';
-        ctx.fillText('SURF', 0, -3);
+        ctx.fillText('DASH', 0, -3);
 
         // Folded hood collar
         ctx.fillStyle = '#e2e8f0';
@@ -1632,10 +1709,10 @@
         ctx.fillStyle = '#facc15';
         ctx.font = '900 7.5px "Fredoka", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('SUB', 0, -9);
+        ctx.fillText('NEON', 0, -9);
         ctx.fillStyle = '#06b6d4';
         ctx.font = '900 7px "Fredoka", sans-serif';
-        ctx.fillText('SURF', 0, -3);
+        ctx.fillText('DASH', 0, -3);
 
         // Folded white hood collar resting on neck
         ctx.fillStyle = '#e2e8f0';
@@ -2686,7 +2763,7 @@
         ctx.fillStyle = '#facc15';
         ctx.font = `bold ${Math.max(6, 8 * sFront)}px "Orbitron", sans-serif`;
         ctx.textAlign = 'center';
-        ctx.fillText('SUBWAY 3D', pFront.x, byFront + 7 * sFront);
+        ctx.fillText('JUNGLE 3D', pFront.x, byFront + 7 * sFront);
       }
 
       // Livery center stripe
@@ -3395,7 +3472,7 @@
       this.baseMultiplier = this.loadBaseMultiplier();
       this.missionsState = this.loadMissionsState();
       this.missionToastTimeout = null;
-      this.updateMissionsNotificationBadge();
+      this.updateMissionsBadge();
 
       // Pilot Profile & Rank
       this.profile = this.loadProfile();
@@ -3505,15 +3582,17 @@
       });
       if (stateChanged) {
         this.saveMissionsState();
-        this.updateMissionsNotificationBadge();
+        this.updateMissionsBadge();
       }
     }
 
     showMissionToast(mission) {
       const toast = document.getElementById('missionToast');
-      const text = document.getElementById('missionToastText');
+      const text = document.getElementById('missionToastDesc');
+      const rewardEl = document.getElementById('missionToastReward');
       if (toast && text) {
-        text.textContent = `🎯 MISSION COMPLETE: ${mission.title}!`;
+        text.textContent = mission.title;
+        if (rewardEl) rewardEl.textContent = `+${mission.rewardCoins} 🪙`;
         toast.classList.remove('hidden');
         toast.classList.add('slide-in');
         clearTimeout(this.missionToastTimeout);
@@ -3542,7 +3621,7 @@
       try { SoundSystem.buy(); } catch (e) {}
       this.updateBankDisplays();
       this.renderMissionsModal();
-      this.updateMissionsNotificationBadge();
+      this.updateMissionsBadge();
     }
 
     renderMissionsModal() {
@@ -3616,9 +3695,9 @@
       const letters = ['A', 'B', 'C', 'D'];
       const quizData = [
         {
-          cat: "🛹 SURFER LORE",
-          q: "Which iconic character rocks the famous backwards red cap & denim vest?",
-          options: ["Jake", "Tricky", "Fresh", "Spike"],
+          cat: "🛹 RUNNER LORE",
+          q: "Which runner has spiky blond hair & a goggle cap?",
+          options: ["Kai", "Luna", "Orion", "Blaze"],
           correct: 0
         },
         {
@@ -3689,14 +3768,14 @@
       });
     }
 
-    updateMissionsNotificationBadge() {
+    updateMissionsBadge() {
       if (!this.missionsState) return;
       const unclaimedCount = MISSIONS_DATA.filter(m => {
         const s = this.missionsState[m.id];
         return s && s.completed && !s.claimed;
       }).length;
 
-      const badge = document.getElementById('missionsNotificationBadge');
+      const badge = document.getElementById('missionsBadge');
       if (badge) {
         if (unclaimedCount > 0) {
           badge.textContent = unclaimedCount;
@@ -3719,7 +3798,7 @@
       const rivals = [
         { name: 'Kai_Speedster', character: 'spike', score: Math.max(12500, Math.floor(myScore * 1.35) + 450), league: 'DIAMOND', medal: '🥇' },
         { name: 'Tokyo_Rider', character: 'tricky', score: Math.max(9200, Math.floor(myScore * 1.18) + 210), league: 'DIAMOND', medal: '🥈' },
-        { name: 'SubwaySurfer99', character: 'jake', score: Math.max(7600, Math.floor(myScore * 1.05) + 90), league: 'GOLD', medal: '🥉' },
+        { name: 'JungleRunner99', character: 'jake', score: Math.max(7600, Math.floor(myScore * 1.05) + 90), league: 'GOLD', medal: '🥉' },
         { name: myName, character: this.equippedCostume, score: myScore, league: this.getProfileRank(myScore).title.split(' ')[1] || 'GOLD', isMe: true },
         { name: 'TrackPhantom', character: 'fresh', score: Math.max(3400, Math.floor(myScore * 0.82)), league: 'SILVER' },
         { name: 'NeonDash', character: 'yutani', score: Math.max(2100, Math.floor(myScore * 0.65)), league: 'BRONZE' },
@@ -4017,7 +4096,7 @@
     }
 
     getProfileRank(score) {
-      if (score >= 7000) return { title: '👑 DIAMOND SURFER', tier: 'TIER 5' };
+      if (score >= 7000) return { title: '👑 DIAMOND RUNNER', tier: 'TIER 5' };
       if (score >= 3500) return { title: '⚡ GOLD RUNNER', tier: 'TIER 4' };
       if (score >= 1500) return { title: '🚀 SILVER TRACKER', tier: 'TIER 3' };
       if (score >= 500) return { title: '🛡️ BRONZE ROOKIE', tier: 'TIER 2' };
@@ -5071,11 +5150,11 @@
       const costEl = document.getElementById('reviveKeyCostText');
       if (costEl) costEl.textContent = `${cost} KEY${cost > 1 ? 'S' : ''}`;
 
-      const scoreEl = document.getElementById('reviveScorePreview');
-      if (scoreEl) scoreEl.textContent = `SCORE: ${this.getScore().toLocaleString()}`;
+      const scoreEl = document.getElementById('reviveScoreVal');
+      if (scoreEl) scoreEl.textContent = this.getScore().toLocaleString();
 
-      const coinsEl = document.getElementById('reviveCoinsPreview');
-      if (coinsEl) coinsEl.textContent = `COINS: ${this.collectibles.coinCount}`;
+      const coinsEl = document.getElementById('reviveCoinsVal');
+      if (coinsEl) coinsEl.textContent = this.collectibles.coinCount;
 
       const btn = document.getElementById('reviveActionBtn');
       if (btn) {
@@ -5092,7 +5171,7 @@
 
       // 5-second countdown with animated circular SVG ring
       let timeLeft = 5.0;
-      const ring = document.getElementById('reviveProgressRing');
+      const ring = document.getElementById('reviveTimerCircle');
       const timeText = document.getElementById('reviveCountdownText');
 
       if (this.reviveCountdownInterval) clearInterval(this.reviveCountdownInterval);
@@ -5102,8 +5181,8 @@
         if (timeText) timeText.textContent = Math.ceil(Math.max(0, timeLeft));
 
         if (ring) {
-          // Circumference is 2 * PI * 45 ≈ 283
-          const offset = 283 - (Math.max(0, timeLeft) / 5.0) * 283;
+          // Ring radius is 42 in the SVG, so circumference ≈ 264 (matches CSS stroke-dasharray)
+          const offset = 264 - (Math.max(0, timeLeft) / 5.0) * 264;
           ring.style.strokeDashoffset = offset;
         }
 
@@ -5276,7 +5355,7 @@
 
         // Roll authentic rewards: 60% Coins (300-800), 25% Keys (1-2), 15% Hoverboards (+2)
         const roll = Math.random();
-        let icon = '🪙', title = '+350 COINS!', desc = 'Added straight to your subway bank!';
+        let icon = '🪙', title = '+350 COINS!', desc = 'Added straight to your coin bank!';
 
         if (roll < 0.60) {
           const coins = 300 + Math.floor(Math.random() * 6) * 100;
@@ -6425,8 +6504,8 @@
         ctx.fillRect(0, DESIGN_HEIGHT - 65, Math.max(0, VP_X - ROAD_WIDTH_FG / 2 - 32), 65);
         ctx.fillRect(VP_X + ROAD_WIDTH_FG / 2 + 32, DESIGN_HEIGHT - 65, DESIGN_WIDTH, 65);
       } else if (to.type === 'rio') {
-        // Rio Carnival: Golden tropical beach sand with turquoise ocean water
-        ctx.fillStyle = '#fde047';
+        // Tropical world: verge uses the world's own ground color (sand or jungle floor)
+        ctx.fillStyle = to.ground;
         // Left sand beach
         ctx.beginPath();
         ctx.moveTo(0, VP_Y);
@@ -6854,7 +6933,7 @@
             ctx.fillStyle = '#ffffff';
             ctx.font = `900 ${Math.max(7, 11 * sf)}px "Orbitron", sans-serif`;
             ctx.textAlign = 'center';
-            ctx.fillText('CARNAVAL 🌴', pF.x, pF.y - 144 * sf);
+            ctx.fillText('PARADISE 🌴', pF.x, pF.y - 144 * sf);
             ctx.restore();
           }
         }
@@ -6862,10 +6941,10 @@
         // D. Trackside Walls with Rio Graffiti
         const wallNorms = [-1.58, 1.58];
         const rioTags = [
-          { text: 'RIO', col: '#10b981', outline: '#ffffff' },
-          { text: 'SAMBA', col: '#facc15', outline: '#064e3b' },
-          { text: 'CARNAVAL', col: '#ec4899', outline: '#ffffff' },
-          { text: 'SURF ★', col: '#06b6d4', outline: '#ffffff' }
+          { text: 'LAGOON', col: '#10b981', outline: '#ffffff' },
+          { text: 'WAVES', col: '#facc15', outline: '#064e3b' },
+          { text: 'NEON', col: '#ec4899', outline: '#ffffff' },
+          { text: 'RUSH ★', col: '#06b6d4', outline: '#ffffff' }
         ];
         for (const wNorm of wallNorms) {
           const grafStep = 160;
@@ -7018,7 +7097,7 @@
             ctx.fillStyle = '#38bdf8';
             ctx.font = `900 ${Math.max(8, 13 * st)}px "Orbitron", sans-serif`;
             ctx.textAlign = 'center';
-            ctx.fillText('SUBWAY CITY 🚇', pM.x, pM.y - 10 * st);
+            ctx.fillText('NEON JUNGLE 🌴', pM.x, pM.y - 10 * st);
             ctx.restore();
           }
         }
@@ -7067,10 +7146,10 @@
         // C. Classic Subway Graffiti Tags
         const wallNorms = [-1.58, 1.58];
         const classicTags = [
-          { text: 'SUBWAY', col: '#38bdf8', outline: '#ffffff' },
-          { text: 'SURFERS', col: '#facc15', outline: '#0f172a' },
-          { text: 'JAKE ★', col: '#ef4444', outline: '#ffffff' },
-          { text: 'FRESH', col: '#22c55e', outline: '#ffffff' }
+          { text: 'NEON', col: '#38bdf8', outline: '#ffffff' },
+          { text: 'JUNGLE', col: '#facc15', outline: '#0f172a' },
+          { text: 'KAI ★', col: '#14b8a6', outline: '#ffffff' },
+          { text: 'ORION', col: '#f97316', outline: '#ffffff' }
         ];
         for (const wNorm of wallNorms) {
           const grafStep = 160;
@@ -7290,9 +7369,9 @@
         const tokyoTags = [
           { text: 'TOKYO', col: '#ff007f', outline: '#ffffff' },
           { text: 'ラーメン', col: '#f59e0b', outline: '#1e1b4b' },
-          { text: 'SUBWAY', col: '#06b6d4', outline: '#facc15' },
+          { text: 'NEON', col: '#06b6d4', outline: '#facc15' },
           { text: 'すし ★', col: '#10b981', outline: '#ffffff' },
-          { text: 'SURF', col: '#ec4899', outline: '#ffffff' }
+          { text: 'JUNGLE', col: '#ec4899', outline: '#ffffff' }
         ];
         for (const wNorm of wallNorms) {
           const wallFar = project3D(wNorm, 950, 0);
